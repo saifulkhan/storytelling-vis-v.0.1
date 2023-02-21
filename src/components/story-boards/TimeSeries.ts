@@ -1,210 +1,97 @@
-/**
- * Timeseries input data format
- *
- * interface ITimeSeriesData {
- *  date: Date;
- *  y: number;
- * }
- *
- */
-
 import * as d3 from "d3";
+import { ITimeSeriesData } from "src/models/ITimeSeriesData";
 
-const width = 800,
-  height = 300,
-  border = 50;
+const WIDTH = 1200,
+  HEIGHT = 400,
+  BOARDER = 50;
 
-const xScFnc = (data, w = width, b = border) => {
-  const xExt = d3.extent(data, (d: any) => d.date);
-  // console.log("TimeSeries:xScFnc: data =", data, "xExt", xExt);
-
+const xScale = (data: ITimeSeriesData[], w = WIDTH, b = BOARDER) => {
+  const xExtent = d3.extent(data, (d: ITimeSeriesData) => d.date);
   const xScale = d3
     .scaleTime()
-    // @ts-expect-error -- rule out [undefined, undefined] (possible runtime error)
-    .domain(xExt)
+    .domain(xExtent)
     .range([b, w - b]);
   return xScale;
 };
 
-const yScFnc = (data, h = height, b = border) => {
-  const yExt = d3.extent(data, (d: any) => d.y);
-  // console.log("TimeSeries:yScFnc: data =", data, "yExt", yExt);
-  const ySc = d3
+const yScale = (data: ITimeSeriesData[], h = HEIGHT, b = BOARDER) => {
+  const yExtent = d3.extent(data, (d: ITimeSeriesData) => d.y);
+  const yScale = d3
     .scaleLinear()
-    // @ts-expect-error -- rule out [undefined, undefined] (possible runtime error)
-    .domain(yExt)
+    .domain(yExtent)
     .range([h - b, b]);
-  return ySc;
+  return yScale;
 };
 
 export class TimeSeries {
-  _data1;
-  _data2;
-  _ctx;
-  _title;
-  _xLabel;
-  _yLabel1;
-  _yLabel2;
-  _color;
-  _color2;
-  _width;
-  _height;
-  _border;
-  _ticks;
-  _showPoints;
-  _showEventLines;
-  _xSc;
-  _ySc1;
-  _ySc2;
+  _data1: ITimeSeriesData[];
+  _data2: ITimeSeriesData[];
+  _svg: SVGSVGElement;
+  _title = "";
+  _xLabel = "";
+  _yLabel1 = "";
+  _yLabel2 = "";
+  _color = "Black";
+  _color2: string;
+  _width: number;
+  _height: number;
+  _border = BOARDER;
+  _ticks = false;
+  _showPoints = false;
+  _showEventLines = false;
+  _xScale: any;
+  _yScale1: any;
+  _yScale2: any;
+  // _annotations;
+  _annoTop = false;
   _annotations;
-  _annoTop;
-  _animationList;
   _animationCounter;
 
-  selector;
-  line;
-  isSameScale = false;
+  _selector: string;
+  _isSameScale = false;
 
-  constructor(data, selector = undefined, w = width, h = height) {
-    this.selector = selector;
+  constructor(
+    data1: ITimeSeriesData[],
+    selector = undefined,
+    width = WIDTH,
+    height = HEIGHT,
+  ) {
+    this._selector = selector;
+    this._data1 = data1;
+    this._width = width;
+    this._height = height;
+    this._border = BOARDER;
+    this._xScale = xScale(this._data1, this._width, this._border);
+    this._yScale1 = yScale(this._data1, this._height, this._border);
+    this._yScale2;
 
-    this._data1 = data;
-    this._data2;
-    this._ctx;
-    this._title = "";
-    this._xLabel = "";
-    this._yLabel1 = "";
-    this._yLabel2 = "";
-    this._color = "Black";
-    this._width = w;
-    this._height = h;
-    this._border = border;
-    this._ticks = false;
-    this._showPoints = false;
-    this._showEventLines = false;
-    this._xSc = xScFnc(this._data1, this._width, this._border);
-    this._ySc1 = yScFnc(this._data1, this._height, this._border);
-    this._ySc2;
-    this._annotations;
-    this._annoTop;
-    this._animationList;
-    this._animationCounter;
-
-    // line generator
-    this.line = d3
-      .line()
-      .x((d: any) => this._xSc(d.date))
-      .y((d: any) => this._ySc1(d.y));
-  }
-
-  static animationSVG(width, height, selector) {
-    // return DOM.svg(width, height);
-
-    // remove the svg content
+    // Remove any exisitng svg, otherwise it will keep adding
     d3.select(selector).select("svg").remove();
 
-    return d3
-      .select(selector)
-      .append("svg")
-      .attr("width", width)
-      .attr("height", height)
-      .node();
+    // The svg canvas is not created here, when we intend to draw on top of another svg, set by svg()
+    // Example, story 4
+    if (selector) {
+      this._svg = d3
+        .select(selector)
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .node();
+    }
   }
 
   addExtraDatasets(dataGroup, isSameScale = true) {
-    this.isSameScale = isSameScale;
+    this._isSameScale = isSameScale;
     this._data2 = dataGroup;
     this._fitPairedData();
     return this;
-  }
-
-  title(title) {
-    this._title = title;
-    return this;
-  }
-
-  xLabel(xLabel) {
-    this._xLabel = xLabel;
-    return this;
-  }
-
-  yLabel(yLabel) {
-    this._yLabel1 = yLabel;
-    return this;
-  }
-
-  yLabel2(yLabel) {
-    this._yLabel2 = yLabel;
-    return this;
-  }
-
-  color2(color) {
-    this._color2 = color;
-    return this;
-  }
-
-  color(color) {
-    this._color = color;
-    return this;
-  }
-
-  ticks(ticks) {
-    this._ticks = ticks;
-    return this;
-  }
-
-  height(height) {
-    this._height = height;
-
-    this._ySc1 = yScFnc(this._data1, this._height, this._border);
-    if (this._data2) this._fitPairedData();
-    return this;
-  }
-
-  width(width) {
-    this._width = width;
-    const sameScale = this._ySc1 == this._ySc2;
-
-    this._xSc = xScFnc(this._data1, this._width, this._border);
-    if (this._data2) this._fitPairedData();
-    return this;
-  }
-
-  border(border) {
-    this._border = border;
-
-    this._xSc = xScFnc(this._data1, this._width, this._border);
-    if (this._data2) this._fitPairedData();
-    return this;
-  }
-
-  showPoints() {
-    this._showPoints = true;
-    return this;
-  }
-
-  showEventLines() {
-    this._showEventLines = true;
-    return this;
-  }
-
-  getXScale() {
-    return this._xSc;
-  }
-
-  getYScale() {
-    return this._ySc1;
-  }
-
-  getYScale2() {
-    return this._ySc2;
   }
 
   _fitPairedData() {
     let data2Comb = this._data2.group.reduce((comb, arr) => comb.concat(arr));
     let combData = this._data1.concat(data2Comb);
 
-    this._xSc = xScFnc(combData, this._width, this._border);
+    this._xScale = xScale(combData, this._width, this._border);
 
     if (this._data2.domain) {
       data2Comb = this._data2.domain.map((v) => {
@@ -213,48 +100,33 @@ export class TimeSeries {
       combData = this._data1.concat(data2Comb);
     }
 
-    if (!this.isSameScale) {
-      this._ySc1 = yScFnc(this._data1, this._height, this._border);
-      this._ySc2 = yScFnc(data2Comb, this._height, this._border);
+    if (!this._isSameScale) {
+      this._yScale1 = yScale(this._data1, this._height, this._border);
+      this._yScale2 = yScale(data2Comb, this._height, this._border);
     } else {
-      this._ySc1 = this._ySc2 = yScFnc(combData, this._height, this._border);
+      this._yScale1 = this._yScale2 = yScale(
+        combData,
+        this._height,
+        this._border,
+      );
     }
   }
 
-  svg(ctx) {
-    // console.log("TimeSeries: ctx = ", ctx);
-    this._ctx = ctx;
-    const bounds = ctx.getBoundingClientRect();
+  /*
+   * Used in story 3, where scrolling svg is passed
+   */
+  svg(svg) {
+    this._svg = svg;
+    const bounds = svg.getBoundingClientRect();
     this.width(bounds.width);
     this.height(bounds.height);
     return this;
   }
 
-  renderSVG() {
-    this._ctx =
-      this._ctx ||
-      d3
-        .select(this.selector)
-        .append("svg")
-        .attr("width", this._width)
-        .attr("height", this._height)
-        .node();
-    return this._ctx;
-  }
-
-  annotate(annotations) {
-    if (!this._ctx)
-      throw "Annotate needs to be called after timeSeries SVG is yielded! ( yield ts.renderSVG() )";
-
+  animate(annotations, animationCounter) {
     this._annotations = annotations;
-    return this;
-  }
-
-  animate(animationList, animationCounter, ctx = this._ctx) {
-    this._animationList = animationList;
     this._animationCounter = animationCounter;
 
-    this.svg(ctx);
     return this;
   }
 
@@ -277,7 +149,7 @@ export class TimeSeries {
 
       // Create a d3 path with this data slice
       path = d3
-        .select(this._ctx)
+        .select(this._svg)
         .append("path")
         .attr("stroke", animObj.color || "black")
         .attr("stroke-width", 3)
@@ -286,10 +158,10 @@ export class TimeSeries {
           "d",
           d3
             .line()
-            .x((d) => this._xSc(d[0]))
-            .y((d) => (animObj.useData2 ? this._ySc2(d[1]) : this._ySc1(d[1])))(
-            subPoints,
-          ),
+            .x((d) => this._xScale(d[0]))
+            .y((d) =>
+              animObj.useData2 ? this._yScale2(d[1]) : this._yScale1(d[1]),
+            )(subPoints),
         );
       length = path.node().getTotalLength();
       // Set the path to be hidden initially
@@ -302,7 +174,7 @@ export class TimeSeries {
       return { path: path, length: length, duration: duration };
     };
 
-    return this._animationList.map(createPath);
+    return this._annotations.map(createPath);
   }
 
   _addEventLine(container, x, y) {
@@ -329,7 +201,7 @@ export class TimeSeries {
 
       // If annotation obj defined - add to svg and set opacity to 0 (hide it)
       anno = annoObj.id(`anim-anno-${idx}`);
-      anno.addTo(this._ctx);
+      anno.addTo(this._svg);
 
       if (this._annoTop) {
         anno.y(this._border + anno._annoHeight / 2);
@@ -349,23 +221,28 @@ export class TimeSeries {
         fadeout: animObj.fadeout || false,
       };
     };
-    return this._animationList.map(createAnno);
+    return this._annotations.map(createAnno);
   }
 
+  /*
+   * Helper for plot()
+   * This will create and add paths to svg based on whether the ts has been called with animate
+   */
   _addPaths() {
-    // Helper for plot fnc
-    // Will create and add paths to svg based on whether the ts has been called with animate
-
     // Convert data to array of coordinate pairs i.e. [[x1, y1],[x2, y2]...[xn, yn]]
     const points1 = this._data1.map(Object.values);
     let points2;
+
+    // TODO: Need to update the data2 structure ITimeSeriesData[]
+    // add setColor2 ?
+
     if (this._data2) {
-      const colors = this._data2.colors;
+      const colors = this._data2.colors; // TODO: add setColor2
       this._data2.group.forEach((data, i) => {
+        // TODO: remove group
         points2 = data.map(Object.values);
-        if (!this._animationList) {
-          const path2 = d3
-            .select(this._ctx)
+        if (!this._annotations) {
+          d3.select(this._svg)
             .append("path")
             .attr("stroke", colors ? colors[i % colors.length] : this._color)
             .attr("stroke-width", 3)
@@ -374,18 +251,16 @@ export class TimeSeries {
               "d",
               d3
                 .line()
-                .x((d) => this._xSc(d[0]))
-                .y((d) => this._ySc2(d[1]))(points2),
+                .x((d) => this._xScale(d[0]))
+                .y((d) => this._yScale2(d[1]))(points2),
             );
         }
       });
     }
 
-    if (!this._animationList) {
+    if (!this._annotations) {
       // When we dont want to animate simply add a single static path derived from the datapoints
-
-      const path1 = d3
-        .select(this._ctx)
+      d3.select(this._svg)
         .append("path")
         .attr("stroke", this._color)
         .attr("stroke-width", 3)
@@ -394,12 +269,12 @@ export class TimeSeries {
           "d",
           d3
             .line()
-            .x((d) => this._xSc(d[0]))
-            .y((d) => this._ySc1(d[1]))(points1),
+            .x((d) => this._xScale(d[0]))
+            .y((d) => this._yScale1(d[1]))(points1),
         );
     } else {
       // We want to animate and are given a list of path segments and annotations to animate
-      const pathNum = this._animationList.length; // Number of path segments
+      const pathNum = this._annotations.length; // Number of path segments
 
       // Create a list of d3 paths and annotations from our animation list
       const paths = this._createPaths(points1, points2);
@@ -457,49 +332,38 @@ export class TimeSeries {
   }
 
   plot() {
-    // Declare SVG
-    // this._ctx = this._ctx || DOM.svg(this._width, this._height);
-
-    this._ctx =
-      this._ctx ||
-      d3
-        .select(this.selector)
-        .append("svg")
-        .attr("width", this._width)
-        .attr("height", this._height)
-        .node();
-
     // select all elements below svg with the selector "svg > *" and remove
     // otherwise it will keep drawing on top of the previous lines / scales
-    d3.select(this._ctx).selectAll("svg > *").remove();
+    d3.select(this._svg).selectAll("svg > *").remove();
 
     // Create line paths
     this._addPaths();
 
     // Add static annotations
-    if (this._annotations) {
-      this._annotations.forEach((anno, idx) =>
-        anno.id("anno-" + idx).addTo(this._ctx),
-      );
-      if (this._showEventLines) {
-        const container = d3.select(this._ctx);
-        this._annotations.forEach((anno) =>
-          this._addEventLine(container, anno._tx, anno._ty),
-        );
-      }
-    }
+    // SK: Not sure
+    // if (this._annotations) {
+    //   this._annotations.forEach((anno, idx) =>
+    //     anno.id("anno-" + idx).addTo(this._ctx),
+    //   );
+    //   if (this._showEventLines) {
+    //     const container = d3.select(this._ctx);
+    //     this._annotations.forEach((anno) =>
+    //       this._addEventLine(container, anno._tx, anno._ty),
+    //     );
+    //   }
+    // }
 
     // Create Axes and add Labels
-    const axisBottom = d3.axisBottom(this._xSc);
+    const axisBottom = d3.axisBottom(this._xScale);
     if (this._ticks) {
       axisBottom.ticks(this._ticks);
     }
-    d3.select(this._ctx)
+    d3.select(this._svg)
       .append("g")
       .attr("transform", `translate(0,${this._height - this._border})`)
       .call(axisBottom);
 
-    d3.select(this._ctx)
+    d3.select(this._svg)
       .append("text")
       .attr("class", "x-label")
       .attr("text-anchor", "middle")
@@ -507,13 +371,13 @@ export class TimeSeries {
       .attr("y", this._height - 5)
       .text(this._xLabel);
 
-    const axisLeft = d3.axisLeft(this._ySc1);
-    d3.select(this._ctx)
+    const axisLeft = d3.axisLeft(this._yScale1);
+    d3.select(this._svg)
       .append("g")
       .attr("transform", `translate(${this._border},0)`)
       .call(axisLeft);
 
-    d3.select(this._ctx)
+    d3.select(this._svg)
       .append("text")
       .attr("transform", "rotate(-90)")
       .attr("x", -this._height / 2)
@@ -522,14 +386,14 @@ export class TimeSeries {
       .attr("text-anchor", "middle")
       .text(this._yLabel1);
 
-    if (this._data2 && !this.isSameScale) {
-      const axisRight = d3.axisRight(this._ySc2);
-      d3.select(this._ctx)
+    if (this._data2 && !this._isSameScale) {
+      const axisRight = d3.axisRight(this._yScale2);
+      d3.select(this._svg)
         .append("g")
         .attr("transform", `translate(${this._width - this._border},0)`)
         .call(axisRight);
 
-      d3.select(this._ctx)
+      d3.select(this._svg)
         .append("text")
         .attr("transform", "rotate(90)")
         .attr("x", this._height / 2)
@@ -540,7 +404,7 @@ export class TimeSeries {
     }
 
     // Display Title
-    d3.select(this._ctx)
+    d3.select(this._svg)
       .append("text")
       .style("font-size", "px")
       .attr("x", this._width / 2)
@@ -550,17 +414,103 @@ export class TimeSeries {
       .attr("font-weight", "bold");
 
     if (this._showPoints) {
-      d3.select(this._ctx)
+      d3.select(this._svg)
         .append("g")
         .selectAll("circle")
         .data(this._data1.map(Object.values))
         .join("circle")
         .attr("r", 3)
-        .attr("cx", (d) => this._xSc(d[0]))
-        .attr("cy", (d) => this._ySc1(d[1]))
+        .attr("cx", (d) => this._xScale(d[0]))
+        .attr("cy", (d) => this._yScale1(d[1]))
         .style("fill", this._color);
     }
 
-    return this._ctx;
+    return this._svg;
+  }
+
+  /**************************************************************************************************************
+   * Setter & Getter functions
+   **************************************************************************************************************/
+
+  title(title) {
+    this._title = title;
+    return this;
+  }
+
+  xLabel(xLabel) {
+    this._xLabel = xLabel;
+    return this;
+  }
+
+  yLabel(yLabel) {
+    this._yLabel1 = yLabel;
+    return this;
+  }
+
+  yLabel2(yLabel) {
+    this._yLabel2 = yLabel;
+    return this;
+  }
+
+  color2(color) {
+    this._color2 = color;
+    return this;
+  }
+
+  color(color) {
+    this._color = color;
+    return this;
+  }
+
+  ticks(ticks) {
+    this._ticks = ticks;
+    return this;
+  }
+
+  height(height) {
+    this._height = height;
+
+    this._yScale1 = yScale(this._data1, this._height, this._border);
+    if (this._data2) this._fitPairedData();
+    return this;
+  }
+
+  width(width) {
+    this._width = width;
+
+    // Same scale
+    this._xScale = xScale(this._data1, this._width, this._border);
+    if (this._data2) this._fitPairedData();
+    return this;
+  }
+
+  border(border) {
+    this._border = border;
+
+    this._xScale = xScale(this._data1, this._width, this._border);
+    if (this._data2) this._fitPairedData();
+    return this;
+  }
+
+  showPoints() {
+    this._showPoints = true;
+    return this;
+  }
+
+  showEventLines() {
+    this._showEventLines = true;
+    return this;
+  }
+
+  getXScale() {
+    return this._xScale;
+  }
+
+  getYScale() {
+    return this._yScale1;
+  }
+
+  getYScale2() {
+    return this._yScale2;
   }
 }

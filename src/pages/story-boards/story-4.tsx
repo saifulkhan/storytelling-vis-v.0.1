@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import Head from "next/head";
 import Box from "@mui/material/Box";
 import {
@@ -17,10 +17,7 @@ import {
   MenuItem,
   OutlinedInput,
   Select,
-  SelectChangeEvent,
-  Tooltip,
 } from "@mui/material";
-import { makeStyles } from "@mui/styles";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 import { blue } from "@mui/material/colors";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
@@ -28,36 +25,56 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 import DashboardLayout from "src/components/dashboard-layout/DashboardLayout";
 import {
-  processDataAndGetRegions,
-  onSelectRegion,
-  onClickAnimate,
-  createTimeSeriesSVG,
-  processDataAndGetNations,
+  loadRegionData,
+  getRegions,
+  loadNationsData,
+  getNations,
+  filterData,
+  createTimeSeries,
+  animateTimeSeries,
 } from "src/components/story-boards/utils-story-4";
 
-const useStyles = makeStyles((theme) => ({
-  avatar: {
-    backgroundColor: blue[500],
-  },
-}));
-
 const Story4 = () => {
-  const classes = useStyles();
-
   const [loading, setLoading] = useState(true);
-  const [regions, setRegions] = useState<string[]>([]);
-  const [nations, setNations] = useState<string[]>([]);
-  const [region, setRegion] = useState<string>("");
-  const [nation, setNation] = useState<string>("");
-  const [animationCounter, setAnimationCounter] = useState<number>(0);
+
+  const [eventX, updateEventX] = useReducer(
+    (prev, next) => {
+      const newEvent = { ...prev, ...next };
+
+      console.log(newEvent);
+
+      if (
+        newEvent.region &&
+        newEvent.nation &&
+        (newEvent.region !== prev.region || newEvent.nation !== prev.nation)
+      ) {
+        filterData(newEvent.region, newEvent.nation);
+        createTimeSeries("#chartId");
+      }
+
+      if (newEvent.animationCounter !== prev.animationCounter)
+        animateTimeSeries(newEvent.animationCounter);
+
+      return newEvent;
+    },
+    {
+      regions: [],
+      nations: [],
+      region: "",
+      nation: "",
+      animationCounter: 0,
+    },
+  );
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const _regions = await processDataAndGetRegions();
-      setRegions(_regions);
-      const _nations = await processDataAndGetNations();
-      setNations(_nations);
+
+      await loadRegionData();
+      updateEventX({ regions: getRegions() });
+      await loadNationsData();
+      updateEventX({ nations: getNations() });
+
       setLoading(false);
     };
 
@@ -68,56 +85,6 @@ const Story4 = () => {
       setLoading(false);
     }
   }, []);
-
-  const handleNationSelect = (event: SelectChangeEvent) => {
-    const selectedNation = event.target.value;
-    console.log("selectedNation = ", selectedNation);
-    if (selectedNation) {
-      if (selectedNation && region) {
-        onSelectRegion(selectedNation, region);
-      }
-      createTimeSeriesSVG("#chart1");
-      setNation(selectedNation);
-      setAnimationCounter(0);
-    }
-  };
-
-  const handleRegionSelect = (event: SelectChangeEvent) => {
-    const selectedRegion = event.target.value;
-    console.log("selectedRegion = ", selectedRegion);
-    if (selectedRegion) {
-      if (nation && selectedRegion) {
-        onSelectRegion(nation, selectedRegion);
-      }
-      createTimeSeriesSVG("#chart1");
-      setRegion(selectedRegion);
-      setAnimationCounter(0);
-    }
-  };
-
-  const handleBeginningButton = () => {
-    const count = 0;
-
-    setAnimationCounter(count);
-    console.log("Story4: animationCounter = ", count);
-    onClickAnimate(count, "#chart1");
-  };
-
-  const handleBackButton = () => {
-    const count = animationCounter - 1;
-    if (count < 0) return;
-
-    setAnimationCounter(count);
-    console.log("Story4: animationCounter = ", count);
-    onClickAnimate(count, "#chart1");
-  };
-
-  const handlePlayButton = () => {
-    const count = animationCounter + 1;
-    setAnimationCounter(count);
-    console.log("Story4: animationCounter = ", count);
-    onClickAnimate(count, "#chart1");
-  };
 
   return (
     <>
@@ -186,11 +153,13 @@ const Story4 = () => {
                         <Select
                           labelId="select-nation-label"
                           id="select-nation-label"
-                          onChange={handleNationSelect}
+                          onChange={(e) =>
+                            updateEventX({ nation: e.target.value })
+                          }
                           input={<OutlinedInput label="Select nation" />}
-                          value={nation}
+                          value={eventX.nation}
                         >
-                          {nations.map((d) => (
+                          {eventX.nations.map((d) => (
                             <MenuItem key={d} value={d}>
                               {d}
                             </MenuItem>
@@ -218,11 +187,13 @@ const Story4 = () => {
                           labelId="select-region-label"
                           id="select-region-label"
                           displayEmpty
-                          onChange={handleRegionSelect}
+                          onChange={(e) =>
+                            updateEventX({ region: e.target.value })
+                          }
                           input={<OutlinedInput label="Select region" />}
-                          value={region}
+                          value={eventX.region}
                         >
-                          {regions.map((d) => (
+                          {eventX.regions.map((d) => (
                             <MenuItem key={d} value={d}>
                               {d}
                             </MenuItem>
@@ -233,8 +204,8 @@ const Story4 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!region || !nation}
-                          onClick={handleBeginningButton}
+                          disabled={!eventX.region || !eventX.nation}
+                          onClick={() => updateEventX({ animationCounter: 0 })}
                           component="span"
                         >
                           Beginning
@@ -244,8 +215,13 @@ const Story4 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!region || !nation}
-                          onClick={handleBackButton}
+                          disabled={!eventX.region || !eventX.nation}
+                          onClick={() => {
+                            eventX.animationCounter &&
+                              updateEventX({
+                                animationCounter: eventX.animationCounter - 1,
+                              });
+                          }}
                           startIcon={<ArrowBackIosIcon />}
                           component="span"
                         >
@@ -256,8 +232,12 @@ const Story4 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!region || !nation}
-                          onClick={handlePlayButton}
+                          disabled={!eventX.region || !eventX.nation}
+                          onClick={() =>
+                            updateEventX({
+                              animationCounter: eventX.animationCounter + 1,
+                            })
+                          }
                           endIcon={<ArrowForwardIosIcon />}
                           component="span"
                         >
@@ -265,7 +245,7 @@ const Story4 = () => {
                         </Button>
                       </FormControl>
                     </FormGroup>
-                    <div id="chart1" />
+                    <div id="chartId" />
                   </>
                 )}
               </CardContent>

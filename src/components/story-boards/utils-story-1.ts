@@ -13,18 +13,31 @@ import {
 import { GraphAnnotation } from "./GraphAnnotation";
 import { DataEvent } from "./DataEvent";
 import { TimeSeries } from "./TimeSeries";
+import { string } from "yup";
+
+/*********************************************************************************************************
+ * - Prepare data
+ *********************************************************************************************************/
 
 const dailyCasesByRegion = {};
 let calendarEvents = [];
 const peaksByRegion = {};
 const gaussByRegion = {};
 
-export async function prepareDataAndGetRegions(): Promise<string[]> {
+/*
+ * Load data
+ */
+export async function loadData(): Promise<void> {
   await prepareDailyCasesByRegion();
   prepareCalenderEvents();
   preparePeaksByRegion();
   prepareGaussByRegion();
+}
 
+/*
+ * Return all area/region names sorted.
+ */
+export function getRegions(): string[] {
   return Object.keys(dailyCasesByRegion).sort();
 }
 
@@ -105,7 +118,7 @@ function prepareCalenderEvents() {
   calendarEvents.forEach((e) => e.setRank(ranking[e.type]));
 
   // prettier-ignore
-  // console.log("prepareCalenderEvents: calendarEvents (ranked) = ", calendarEvents);
+  console.log("prepareCalenderEvents: calendarEvents (ranked) = ", calendarEvents);
 }
 
 function preparePeaksByRegion() {
@@ -116,7 +129,7 @@ function preparePeaksByRegion() {
     });
   }
 
-  // console.log("preparePeaksByRegion: peaksByRegion = ", peaksByRegion);
+  console.log("preparePeaksByRegion: peaksByRegion = ", peaksByRegion);
 
   const rankPeaks = (peaks) => {
     const sorted = [...peaks].sort((p1, p2) => p1.height - p2.height);
@@ -131,7 +144,7 @@ function preparePeaksByRegion() {
     rankPeaks(peaksByRegion[region]);
   }
 
-  // console.log("preparePeaksByRegion: peaksByRegion (ranked) = ", peaksByRegion);
+  console.log("preparePeaksByRegion: peaksByRegion (ranked) = ", peaksByRegion);
 }
 
 function prepareGaussByRegion() {
@@ -158,44 +171,50 @@ function prepareGaussByRegion() {
   console.log("prepareGaussByRegion: gaussByRegion = ", gaussByRegion, Object.keys(gaussByRegion));
 }
 
-//
-//
-//
+/*********************************************************************************************************
+ * - Filter/select region or area
+ * - Segmentation value
+ *********************************************************************************************************/
+
 const splitsByRegion = {};
-let segNum: number;
-let region;
+let segment: number;
+let region: string;
 let casesData;
 const annotations: { start?: number; end: number }[] = [{ start: 0, end: 0 }];
 
-export function segmentData(_segNum: number) {
-  segNum = _segNum;
+export function filterData(_region: string, _segment: number) {
+  region = _region;
+  segment = _segment;
+
+  segmentData();
+
+  casesData = dailyCasesByRegion[region];
+  console.log("filterData: dailyCasesByRegion", dailyCasesByRegion);
+  console.log("filterData: caseData", casesData);
+
+  calculateAnnotations();
+}
+
+function segmentData() {
   for (const region in peaksByRegion) {
     const dailyCases = dailyCasesByRegion[region];
     splitsByRegion[region] = peakSegment(
       gaussByRegion[region],
       dailyCases,
-    ).slice(0, segNum - 1);
+    ).slice(0, segment - 1);
   }
 
   // prettier-ignore
   console.log("segmentData: splitsByRegion = ", splitsByRegion);
 }
 
-export function onSelectRegion(_region: string) {
-  region = _region;
-  console.log("onSelectRegion: region =  ", region);
-
-  //
-  // annotations
-  //
-  casesData = dailyCasesByRegion[region];
-  console.log("onSelectRegion: dailyCasesByRegion", dailyCasesByRegion);
-  console.log("onSelectRegion: caseData", casesData);
+function calculateAnnotations() {
+  console.log("calculateAnnotations: region =  ", region);
 
   // We now combine the event arrays and segment them based on our splits
-  console.log("onSelectRegion: peaksByRegion", peaksByRegion);
+  console.log("calculateAnnotations: peaksByRegion", peaksByRegion);
   const peaks = peaksByRegion[region];
-  console.log("onSelectRegion: peaks", peaks);
+  console.log("calculateAnnotations: peaks", peaks);
   const events = peaks.concat(calendarEvents);
   const splits = splitsByRegion[region].sort((s1, s2) => s1.date - s2.date);
 
@@ -206,7 +225,7 @@ export function onSelectRegion(_region: string) {
   // let annotations = [{ start: 0, end: 0 }];
   let currSeg = 0;
   let currData, firstDate, lastDate;
-  for (; currSeg < segNum; currSeg++) {
+  for (; currSeg < segment; currSeg++) {
     // Get segment data based on segment number
     currData = dataEventsBySegment[currSeg];
     firstDate = currData[0].date;
@@ -289,7 +308,7 @@ export function onSelectRegion(_region: string) {
         const peakText = `By ${highestPeak.date}, the number of cases reached ${highestPeak.height}.`;
         annotations.push(writeText(peakText, highestPeak._date, casesData));
       }
-    } else if (currSeg < segNum - 1) {
+    } else if (currSeg < segment - 1) {
       /*
           ------- Middle Segments Rules -------
         */
@@ -385,31 +404,8 @@ export function onSelectRegion(_region: string) {
   annotations.push({ end: casesData.length - 1 });
   annotations.slice(1).forEach((anno, i) => (anno.start = annotations[i].end));
 
-  console.log("onSelectRegion: annotations", annotations);
+  console.log("calculateAnnotations: annotations", annotations);
 }
-
-const writeText = (text, date, data, showRedCircle = false): any => {
-  // Find idx of event in data and set location of the annotation in opposite half of graph
-  const idx = findDateIdx(date, data);
-
-  const target = data[idx];
-
-  const anno = new GraphAnnotation()
-    .title(date.toLocaleDateString())
-    .label(text)
-    .backgroundColor("#EEE")
-    .wrap(500);
-
-  // @ts-expect-error -- investigate
-  anno.left = idx < data.length / 2;
-  anno.unscaledTarget = [target.date, target.y];
-
-  if (showRedCircle) {
-    anno.circleHighlight();
-  }
-
-  return { end: idx, annotation: anno, fadeout: true };
-};
 
 /*
     Linear regression function inspired by the answer found at: https://stackoverflow.com/a/31566791.
@@ -435,23 +431,39 @@ function linRegGrad(y) {
   return slope;
 }
 
-//
-//
-//
-let visCtx;
-let ts;
+function writeText(text, date, data, showRedCircle = false) {
+  // Find idx of event in data and set location of the annotation in opposite half of graph
+  const idx = findDateIdx(date, data);
 
-export function createTimeSeriesSVG(selector: string) {
-  visCtx = TimeSeries.animationSVG(1200, 400, selector);
+  const target = data[idx];
+
+  const anno = new GraphAnnotation()
+    .title(date.toLocaleDateString())
+    .label(text)
+    .backgroundColor("#EEE")
+    .wrap(500);
+
+  // @ts-expect-error -- investigate
+  anno.left = idx < data.length / 2;
+  anno.unscaledTarget = [target.date, target.y];
+
+  if (showRedCircle) {
+    anno.circleHighlight();
+  }
+
+  return { end: idx, annotation: anno, fadeout: true };
 }
 
-//
-//
-//
+/*********************************************************************************************************
+ * - Create or init TimeSeries.
+ * - Animate when button is clicked.
+ *********************************************************************************************************/
 
-export function onClickAnimate(animationCounter: number, selector: string) {
-  const ts = new TimeSeries(casesData, selector)
-    .svg(visCtx)
+let ts;
+
+export function createTimeSeries(selector: string) {
+  ts = new TimeSeries(casesData, selector, 1200, 400)
+    // .svg(visCtx)
     .title(`Basic story of COVID-19 in ${region}`)
     .yLabel("Cases per Day")
     .annoTop()
@@ -462,7 +474,7 @@ export function onClickAnimate(animationCounter: number, selector: string) {
 
   let annoObj;
 
-  console.log("annotations = ", annotations);
+  console.log("createTimeSeries: annotations = ", annotations);
 
   annotations.forEach((a: any) => {
     annoObj = a.annotation;
@@ -478,6 +490,9 @@ export function onClickAnimate(animationCounter: number, selector: string) {
     }
   });
 
-  console.log("createTimeSeriesSVG: annoObj = ", annoObj);
-  ts.animate(annotations, animationCounter, visCtx).plot();
+  console.log("createTimeSeries: annoObj = ", annoObj);
+}
+
+export function animateTimeSeries(animationCounter: number) {
+  ts.animate(annotations, animationCounter).plot();
 }

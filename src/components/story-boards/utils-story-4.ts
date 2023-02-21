@@ -14,6 +14,7 @@ import { TimeSeries } from "./TimeSeries";
 import { Rise } from "./Raise";
 import { Fall } from "./Fall";
 import { createDataGroup } from "./utils-data-processing";
+import { getRegions } from "./utils-story-1";
 
 //
 // Region data
@@ -31,10 +32,12 @@ const dailyCasesByRegion = {};
 // },
 const wavesByRegion = {};
 
-export async function processDataAndGetRegions(): Promise<string[]> {
+export async function loadRegionData(): Promise<void> {
   await createDailyCasesByRegion();
   createPeaksByRegion();
+}
 
+export function getRegions() {
   return Object.keys(dailyCasesByRegion).sort();
 }
 
@@ -155,10 +158,12 @@ const rankFeatures = (featureObj) => {
 let dailyCasesByNation = {};
 const wavesByNation = {};
 
-export async function processDataAndGetNations(): Promise<string[]> {
+export async function loadNationsData(): Promise<void> {
   await prepareDailyCasesByNation();
   preparePeaksByNation();
+}
 
+export function getNations() {
   return Object.keys(dailyCasesByNation).sort();
 }
 
@@ -215,13 +220,21 @@ let nation, region;
 let gauss;
 let gaussMatchedWaves;
 let annotations;
+let nationCasesData, regionCasesData;
 
-export function onSelectRegion(_nation, _region) {
+export function filterData(_region, _nation) {
   nation = _nation;
   region = _region;
+
+  nationCasesData = dailyCasesByNation[nation];
+  regionCasesData = dailyCasesByRegion[region].data;
+
   createCombGauss(nation, region);
   calculateGaussMatchedWaves(nation, region);
   createAnnotations(nation, region);
+
+  // prettier-ignore
+  console.log("createTimeSeries", dailyCasesByNation[nation], dailyCasesByRegion[region]);
 }
 
 function createCombGauss(nation, region) {
@@ -237,13 +250,13 @@ function createCombGauss(nation, region) {
     [],
   );
 
-  const nationDailyCases = dailyCasesByNation[nation];
-  const regionDailyCases = dailyCasesByRegion[region].data;
+  // const nationDailyCases = dailyCasesByNation[nation];
+  // const regionDailyCases = dailyCasesByRegion[region].data;
 
   const largestDataSet =
-    nationDailyCases.length > regionDailyCases.length
-      ? nationDailyCases
-      : regionDailyCases;
+    nationCasesData.length > regionCasesData.length
+      ? nationCasesData
+      : regionCasesData;
 
   const nationGauss = eventsToGaussian(nationPeaks, largestDataSet);
   const nationBounds = maxBounds(nationGauss);
@@ -261,13 +274,13 @@ function calculateGaussMatchedWaves(nation, region) {
   const peakTimeDistance = (p1, p2) =>
     Math.abs(p1._date.getTime() - p2._date.getTime());
 
-  const nationDailyCases = dailyCasesByNation[nation];
-  const regionDailyCases = dailyCasesByRegion[region].data;
+  // const nationDailyCases = dailyCasesByNation[nation];
+  // const regionDailyCases = dailyCasesByRegion[region].data;
 
   const largestDataSet =
-    nationDailyCases.length > regionDailyCases.length
-      ? nationDailyCases
-      : regionDailyCases;
+    nationCasesData.length > regionCasesData.length
+      ? nationCasesData
+      : regionCasesData;
 
   const gaussTS = gauss.map((g, i) => {
     return { date: largestDataSet[i].date, y: g };
@@ -603,32 +616,19 @@ const writeText = (
   };
 };
 
-//
-// Create SVG
-// When play animate button is clicked draw there
-//
+/*********************************************************************************************************
+ * - Create or init TimeSeries.
+ * - Animate when button is clicked.
+ *********************************************************************************************************/
 
-let visCtx;
+let ts;
 
-export function createTimeSeriesSVG(selector: string) {
-  visCtx = TimeSeries.animationSVG(1200, 400, selector);
-}
+export function createTimeSeries(selector: string) {
+  console.log("createTimeSeries: ", nation, region);
 
-export function onClickAnimate(animationCounter: number, selector: string) {
-  console.log("onClickAnimate: ", nation, region);
-  console.log(
-    "onClickAnimate",
-    dailyCasesByNation[nation],
-    dailyCasesByRegion[region],
-  );
-
-  const nationCasesData = dailyCasesByNation[nation];
-  const regionCasesData = dailyCasesByRegion[region].data;
-
-  const ts = new TimeSeries(regionCasesData, selector)
+  ts = new TimeSeries(regionCasesData, selector, 1200, 400)
     .border(60)
     .addExtraDatasets(createDataGroup([nationCasesData]), true)
-    .svg(visCtx)
     .annoTop()
     .title(`Comparison of waves between ${nation} and ${region}`)
     .yLabel("Cases per Day")
@@ -655,8 +655,11 @@ export function onClickAnimate(animationCounter: number, selector: string) {
     }
   });
 
-  console.log("utils-story-2.ts: onClickAnimate: annotations = ", annotations);
-  console.log("utils-story-2.ts: onClickAnimate: annoObj = ", annoObj);
+  // prettier-ignore
+  console.log("createTimeSeries: annotations = ", annotations);
+  console.log("createTimeSeries: annoObj = ", annoObj);
+}
 
-  ts.animate(annotations, animationCounter, visCtx).plot();
+export function animateTimeSeries(animationCounter: number) {
+  ts.animate(annotations, animationCounter).plot();
 }

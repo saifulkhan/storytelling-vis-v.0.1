@@ -21,7 +21,8 @@ const PostMountRedirectToPage: React.VoidFunctionComponent<
   React.useEffect(() => {
     const pageId = pageIdByRoute[router.asPath];
     if (pageId) {
-      router.replace(`/page?id=${pageId}`);
+      // router.replace(`/page?id=${pageId}`);
+      router.replace(`/story-boards/story-4`);
     } else {
       setReady(true);
     }
