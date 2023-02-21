@@ -16,9 +16,6 @@ export class Peak extends DataEvent {
     super(date, start, end, metric);
     this._type = DataEvent.TYPES.PEAK;
     this._height = height;
-
-    // this._normHeight;
-    // this._normDuration;
   }
 
   setHeight(height) {

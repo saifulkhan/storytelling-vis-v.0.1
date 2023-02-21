@@ -1,8 +1,3 @@
-//
-// Ported from https://observablehq.com/@scottwjones/feature-detection
-//
-
-import * as d3 from "d3";
 import { Fall } from "./Fall";
 import minIndex from "./min-index";
 import maxIndex from "./max-index";
@@ -323,7 +318,9 @@ export const detectRises = (timeSeriesData, metric = undefined) => {
 };
 
 /*
-  Options should be object stating selection of features {rises: true, falls: false, peaks: true}.
+  Options should be object stating selection of features, e.g., 
+  { rises: true, falls: false, peaks: true }
+  
   All features default to being false (unselected) if unmentioned options.
   From this selection we will return an array data events representing detected features in the data.
 */
