@@ -179,7 +179,7 @@ const splitsByRegion = {};
 let segment: number;
 let region: string;
 let casesData;
-const annotations: { start?: number; end: number }[] = [{ start: 0, end: 0 }];
+let annotations: { start?: number; end: number }[];
 
 export function filterData(_region: string, _segment: number) {
   region = _region;
@@ -208,6 +208,7 @@ function segmentData() {
 }
 
 function calculateAnnotations() {
+  annotations = [];
   console.log("calculateAnnotations: region =  ", region);
 
   // We now combine the event arrays and segment them based on our splits
@@ -489,9 +490,11 @@ export function createTimeSeries(selector: string) {
     }
   });
 
-  console.log("createTimeSeries: annoObj = ", annoObj);
+  // console.log("createTimeSeries: annoObj = ", annoObj);
 }
 
 export function animateTimeSeries(animationCounter: number) {
+  // prettier-ignore
+  console.log("animateTimeSeries: annotations = ", annotations, "\nanimationCounter: ", animationCounter);
   ts.animate(annotations, animationCounter).plot();
 }

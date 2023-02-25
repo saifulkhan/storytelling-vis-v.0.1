@@ -124,6 +124,7 @@ export class TimeSeries {
 
   animate(annotations, animationCounter) {
     console.log("TimeSeries1: animate: animationCounter: ", animationCounter);
+    console.log("TimeSeries1: animate: annotations: ", annotations);
 
     this._annotations = annotations;
     this._animationCounter = animationCounter;
@@ -143,7 +144,11 @@ export class TimeSeries {
   _createPaths(points1, points2) {
     let subPoints, path, length, duration;
 
-    const createPath = (animObj, i) => {
+    console.log("TimeSeries1: _createPaths: annotations: ", this._annotations);
+
+    const createPath = (animObj) => {
+      console.log("TimeSeries1: createPath: animObj: ", animObj);
+
       // Slice datapoints within the start and end idx of the segment
       if (animObj.useData2) {
         subPoints = points2.slice(animObj.start, animObj.end + 1);
@@ -177,6 +182,8 @@ export class TimeSeries {
       // return path and length as an object
       return { path: path, length: length, duration: duration };
     };
+
+    console.log(this._annotations.map(createPath));
 
     return this._annotations.map(createPath);
   }
