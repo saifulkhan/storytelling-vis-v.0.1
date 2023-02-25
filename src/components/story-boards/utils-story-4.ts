@@ -14,7 +14,6 @@ import { TimeSeries } from "./TimeSeries";
 import { Rise } from "./Raise";
 import { Fall } from "./Fall";
 import { createDataGroup } from "./utils-data-processing";
-import { getRegions } from "./utils-story-1";
 
 //
 // Region data
