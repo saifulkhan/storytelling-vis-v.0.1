@@ -37,54 +37,67 @@ const Story5 = () => {
   // generateData();
 
   const [loading, setLoading] = useState(true);
+  const [segment, setSegment] = useState<number>(3);
+  const [regions, setRegions] = useState<string[]>([]);
+  const [region, setRegion] = useState<string>("");
   const [animationCounter, setAnimationCounter] = useState(0);
 
-  const [eventX, updateEventX] = useReducer(
-    (prev, next) => {
-      const newEvent = { ...prev, ...next };
+  const handleSegmentChange = (e) => {
+    const newSegment = e.target.value;
+    // prettier-ignore
+    console.log(`Story5: handleSegmentChange: segment: ${segment}, newSegment: ${newSegment}`,);
+    setSegment(newSegment);
 
-      if (
-        newEvent.region &&
-        newEvent.segment &&
-        (newEvent.region !== prev.region || newEvent.segment !== prev.segment)
-      ) {
-        filterData(newEvent.region, newEvent.segment);
-        createTimeSeries("#chartId");
-      }
+    if (segment && region) {
+      filterData(region, newSegment);
+      createTimeSeries("#chartId");
+      setAnimationCounter(0);
+    }
+  };
 
-      return newEvent;
-    },
-    { regions: [], region: "", segment: 3 },
-  );
+  const handleRegionSelect = (e) => {
+    const newRegion = e.target.value;
+    // prettier-ignore
+    console.log(`Story5: handleRegionSelect: region: ${region}, newRegion: ${newRegion}`);
+    setRegion(newRegion);
+    if (segment && newRegion) {
+      filterData(newRegion, segment);
+      createTimeSeries("#chartId");
+      setAnimationCounter(0);
+    }
+  };
 
   const handleBeginningClick = () => {
-    setAnimationCounter((prev) => {
-      animateTimeSeries(0);
-      return 0;
-    });
+    // prettier-ignore
+    console.log(`Story5: handleBeginningClick: animationCounter: ${animationCounter}, -> ${0}`);
+    setAnimationCounter(0);
+    animateTimeSeries(0);
   };
 
   const handleBackClick = () => {
-    setAnimationCounter((prev) => {
-      const next = prev && prev - 1;
-      animateTimeSeries(next);
-      return next;
-    });
+    // prettier-ignore
+    console.log(`Story5: handleBackClick: animationCounter: ${animationCounter}`);
+    if (animationCounter === 0) return;
+    const newAnimationCounter = animationCounter - 1;
+    // prettier-ignore
+    console.log(`Story5: handleBackClick: newAnimationCounter: ${newAnimationCounter}`);
+    setAnimationCounter(newAnimationCounter);
+    animateTimeSeries(newAnimationCounter);
   };
 
   const handlePlayClick = () => {
-    setAnimationCounter((prev) => {
-      const next = prev + 1;
-      animateTimeSeries(next);
-      return next;
-    });
+    const newAnimationCounter = animationCounter + 1;
+    // prettier-ignore
+    console.log(`Story5: handleBackClick: animationCounter: ${animationCounter}, newAnimationCounter: ${newAnimationCounter}`);
+    setAnimationCounter(newAnimationCounter);
+    animateTimeSeries(newAnimationCounter);
   };
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       await loadData();
-      updateEventX({ regions: getRegions() });
+      setRegions(getRegions());
       setLoading(false);
     };
 
@@ -167,10 +180,8 @@ const Story5 = () => {
                           min={0}
                           max={5}
                           valueLabelDisplay="auto"
-                          value={eventX.segment}
-                          onChange={(e) =>
-                            updateEventX({ segment: e.target.value })
-                          }
+                          value={segment}
+                          onChange={handleSegmentChange}
                         />
                       </FormControl>
 
@@ -186,12 +197,10 @@ const Story5 = () => {
                           id="select-region-label"
                           displayEmpty
                           input={<OutlinedInput label="Select region" />}
-                          value={eventX.region}
-                          onChange={(e) =>
-                            updateEventX({ region: e.target.value })
-                          }
+                          value={region}
+                          onChange={handleRegionSelect}
                         >
-                          {eventX.regions.map((d) => (
+                          {regions.map((d) => (
                             <MenuItem key={d} value={d}>
                               {d}
                             </MenuItem>
@@ -202,7 +211,7 @@ const Story5 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!eventX.region}
+                          disabled={!region}
                           onClick={handleBeginningClick}
                           component="span"
                         >
@@ -213,7 +222,7 @@ const Story5 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!eventX.region}
+                          disabled={!region}
                           onClick={handleBackClick}
                           startIcon={<ArrowBackIosIcon />}
                           component="span"
@@ -225,7 +234,7 @@ const Story5 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!eventX.region}
+                          disabled={!region}
                           onClick={handlePlayClick}
                           endIcon={<ArrowForwardIosIcon />}
                           component="span"

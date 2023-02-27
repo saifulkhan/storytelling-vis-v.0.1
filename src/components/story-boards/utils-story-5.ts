@@ -12,16 +12,16 @@ import {
 
 import { GraphAnnotation } from "./GraphAnnotation";
 import { DataEvent } from "./DataEvent";
-import { TimeSeries } from "./TimeSeries1";
+import { TimeSeries } from "./TimeSeries5";
 
 /*********************************************************************************************************
  * - Prepare data
  *********************************************************************************************************/
 
-const dailyCasesByRegion = {};
+let dailyCasesByRegion = {};
 let calendarEvents = [];
-const peaksByRegion = {};
-const gaussByRegion = {};
+let peaksByRegion = {};
+let gaussByRegion = {};
 
 /*
  * Load data
@@ -41,6 +41,8 @@ export function getRegions(): string[] {
 }
 
 async function prepareDailyCasesByRegion() {
+  dailyCasesByRegion = {};
+
   const csv: any[] = await readCSVFile(
     "/static/story-boards/newCasesByPublishDateRollingSum.csv",
   );
@@ -64,6 +66,7 @@ async function prepareDailyCasesByRegion() {
 }
 
 function prepareCalenderEvents() {
+  calendarEvents = [];
   // We need to construct Calendar Data Because
   // Lockdown events
   const lockdownStart1 = new SemanticEvent(new Date("2020-03-24"))
@@ -121,6 +124,7 @@ function prepareCalenderEvents() {
 }
 
 function preparePeaksByRegion() {
+  peaksByRegion = {};
   for (const region in dailyCasesByRegion) {
     peaksByRegion[region] = detectFeatures(dailyCasesByRegion[region], {
       peaks: true,
@@ -147,6 +151,7 @@ function preparePeaksByRegion() {
 }
 
 function prepareGaussByRegion() {
+  gaussByRegion = {};
   for (const region in peaksByRegion) {
     const peaks = peaksByRegion[region];
     const dailyCases = dailyCasesByRegion[region];
@@ -175,13 +180,15 @@ function prepareGaussByRegion() {
  * - Segmentation value
  *********************************************************************************************************/
 
-const splitsByRegion = {};
+let splitsByRegion = {};
 let segment: number;
 let region: string;
 let casesData;
 let annotations: { start?: number; end: number }[];
 
 export function filterData(_region: string, _segment: number) {
+  casesData = [];
+
   region = _region;
   segment = _segment;
 
@@ -195,6 +202,8 @@ export function filterData(_region: string, _segment: number) {
 }
 
 function segmentData() {
+  splitsByRegion = {};
+
   for (const region in peaksByRegion) {
     const dailyCases = dailyCasesByRegion[region];
     splitsByRegion[region] = peakSegment(
@@ -462,39 +471,48 @@ function writeText(text, date, data, showRedCircle = false) {
 let ts;
 
 export function createTimeSeries(selector: string) {
-  ts = new TimeSeries(casesData, selector)
+  console.log("createTimeSeries: selector = ", selector);
+  console.log("createTimeSeries: annotations = ", annotations);
+
+  ts = new TimeSeries()
+    .data(casesData)
+    .selector(selector)
     // .svg(visCtx)
     .title(`Basic story of COVID-19 in ${region}`)
     .yLabel("Cases per Day")
     .annoTop()
-    .ticks(30);
+    .ticks(30)
+    .annotations(annotations);
 
-  const xSc = ts.getXScale();
-  const ySc = ts.getYScale();
+  // ts.plot();
 
-  let annoObj;
+  // const xSc = ts.getXScale();
+  // const ySc = ts.getYScale();
 
-  console.log("createTimeSeries: annotations = ", annotations);
+  // let annoObj;
 
-  annotations.forEach((a: any) => {
-    annoObj = a.annotation;
-    if (annoObj) {
-      annoObj.x(xSc(annoObj.unscaledTarget[0])).y(ts._height / 2);
+  // console.log("createTimeSeries: annotations = ", annotations);
 
-      annoObj.target(
-        xSc(annoObj.unscaledTarget[0]),
-        ySc(annoObj.unscaledTarget[1]),
-        true,
-        { left: annoObj.left, right: !annoObj.left },
-      );
-    }
-  });
+  // annotations.forEach((a: any) => {
+  //   annoObj = a.annotation;
+  //   if (annoObj) {
+  //     annoObj.x(xSc(annoObj.unscaledTarget[0])).y(ts._height / 2);
+
+  //     annoObj.target(
+  //       xSc(annoObj.unscaledTarget[0]),
+  //       ySc(annoObj.unscaledTarget[1]),
+  //       true,
+  //       { left: annoObj.left, right: !annoObj.left },
+  //     );
+  //   }
+  // });
 
   // console.log("createTimeSeries: annoObj = ", annoObj);
 }
 
 export function animateTimeSeries(animationCounter: number) {
   // prettier-ignore
-  console.log("animateTimeSeries: annotations = ", annotations, "\nanimationCounter: ", animationCounter);
-  ts.animate(annotations, animationCounter).plot();
+  console.log("animateTimeSeries: animationCounter: ", animationCounter);
+  ts.animate(animationCounter);
+  // ts.plot();
 }

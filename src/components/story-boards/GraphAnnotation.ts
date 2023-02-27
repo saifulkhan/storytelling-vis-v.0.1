@@ -133,7 +133,7 @@ export class GraphAnnotation {
     return this;
   }
 
-  target(tx, ty, showConnector = true, connectorOptions = false) {
+  target(tx, ty, showConnector = true, connectorOptions = undefined) {
     this._tx = tx;
     this._ty = ty;
     this._showConnector = showConnector;
