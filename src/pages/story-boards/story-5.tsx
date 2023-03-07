@@ -26,79 +26,55 @@ import { blue } from "@mui/material/colors";
 import DashboardLayout from "src/components/dashboard-layout/DashboardLayout";
 import {
   loadData,
-  getRegions,
+  getParameters,
   filterData,
-  animateTimeSeries,
-  createTimeSeries,
+  createPlot,
+  animatePlot,
 } from "src/components/story-boards/utils-story-5";
-import { generateData } from "src/components/story-boards/data-for-story-5";
 
-const Story5 = () => {
-  // generateData();
-
+const Story5a = () => {
   const [loading, setLoading] = useState(true);
-  const [segment, setSegment] = useState<number>(3);
-  const [regions, setRegions] = useState<string[]>([]);
-  const [region, setRegion] = useState<string>("");
-  const [animationCounter, setAnimationCounter] = useState(0);
+  const [parameters, setParameters] = useState<string[]>([]);
+  const [parameter, setParameter] = useState<string>("");
 
-  const handleSegmentChange = (e) => {
-    const newSegment = e.target.value;
+  const handleParameterSelect = (e) => {
+    const newParameter = e.target.value;
     // prettier-ignore
-    console.log(`Story5: handleSegmentChange: segment: ${segment}, newSegment: ${newSegment}`,);
-    setSegment(newSegment);
-
-    if (segment && region) {
-      filterData(region, newSegment);
-      createTimeSeries("#chartId");
-      setAnimationCounter(0);
-    }
-  };
-
-  const handleRegionSelect = (e) => {
-    const newRegion = e.target.value;
-    // prettier-ignore
-    console.log(`Story5: handleRegionSelect: region: ${region}, newRegion: ${newRegion}`);
-    setRegion(newRegion);
-    if (segment && newRegion) {
-      filterData(newRegion, segment);
-      createTimeSeries("#chartId");
-      setAnimationCounter(0);
+    console.log(`Story5a: handleRegionSelect: parameter: ${parameter}, newParameter: ${newParameter}`);
+    setParameter(newParameter);
+    if (newParameter) {
+      // createTimeSeries("#chartId");
+      filterData(newParameter);
+      createPlot("#chartId");
     }
   };
 
   const handleBeginningClick = () => {
     // prettier-ignore
-    console.log(`Story5: handleBeginningClick: animationCounter: ${animationCounter}, -> ${0}`);
-    setAnimationCounter(0);
-    animateTimeSeries(0);
+    console.log(`Story5a: handleBeginningClick:`);
+    animatePlot(0);
   };
 
   const handleBackClick = () => {
     // prettier-ignore
-    console.log(`Story5: handleBackClick: animationCounter: ${animationCounter}`);
-    if (animationCounter === 0) return;
-    const newAnimationCounter = animationCounter - 1;
-    // prettier-ignore
-    console.log(`Story5: handleBackClick: newAnimationCounter: ${newAnimationCounter}`);
-    setAnimationCounter(newAnimationCounter);
-    animateTimeSeries(newAnimationCounter);
+    console.log(`Story5a: handleBackClick:`);
+    animatePlot(-1);
   };
 
   const handlePlayClick = () => {
-    const newAnimationCounter = animationCounter + 1;
     // prettier-ignore
-    console.log(`Story5: handleBackClick: animationCounter: ${animationCounter}, newAnimationCounter: ${newAnimationCounter}`);
-    setAnimationCounter(newAnimationCounter);
-    animateTimeSeries(newAnimationCounter);
+    console.log(`Story5a: handlePlayClick: `);
+    animatePlot(1);
   };
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       await loadData();
-      setRegions(getRegions());
+      setParameters(getParameters());
       setLoading(false);
+
+      filterData("kernel_size");
     };
 
     try {
@@ -115,7 +91,7 @@ const Story5 = () => {
   return (
     <>
       <Head>
-        <title>Story-1</title>
+        <title>Story-5</title>
       </Head>
       <DashboardLayout>
         <Box
@@ -134,7 +110,7 @@ const Story5 = () => {
                   </Avatar>
                 }
                 title="Story-5"
-                subheader="xxxx"
+                subheader="Choose a hyper parameter, and click play to animate the story."
               />
               <CardContent sx={{ pt: "8px" }}>
                 {loading ? (
@@ -160,47 +136,22 @@ const Story5 = () => {
                         },
                       }}
                     >
-                      <InputLabel
-                        sx={{ m: 1, mt: 0 }}
-                        id="segment-slider-label"
-                      >
-                        Set segment value
-                      </InputLabel>
-                      <FormControl
-                        sx={{ m: 1, width: 300, mt: 0 }}
-                        size="small"
-                      >
-                        <Slider
-                          // labelId="segment-slider"
-                          aria-label="Segments"
-                          // defaultValue={3}
-                          getAriaValueText={valuetext}
-                          step={1}
-                          marks
-                          min={0}
-                          max={5}
-                          valueLabelDisplay="auto"
-                          value={segment}
-                          onChange={handleSegmentChange}
-                        />
-                      </FormControl>
-
                       <FormControl
                         sx={{ m: 1, width: 300, mt: 0 }}
                         size="small"
                       >
                         <InputLabel id="select-region-label">
-                          Select region
+                          Select parameter
                         </InputLabel>
                         <Select
                           labelId="select-region-label"
                           id="select-region-label"
                           displayEmpty
                           input={<OutlinedInput label="Select region" />}
-                          value={region}
-                          onChange={handleRegionSelect}
+                          value={parameter}
+                          onChange={handleParameterSelect}
                         >
-                          {regions.map((d) => (
+                          {parameters.map((d) => (
                             <MenuItem key={d} value={d}>
                               {d}
                             </MenuItem>
@@ -211,7 +162,7 @@ const Story5 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!region}
+                          disabled={!parameter}
                           onClick={handleBeginningClick}
                           component="span"
                         >
@@ -222,7 +173,7 @@ const Story5 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!region}
+                          disabled={!parameter}
                           onClick={handleBackClick}
                           startIcon={<ArrowBackIosIcon />}
                           component="span"
@@ -234,7 +185,7 @@ const Story5 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!region}
+                          disabled={!parameter}
                           onClick={handlePlayClick}
                           endIcon={<ArrowForwardIosIcon />}
                           component="span"
@@ -256,4 +207,4 @@ const Story5 = () => {
   );
 };
 
-export default Story5;
+export default Story5a;

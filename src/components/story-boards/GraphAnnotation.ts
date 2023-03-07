@@ -1,5 +1,15 @@
 import * as d3 from "d3";
 
+export interface IGraphAnnotationWrapper {
+  end?: number;
+  annotation?: GraphAnnotation;
+  fadeout?: boolean;
+  start?: number;
+  color?: string;
+  date?: any;
+  useData2: boolean;
+}
+
 export class GraphAnnotation {
   _id;
   _wrap;
@@ -45,9 +55,9 @@ export class GraphAnnotation {
       .append("text")
       .attr("font-weight", "bold")
       .node();
-    // svg`<text font-weight="bold"></text>`;
+
     this._rect = d3.create("svg").append("rect").node();
-    // svg`<rect></rect>`;
+
     this._circle = d3
       .create("svg")
       .append("circle")
@@ -55,17 +65,17 @@ export class GraphAnnotation {
       .attr("stroke-width", 3)
       .attr("fill", "none")
       .node();
-    //  svg`<circle r=20 stroke-width="3" fill="none"></circle>`;
+
     this._rectPadding = 10;
     this._label = d3.create("svg").append("text").node();
-    // svg`<text></text>`;
+
     this._connector = d3
       .create("svg")
       .append("line")
       .attr("class", "graph-annotation-connector")
       .attr("stroke", this._color)
       .node();
-    // svg`<line class="graph-annotation-connector" stroke=${this._color}></line>`;
+
     this._textNode = d3
       .create("svg")
       .append("g")
@@ -74,8 +84,7 @@ export class GraphAnnotation {
       .node();
     this._textNode.append(this._title);
     this._textNode.append(this._label);
-    //.node();
-    // svg`<g class="graph-annotation-text" style="fill: ${this.color}">${this._title}${this._label}</g>`;
+
     this.node = d3
       .create("svg")
       .append("g")
@@ -89,15 +98,6 @@ export class GraphAnnotation {
     this.node.appendChild(this._rect);
     this.node.appendChild(this._connector);
     this.node.appendChild(this._textNode);
-
-    // svg`<g display="none" ${
-    //     id ? 'id="' + id + '"' : ""
-    //   } class="graph-annotation" font-size="12px">
-    //     ${this._circle}
-    //     ${this._rect}
-    //     ${this._connector}
-    //     ${this._textNode}
-    // </g>`;
   }
 
   id(id) {
@@ -238,10 +238,6 @@ export class GraphAnnotation {
 
       isLastWord = i == words.length - 1;
       if (isLastWord) {
-        // textElem.appendChild(
-        //   svg`<tspan x=0 dy="1.1em">${rowString.join(" ") + " "}</tspan>`,
-        // );
-
         textElem.appendChild(
           d3
             .create("svg")

@@ -320,14 +320,15 @@ function calculateGaussMatchedWaves(nation, region) {
   console.log("calculateGaussMatchedWaves: gaussMatchedWaves = ", gaussMatchedWaves);
 }
 
+const regionColor = "steelblue";
+const nationColor = "orange";
+
 function createAnnotations(nation, region) {
   const nationCasesData = dailyCasesByNation[nation];
   const nationWaves = wavesByNation[nation];
-  const nationColor = "orange";
 
   const regionCasesData = dailyCasesByRegion[region].data;
   const regionWaves = wavesByRegion[region];
-  const regionColor = "steelblue";
 
   const waveNum = nationWaves.length;
   const cutOff = Math.ceil(waveNum * 0.3);
@@ -625,13 +626,19 @@ let ts;
 export function createTimeSeries(selector: string) {
   console.log("createTimeSeries: ", nation, region);
 
-  ts = new TimeSeries(regionCasesData, selector, 1200, 400)
-    .border(60)
-    .addExtraDatasets(createDataGroup([nationCasesData]), true)
-    .annoTop()
+  ts = new TimeSeries()
+    .data1(nationCasesData)
+    .color1(nationColor)
+    .margin(60)
+    .data2([regionCasesData])
+    .color2([regionColor])
     .title(`Comparison of waves between ${nation} and ${region}`)
     .yLabel("Cases per Day")
     .ticks(30);
+  // .annoTop()
+
+  ts.plot();
+  return;
 
   const xSc = ts.getXScale();
   const ySc = ts.getYScale();

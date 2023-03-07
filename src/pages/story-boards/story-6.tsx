@@ -1,6 +1,7 @@
 import { useEffect, useReducer, useState } from "react";
 import Head from "next/head";
 import Box from "@mui/material/Box";
+import Slider from "@mui/material/Slider";
 import {
   Avatar,
   Button,
@@ -8,7 +9,6 @@ import {
   CardContent,
   CardHeader,
   Container,
-  Fade,
   FormControl,
   FormGroup,
   InputLabel,
@@ -16,60 +16,80 @@ import {
   MenuItem,
   OutlinedInput,
   Select,
+  Fade,
 } from "@mui/material";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
-import { blue } from "@mui/material/colors";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
+import { blue } from "@mui/material/colors";
 import DashboardLayout from "src/components/dashboard-layout/DashboardLayout";
 import {
   loadData,
-  getNations,
+  getParameters,
   filterData,
-  createScrollingSvg,
-  animateTimeSeries,
-} from "src/components/story-boards/utils-story-3";
+  createPlot,
+  animatePlot,
+  // animateTimeSeries,
+  // createTimeSeries,
+} from "src/components/story-boards/utils-story-6";
 
-const Story3 = () => {
+const Story6 = () => {
   const [loading, setLoading] = useState(true);
-  const [nations, setNations] = useState<string[]>([]);
-  const [nation, setNation] = useState<string>("");
+  const [segment, setSegment] = useState<number>(3);
+  const [parameters, setParameters] = useState<string[]>([]);
+  const [parameter, setParameter] = useState<string>("");
 
-  const handleRegionSelect = (e) => {
-    const newNation = e.target.value;
+  const handleSegmentChange = (e) => {
+    const newSegment = e.target.value;
     // prettier-ignore
-    console.log(`Story3: handleRegionSelect: nation: ${nation}, newNation: ${newNation}`);
-    setNation(newNation);
-    if (newNation) {
-      filterData(newNation).then(() => createScrollingSvg("#chartId"));
+    console.log(`Story6: handleSegmentChange: segment: ${segment}, newSegment: ${newSegment}`,);
+    setSegment(newSegment);
+
+    if (segment && parameter) {
+      filterData(parameter, newSegment);
+      // createTimeSeries("#chartId");
+    }
+  };
+
+  const handleParameterSelect = (e) => {
+    const newParameter = e.target.value;
+    // prettier-ignore
+    console.log(`Story6: handleParameterSelect: parameter: ${parameter}, newParameter: ${newParameter}`);
+    setParameter(newParameter);
+    if (segment && newParameter) {
+      filterData(newParameter, segment);
+      createPlot("#chartId", newParameter);
     }
   };
 
   const handleBeginningClick = () => {
     // prettier-ignore
-    console.log(`Story3: handleBeginningClick:`);
-    animateTimeSeries(0);
+    console.log(`Story6: handleBeginningClick:`);
+    animatePlot(0);
   };
 
   const handleBackClick = () => {
     // prettier-ignore
-    console.log(`Story3: handleBackClick:`);
-    animateTimeSeries(-1);
+    console.log(`Story6: handleBackClick:`);
+    animatePlot(-1);
   };
 
   const handlePlayClick = () => {
     // prettier-ignore
-    console.log(`Story3: handlePlayClick: `);
-    animateTimeSeries(1);
+    console.log(`Story6: handlePlayClick: `);
+    animatePlot(1);
   };
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       await loadData();
-      setNations(getNations());
+      setParameters(getParameters());
       setLoading(false);
+
+      // filterData("epochs", 3);
+      // createPlot("#chartId");
     };
 
     try {
@@ -80,10 +100,13 @@ const Story3 = () => {
     }
   }, []);
 
+  // slider formatted value
+  const valuetext = (value) => `${value}`;
+
   return (
     <>
       <Head>
-        <title>Story-3</title>
+        <title>Story-6</title>
       </Head>
       <DashboardLayout>
         <Box
@@ -94,15 +117,15 @@ const Story3 = () => {
           }}
         >
           <Container>
-            <Card sx={{ minWidth: 1300 }}>
+            <Card sx={{ minWidth: 1200 }}>
               <CardHeader
                 avatar={
                   <Avatar style={{ backgroundColor: blue[500] }}>
                     <AutoStoriesIcon />
                   </Avatar>
                 }
-                title="Story-3"
-                subheader="Choose a nation and scroll the timeline to animate the story"
+                title="Story-6"
+                subheader="Choose a ..."
               />
               <CardContent sx={{ pt: "8px" }}>
                 {loading ? (
@@ -128,21 +151,47 @@ const Story3 = () => {
                         },
                       }}
                     >
+                      {/* <InputLabel
+                        sx={{ m: 1, mt: 0 }}
+                        id="segment-slider-label"
+                      >
+                        Set segment value
+                      </InputLabel>
                       <FormControl
                         sx={{ m: 1, width: 300, mt: 0 }}
                         size="small"
                       >
-                        <InputLabel id="select-nation-label">
-                          Select nation
+                        <Slider
+                          // labelId="segment-slider"
+                          aria-label="Segments"
+                          // defaultValue={3}
+                          getAriaValueText={valuetext}
+                          step={1}
+                          marks
+                          min={0}
+                          max={5}
+                          valueLabelDisplay="auto"
+                          value={segment}
+                          onChange={handleSegmentChange}
+                        />
+                      </FormControl> */}
+
+                      <FormControl
+                        sx={{ m: 1, width: 300, mt: 0 }}
+                        size="small"
+                      >
+                        <InputLabel id="select-region-label">
+                          Select parameter
                         </InputLabel>
                         <Select
-                          labelId="select-nation-label"
-                          id="select-nation-label"
-                          onChange={handleRegionSelect}
-                          input={<OutlinedInput label="Select nation" />}
-                          value={nation}
+                          labelId="select-region-label"
+                          id="select-region-label"
+                          displayEmpty
+                          input={<OutlinedInput label="Select region" />}
+                          value={parameter}
+                          onChange={handleParameterSelect}
                         >
-                          {nations.map((d) => (
+                          {parameters.map((d) => (
                             <MenuItem key={d} value={d}>
                               {d}
                             </MenuItem>
@@ -153,7 +202,7 @@ const Story3 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!nation}
+                          disabled={!parameter}
                           onClick={handleBeginningClick}
                           component="span"
                         >
@@ -164,7 +213,7 @@ const Story3 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!nation}
+                          disabled={!parameter}
                           onClick={handleBackClick}
                           startIcon={<ArrowBackIosIcon />}
                           component="span"
@@ -176,7 +225,7 @@ const Story3 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!nation}
+                          disabled={!parameter}
                           onClick={handlePlayClick}
                           endIcon={<ArrowForwardIosIcon />}
                           component="span"
@@ -198,4 +247,4 @@ const Story3 = () => {
   );
 };
 
-export default Story3;
+export default Story6;

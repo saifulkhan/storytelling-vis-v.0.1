@@ -12,10 +12,6 @@ export const readJSONFile = async (file: string) => {
   return json;
 };
 
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export class CsvDataService {
   static exportToCsv(filename: string, rows: object[]) {
     if (!rows || !rows.length) {

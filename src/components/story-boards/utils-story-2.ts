@@ -14,7 +14,6 @@ import { TimeSeries } from "./TimeSeries";
 import { Rise } from "./Raise";
 import { Fall } from "./Fall";
 import { createDataGroup } from "./utils-data-processing";
-import { axisBottom } from "d3";
 
 /*What is the definition of a wave?
   src: https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/conditionsanddiseases/articles/coronaviruscovid19infectionsurveytechnicalarticle/wavesandlagsofcovid19inenglandjune2021
@@ -177,7 +176,8 @@ let region1, region2;
 let gauss = [];
 let gaussMatchedWaves = [];
 let annotations = [];
-let maxCounter;
+const region1Color = "orange";
+const region2Color = "steelblue";
 
 let region1CasesData, region2CasesData;
 
@@ -189,9 +189,6 @@ export function filterData(_region1, _region2) {
   calculateCombGauss(region1, region2);
   calculateGaussMatchedWaves(region1, region2);
   calculateAnnotations(region1, region2);
-
-  maxCounter = annotations.length - 1;
-  counter = -1;
 
   region1CasesData = dailyCasesByRegion[region1].data;
   region2CasesData = dailyCasesByRegion[region2].data;
@@ -313,11 +310,9 @@ function calculateAnnotations(region1, region2) {
 
   const region1CasesData = dailyCasesByRegion[region1].data;
   const region1Waves = peaksByRegion[region1];
-  const region1Color = "orange";
 
   const region2CasesData = dailyCasesByRegion[region2].data;
   const region2Waves = peaksByRegion[region2];
-  const region2Color = "steelblue";
 
   console.log("calculateAnnotations: region1 waves", region1Waves);
   console.log("calculateAnnotations: region2 waves", region2Waves);
@@ -699,54 +694,31 @@ const writeText = (
  *********************************************************************************************************/
 
 let ts;
-let counter = -1;
 
 export function createTimeSeries(selector: string) {
-  ts = new TimeSeries(region2CasesData, selector, 1200, 400)
-    .border(60)
-    .addExtraDatasets(createDataGroup([region1CasesData]), true)
-    // .svg(visCtx)
-    .annoTop()
+  // prettier-ignore
+  console.log("utils-story-2: createTimeSeries: region1CasesData = ", region1CasesData, "\nregion2CaseData: ", region2CasesData);
+
+  ts = new TimeSeries()
+    .data1(region2CasesData)
+    .color1(region2Color)
+    .data2([region1CasesData])
+    .color2([region1Color])
+    .selector(selector)
+    .margin(60)
     .title(`Comparison of waves between ${region1} and ${region2}`)
     .yLabel("Cases per Day")
-    .ticks(30);
-
-  const xSc = ts.getXScale();
-  const ySc = ts.getYScale();
-  const ySc2 = ts.getYScale2();
-
-  let annObj;
-  annotations.forEach((a) => {
-    annObj = a.annotation;
-    if (annObj) {
-      annObj.x(xSc(annObj.unscaledTarget[0])).y(ts._height / 2);
-
-      annObj.target(
-        xSc(annObj.unscaledTarget[0]),
-        a.useData2
-          ? ySc2(annObj.unscaledTarget[1])
-          : ySc(annObj.unscaledTarget[1]),
-        true,
-        { left: annObj.left, right: !annObj.left },
-      );
-    }
-  });
+    .ticks(30)
+    //.plot() // static plot
+    .annotations(annotations)
+    .annoTop();
 }
 
 //
 // When play animate button is clicked draw there
 //
 
-export function animateTimeSeries(inc: number) {
-  // prettier-ignore
-  console.log("animateTimeSeries: updateCounter: counter = ", counter, ", inc = ", inc, "maxCounter = ", maxCounter);
-
-  if (inc === 0) {
-    counter = 0;
-  } else if (counter + inc >= 0 && counter + inc <= maxCounter) {
-    counter += inc;
-  }
+export function animateTimeSeries(counter: number) {
   console.log("animateTimeSeries: updateCounter: counter = ", counter);
-
-  ts.animate(annotations, counter).plot();
+  ts.animate(counter);
 }

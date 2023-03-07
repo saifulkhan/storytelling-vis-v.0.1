@@ -2,7 +2,6 @@
 // Ported from https://observablehq.com/@scottwjones/lockdown-restriction-data
 //
 
-import { CompressOutlined } from "@mui/icons-material";
 import { SemanticEvent } from "./SemanticEvent";
 import { readCSVFile } from "./utils-data";
 

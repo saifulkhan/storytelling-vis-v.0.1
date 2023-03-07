@@ -26,66 +26,70 @@ import { blue } from "@mui/material/colors";
 import DashboardLayout from "src/components/dashboard-layout/DashboardLayout";
 import {
   loadData,
-  getRegions,
+  getParameters,
   filterData,
-  animateTimeSeries,
-  createTimeSeries,
-} from "src/components/story-boards/utils-story-5";
-import { generateData } from "src/components/story-boards/data-for-story-5";
+  createPlot,
+  animatePlot,
+  // animateTimeSeries,
+  // createTimeSeries,
+} from "src/components/story-boards/archived/utils-story-5";
 
 const Story5 = () => {
-  // generateData();
-
   const [loading, setLoading] = useState(true);
-  const [animationCounter, setAnimationCounter] = useState(0);
+  const [segment, setSegment] = useState<number>(3);
+  const [parameters, setParameters] = useState<string[]>([]);
+  const [parameter, setParameter] = useState<string>("");
 
-  const [eventX, updateEventX] = useReducer(
-    (prev, next) => {
-      const newEvent = { ...prev, ...next };
+  const handleSegmentChange = (e) => {
+    const newSegment = e.target.value;
+    // prettier-ignore
+    console.log(`Story5: handleSegmentChange: segment: ${segment}, newSegment: ${newSegment}`,);
+    setSegment(newSegment);
 
-      if (
-        newEvent.region &&
-        newEvent.segment &&
-        (newEvent.region !== prev.region || newEvent.segment !== prev.segment)
-      ) {
-        filterData(newEvent.region, newEvent.segment);
-        createTimeSeries("#chartId");
-      }
+    if (segment && parameter) {
+      filterData(parameter, newSegment);
+      // createTimeSeries("#chartId");
+    }
+  };
 
-      return newEvent;
-    },
-    { regions: [], region: "", segment: 3 },
-  );
+  const handleParameterSelect = (e) => {
+    const newParameter = e.target.value;
+    // prettier-ignore
+    console.log(`Story5: handleRegionSelect: parameter: ${parameter}, newParameter: ${newParameter}`);
+    setParameter(newParameter);
+    if (segment && newParameter) {
+      // createTimeSeries("#chartId");
+      filterData(newParameter, 3);
+      createPlot("#chartId");
+    }
+  };
 
   const handleBeginningClick = () => {
-    setAnimationCounter((prev) => {
-      animateTimeSeries(0);
-      return 0;
-    });
+    // prettier-ignore
+    console.log(`Story5: handleBeginningClick:`);
+    animatePlot(0);
   };
 
   const handleBackClick = () => {
-    setAnimationCounter((prev) => {
-      const next = prev && prev - 1;
-      animateTimeSeries(next);
-      return next;
-    });
+    // prettier-ignore
+    console.log(`Story5: handleBackClick:`);
+    animatePlot(-1);
   };
 
   const handlePlayClick = () => {
-    setAnimationCounter((prev) => {
-      const next = prev + 1;
-      animateTimeSeries(next);
-      return next;
-    });
+    // prettier-ignore
+    console.log(`Story5: handlePlayClick: `);
+    animatePlot(1);
   };
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       await loadData();
-      updateEventX({ regions: getRegions() });
+      setParameters(getParameters());
       setLoading(false);
+
+      filterData("kernel_size", 3);
     };
 
     try {
@@ -102,7 +106,7 @@ const Story5 = () => {
   return (
     <>
       <Head>
-        <title>Story-1</title>
+        <title>Story-5</title>
       </Head>
       <DashboardLayout>
         <Box
@@ -121,7 +125,7 @@ const Story5 = () => {
                   </Avatar>
                 }
                 title="Story-5"
-                subheader="xxxx"
+                subheader="Choosea parameter, and click play to animate the story."
               />
               <CardContent sx={{ pt: "8px" }}>
                 {loading ? (
@@ -147,7 +151,7 @@ const Story5 = () => {
                         },
                       }}
                     >
-                      <InputLabel
+                      {/* <InputLabel
                         sx={{ m: 1, mt: 0 }}
                         id="segment-slider-label"
                       >
@@ -167,31 +171,27 @@ const Story5 = () => {
                           min={0}
                           max={5}
                           valueLabelDisplay="auto"
-                          value={eventX.segment}
-                          onChange={(e) =>
-                            updateEventX({ segment: e.target.value })
-                          }
+                          value={segment}
+                          onChange={handleSegmentChange}
                         />
-                      </FormControl>
+                      </FormControl> */}
 
                       <FormControl
                         sx={{ m: 1, width: 300, mt: 0 }}
                         size="small"
                       >
                         <InputLabel id="select-region-label">
-                          Select region
+                          Select parameter
                         </InputLabel>
                         <Select
                           labelId="select-region-label"
                           id="select-region-label"
                           displayEmpty
                           input={<OutlinedInput label="Select region" />}
-                          value={eventX.region}
-                          onChange={(e) =>
-                            updateEventX({ region: e.target.value })
-                          }
+                          value={parameter}
+                          onChange={handleParameterSelect}
                         >
-                          {eventX.regions.map((d) => (
+                          {parameters.map((d) => (
                             <MenuItem key={d} value={d}>
                               {d}
                             </MenuItem>
@@ -202,7 +202,7 @@ const Story5 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!eventX.region}
+                          disabled={!parameter}
                           onClick={handleBeginningClick}
                           component="span"
                         >
@@ -213,7 +213,7 @@ const Story5 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!eventX.region}
+                          disabled={!parameter}
                           onClick={handleBackClick}
                           startIcon={<ArrowBackIosIcon />}
                           component="span"
@@ -225,7 +225,7 @@ const Story5 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!eventX.region}
+                          disabled={!parameter}
                           onClick={handlePlayClick}
                           endIcon={<ArrowForwardIosIcon />}
                           component="span"

@@ -2,32 +2,6 @@
 // Ported from https://observablehq.com/@scottwjones/graphing-tools-v2
 //
 
-import * as d3 from "d3";
-
-const width = 800,
-  height = 300,
-  border = 50;
-
-export const xScFnc = (data, w = width, b = border) => {
-  const xEx = d3.extent(data, (dp: any) => dp.date);
-  const xSc = d3
-    .scaleTime()
-    // @ts-expect-error -- rule out [undefined, undefined] (possible runtime error)
-    .domain(xEx)
-    .range([border, w - b]);
-  return xSc;
-};
-
-export const yScFnc = (data, h = height, b = border) => {
-  const yEx = d3.extent(data, (dp: any) => dp.y);
-  const ySc = d3
-    .scaleLinear()
-    // @ts-expect-error -- rule out [undefined, undefined] (possible runtime error)
-    .domain(yEx)
-    .range([h - b, b]);
-  return ySc;
-};
-
 export const createDataGroup = (arr, colors = [], domain = false) => {
   return { group: arr, colors: colors, domain: domain };
 };
@@ -128,3 +102,27 @@ export const parseData = (json, location) =>
     date: parseDate(arr[1].index),
     y: +arr[1][location],
   }));
+
+/**
+ *   Linear regression function inspired by the answer found at: https://stackoverflow.com/a/31566791.
+ *   We remove the need for array x as we assum y data is equally spaced and we only want the gradient.
+ */
+
+export function linRegGrad(y) {
+  let slope = {};
+  const n = y.length;
+  let sum_x = 0;
+  let sum_y = 0;
+  let sum_xy = 0;
+  let sum_xx = 0;
+
+  for (let i = 0; i < y.length; i++) {
+    sum_x += i;
+    sum_y += y[i];
+    sum_xy += i * y[i];
+    sum_xx += i * i;
+  }
+
+  slope = (n * sum_xy - sum_x * sum_y) / (n * sum_xx - sum_x * sum_x);
+  return slope;
+}

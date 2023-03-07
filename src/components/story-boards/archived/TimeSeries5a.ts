@@ -1,6 +1,11 @@
+/**
+ * TimeSeries is a class that creates a time series graph
+ * It is used in the following stories: 1, 3 (with scrolling timeline), potentially in 5, 5a
+ */
+
 import * as d3 from "d3";
 import { ITimeSeriesData } from "src/models/ITimeSeriesData";
-import { GraphAnnotation } from "./GraphAnnotation";
+import { GraphAnnotation, IGraphAnnotationWrapper } from "../GraphAnnotation";
 
 const WIDTH = 1200,
   HEIGHT = 400,
@@ -19,32 +24,37 @@ const yScale = (data: ITimeSeriesData[], h = HEIGHT, m = MARGIN) => {
   const yScale = d3
     .scaleLinear()
     .domain(d3.extent(data, (d: ITimeSeriesData) => d.y))
+    .nice()
     .range([h - m, m]);
   return yScale;
 };
 
-export class TimeSeries {
-  _data1: ITimeSeriesData[];
-  _data2;
-  _svg: SVGSVGElement;
-  _title = "";
-  _xLabel = "";
-  _yLabel1 = "";
-  _yLabel2 = "";
-  _color = "Black";
+export class TimeSeries5a {
+  _title: string;
+  _xLabel: string;
+  _yLabel1: string;
+  _yLabel2: string;
+  _color1: string;
   _color2: string;
   _width: number;
   _height: number;
-  _margin = MARGIN;
-  _ticks = false;
-  _showPoints = false;
-  _showEventLines = true;
+  _margin: number;
+  _ticks: number;
+
+  _showPoints1: boolean;
+  _pointsColor1: string;
+  _showEventLines: boolean;
+
+  _data1: ITimeSeriesData[];
+  _data2;
+  _svg: SVGSVGElement;
+
   _xScale: any;
   _yScale1: any;
   _yScale2: any;
-  _annotations;
+  _annotations: IGraphAnnotationWrapper[];
   _annoTop = false;
-  _animationCounter;
+  _animationCounter = 0;
 
   _selector: string;
   _isSameScale = false;
@@ -52,10 +62,19 @@ export class TimeSeries {
   _pathElements = [];
   _annotationElements = [];
 
-  constructor(width = WIDTH, height = HEIGHT) {
-    this._width = width;
-    this._height = height;
-    this._margin = MARGIN;
+  constructor(options: any) {
+    this._width = options.width || WIDTH;
+    this._height = options.height || HEIGHT;
+    this._margin = options.margin || MARGIN;
+    this._title = options.title || "";
+    this._xLabel = options.xLabel || "";
+    this._yLabel1 = options.yLabel1 || "";
+    this._yLabel2 = options.yLabel2 || "";
+    this._color1 = options.color1 || "Black";
+    this._ticks = options.ticks || 10;
+    this._showPoints1 = options.showPoints1 || false;
+    this._pointsColor1 = options.pointsColor1 || "Red";
+    this._showEventLines = options.showEventLines || false;
   }
 
   /**
@@ -99,7 +118,7 @@ export class TimeSeries {
    */
   svg(svg) {
     this._svg = svg;
-    d3.select(this._selector).select("svg").remove();
+    // d3.select(this._selector).select("svg").remove();
 
     const bounds = svg.getBoundingClientRect();
     this.width(bounds.width);
@@ -109,15 +128,10 @@ export class TimeSeries {
     return this;
   }
 
-  // addExtraDatasets(dataGroup, isSameScale = true) {
-  //   this._isSameScale = isSameScale;
-  //   this._data2 = dataGroup;
-  //   this._fitPairedData();
-  //   return this;
-  // }
-
-  // { end: number; start: number; annotation: GraphAnnotation }[]
-  annotations(annotations) {
+  /**
+   * x
+   */
+  annotations(annotations: IGraphAnnotationWrapper[]) {
     console.log("TimeSeries1: annotations: 1 annotations: ", annotations);
 
     annotations.forEach((d: any) => {
@@ -143,27 +157,14 @@ export class TimeSeries {
     this._annotations = annotations;
     console.log("TimeSeries1: annotations: 2 annotations: ", annotations);
 
-    // TODO This can be done once
-    // Convert data to array of coordinate pairs i.e. [[x1, y1],[x2, y2]...[xn, yn]]
-    const points1 = this._data1.map(Object.values);
-    let points2;
-
-    // console.log("_data1", this._data1);
-    // console.log("points1", points1);
-
-    if (this._data2) {
-      const colors = this._data2.colors; // TODO: add setColor2
-      this._data2.group.forEach((data, i) => {
-        points2 = data.map(Object.values);
-      });
-    }
-
     // Create a list of d3 paths and annotations from our animation list
-    this._createPaths(points1, points2);
+    this._createPaths();
     this._createAnnos();
 
     console.log("paths", this._pathElements);
     console.log("annotations", this._annotationElements);
+
+    this._drawAxisAndLabels();
 
     return this;
   }
@@ -173,75 +174,106 @@ export class TimeSeries {
     return this;
   }
 
+  /*
+   * When we dont want to animate- simply add a single static path derived from the datapoints.
+   */
   plot() {
     console.log("TimeSeries1: plot:");
     this._clearSvg();
     this._drawAxisAndLabels();
 
-    const points1 = this._data1.map(Object.values);
-    // When we dont want to animate- simply add a single static path derived from the datapoints.
-    // if (!this._annotations) {
+    console.log(this._data1, this._color1);
+
     const line1 = d3
       .line()
-      .x((d) => this._xScale(d[0]))
-      .y((d) => this._yScale1(d[1]));
+      .x((d) => {
+        return this._xScale(d.date);
+      })
+      .y((d) => {
+        return this._yScale1(d.y);
+      });
 
     d3.select(this._svg)
       .append("path")
-      .attr("stroke", this._color)
+      .attr("stroke", this._color1)
       .attr("stroke-width", 3)
       .attr("fill", "none")
-      .attr("d", line1(points1));
-    // }
+      .attr("d", line1(this._data1));
 
     if (this._data2) {
-      const colors = this._data2.colors; // TODO: add setColor2
+      const colors = this._data2.colors; // TODO:
       this._data2.group.forEach((data, i) => {
-        let points2 = data.map(Object.values);
-        // if (!this._annotations) {
         d3.select(this._svg)
           .append("path")
-          .attr("stroke", colors ? colors[i % colors.length] : this._color)
+          .attr("stroke", "red") // TODO: colors ? colors[i % colors.length] : this._color)
           .attr("stroke-width", 3)
           .attr("fill", "none")
           .attr(
             "d",
             d3
               .line()
-              .x((d) => this._xScale(d[0]))
-              .y((d) => this._yScale2(d[1]))(points2),
+              .x((d) => this._xScale(d.date))
+              .y((d) => this._yScale2(d.y))(data),
           );
-        // }
       });
     }
 
+    //
     // Add static annotations
-    // TODO fix this
-    // if (this._annotations) {
-    //   this._annotations.forEach((anno, idx) =>
-    //     anno.id("anno-" + idx).addTo(this._svg),
-    //   );
-    //   if (this._showEventLines) {
-    //     const container = d3.select(this._svg);
-    //     this._annotations.forEach((anno) =>
-    //       this._addEventLine(container, anno._tx, anno._ty),
-    //     );
-    //   }
-    // }
+    //
+    // TODO: Not important - show the annotations
+    if (this._annotations) {
+      this._annotations.forEach((d, idx) => {
+        console.log(typeof d, d);
+        d.annotation &&
+          d.annotation.id(`id-annotation-${idx}`).addTo(this._svg);
+      });
+      if (this._showEventLines) {
+        const container = d3.select(this._svg);
+        this._annotations.forEach(
+          (d) =>
+            d.annotation &&
+            this._addEventLine(container, d.annotation._tx, d.annotation._ty),
+        );
+      }
+    }
+
+    if (this._showPoints1) {
+      console.log("TimeSeries1: showPoints:");
+
+      d3.select(this._svg)
+        .append("g")
+        .selectAll("circle")
+        .data(this._data1)
+        .join("circle")
+        .attr("r", 3)
+        .attr("cx", (d) => this._xScale(d.date))
+        .attr("cy", (d) => this._yScale1(d.y))
+        .style("fill", this._pointsColor1);
+    }
 
     return this._svg;
   }
 
-  animate(animationCounter) {
-    console.log("TimeSeries1: animate: animationCounter: ", animationCounter);
+  animate(counter: -1 | 0 | 1) {
+    console.log("TimeSeries1: animate: counter: ", counter);
 
-    this._animationCounter = animationCounter;
+    if (counter === -1 && this._animationCounter - 1 >= 0) {
+      this._animateBack();
+      this._animationCounter -= 1;
+    } else if (counter === 0) {
+      this._animateBeginning();
+      this._animationCounter = 0;
+    } else if (
+      counter === 1 &&
+      this._animationCounter + 1 < this._annotations.length
+    ) {
+      this._animateForward();
+      this._animationCounter += 1;
+    }
 
-    // return this;
-
-    this._drawAxisAndLabels();
-    // show line paths
-    this._showPaths();
+    // prettier-ignore
+    console.log("TimeSeries1: animate: _animationCounter: ", this._animationCounter)
   }
 
   /**************************************************************************************************************
@@ -249,54 +281,100 @@ export class TimeSeries {
    **************************************************************************************************************/
 
   /*
-   * Helper for plot()
-   * This will create and add paths to svg based on whether the ts has been called with animate
+   * This will remove the current path
+   * Show or hide the path elements to svg based on the animation counter value
    */
-  _showPaths() {
-    // if (!this._annotations) return;
-    // console.log("TimeSeries1: _showPaths:");
+  _animateBeginning() {
+    const idxTo = 0;
+    const idxFrom = this._animationCounter + 1;
+    console.log(`TimeSeries1: _animateBeginning: ${idxTo} <- ${idxFrom}`);
 
-    // // TODO This can be done once
-    // // Convert data to array of coordinate pairs i.e. [[x1, y1],[x2, y2]...[xn, yn]]
-    // const points1 = this._data1.map(Object.values);
-    // let points2;
+    // disappear all annotations
+    this._annotationElements.forEach((a) => {
+      a.anno?.style("opacity", 0);
+    });
 
-    // // console.log("_data1", this._data1);
-    // // console.log("points1", points1);
+    // disappear lines from back
+    this._pathElements
+      .slice(idxTo, idxFrom + 1)
+      .reverse()
+      .forEach((d, i) => {
+        d.path
+          .transition()
+          .ease(d3.easeLinear)
+          .delay(500 + 500 * i) // TODO timing
+          .duration(d.duration || 1000)
+          .attr("stroke-dashoffset", d.length);
+      });
 
-    // if (this._data2) {
-    //   const colors = this._data2.colors; // TODO: add setColor2
-    //   this._data2.group.forEach((data, i) => {
-    //     points2 = data.map(Object.values);
-    //   });
-    // }
+    return;
+  }
 
-    // // Create a list of d3 paths and annotations from our animation list
-    // this._createPaths(points1, points2);
-    // this._createAnnos();
+  /*
+   * This will remove the current path
+   * Show or hide the path elements to svg based on the animation counter value
+   */
+  _animateBack() {
+    const currentIndex = this._animationCounter;
+    // prettier-ignore
+    console.log(`TimeSeries1: _animateBack: ${currentIndex} <- ${currentIndex + 1}`);
 
-    console.log("_pathElements", this._pathElements);
-    console.log("_annotationElements", this._annotationElements);
+    // disappear all annotations
+    this._annotationElements.forEach((a) => {
+      a.anno?.style("opacity", 0);
+    });
 
-    // We want to animate and are given a list of path segments and annotations to animate
-    const pathNum = this._annotations.length; // Number of path segments
+    this._pathElements
+      .slice(currentIndex, currentIndex + 1)
+      .reverse()
+      .forEach((d) => {
+        // console.log(d);
+        d.path
+          .transition()
+          .ease(d3.easeLinear)
+          .delay(500)
+          .duration(d.duration || 1000)
+          .attr("stroke-dashoffset", d.length);
+      });
 
+    const currAnnotationElement = this._annotationElements[currentIndex - 1];
+    if (currAnnotationElement) {
+      currAnnotationElement.anno
+        .transition()
+        .delay(500 + 500) // TODO timing
+        .duration(500)
+        .style("opacity", 1);
+    }
+
+    return;
+  }
+
+  /*
+   * This will show or hide the path elements to svg based on the animation counter value
+   */
+  _animateForward() {
+    // Number of path segments
+    const pathNum = this._annotations.length;
     // Use modulus to repeat animation sequence once counter > number of animation segments
-    const idx = this._animationCounter % pathNum;
+    const currIdx = this._animationCounter % pathNum;
     const prevIdx = (this._animationCounter - 1) % pathNum;
 
     // Get path and annotations for current animation and previous one
-    const currPath = this._pathElements[idx];
-    const duration = currPath.duration || 1000;
-    const currAnno = this._annotationElements[idx];
-    const prevAnno = this._annotationElements[prevIdx];
+    const currPathElement = this._pathElements[currIdx];
+    const duration = currPathElement.duration || 1000;
+    const currAnnotationElement = this._annotationElements[currIdx];
+    const prevAnnotationElement = this._annotationElements[prevIdx];
 
     // prettier-ignore
-    console.log(pathNum, prevIdx, idx, currPath, duration, currAnno, prevAnno);
+    console.log(`TimeSeries5: _animateForward: ${pathNum}, ${prevIdx}, ${currIdx}`);
 
     // If we have a previous annotation that needs to be faded out do so
-    if (prevAnno && prevAnno.fadeout && prevIdx != pathNum - 1) {
-      prevAnno.anno
+    if (
+      prevAnnotationElement &&
+      prevAnnotationElement.fadeout &&
+      prevIdx != pathNum - 1
+    ) {
+      prevAnnotationElement.anno
         .style("opacity", 1)
         .transition()
         .duration(500)
@@ -304,10 +382,11 @@ export class TimeSeries {
     }
 
     // If we have faded out we need to delay the following animations (value is 1000 if true)
-    const fadeOutDelay = (prevAnno && prevAnno.fadeout && 500) + 500;
+    const fadeOutDelay =
+      (prevAnnotationElement && prevAnnotationElement.fadeout && 500) + 500;
 
     // Animate current path with duration given by user
-    currPath.path
+    currPathElement.path
       .transition()
       .ease(d3.easeLinear)
       .delay(fadeOutDelay)
@@ -315,8 +394,8 @@ export class TimeSeries {
       .attr("stroke-dashoffset", 0);
 
     // Animate the fadein of annotation after the path has fully revealed itself
-    if (currAnno) {
-      currAnno.anno
+    if (currAnnotationElement) {
+      currAnnotationElement.anno
         .transition()
         .delay(duration + fadeOutDelay)
         .duration(500)
@@ -325,11 +404,11 @@ export class TimeSeries {
 
     // Set the paths before current path to be visible (default to invisible at each step)
     this._pathElements
-      .slice(0, idx)
+      .slice(0, currIdx)
       .forEach((p) => p.path.attr("stroke-dashoffset", 0));
 
     // Set the persisting annotations to be visible (default to invisible at each step)
-    this._annotationElements.slice(0, idx).forEach((a) => {
+    this._annotationElements.slice(0, currIdx).forEach((a) => {
       if (a && !a.fadeout) {
         a.anno.style("opacity", 1);
       }
@@ -337,30 +416,30 @@ export class TimeSeries {
   }
 
   /*
-   * Returns array of objects representing (for each annotation) segment path, their length and animation duration
+   * Lopp through all the annotation objects,
+   * creates array of objects representing (for each annotation) segment path,
+   * their length and animation duration
    */
-  _createPaths(points1, points2) {
-    let subPoints, path, length, duration;
+  _createPaths() {
+    // prettier-ignore
+    console.log("TimeSeries: _createPaths: _data1: ", this._data1, "data2: ", this._data2);
 
-    console.log("TimeSeries1: _createPaths: annotations: ", this._annotations);
-
-    // d3.select(this._svg).selectAll("#id-line-chart").remove();
-    // const selection = d3
-    //   .select(this._svg)
-    //   .append("g")
-    //   .attr("id", "axis-labels");
+    // const mergedData2Group = this._data2.group.map((d) => d);
+    const mergedData2Group = this._data2.group[0];
+    console.log("TimeSeries: _createPaths: mergedData2Group", mergedData2Group);
 
     this._pathElements = this._annotations.map((obj) => {
+      console.log("TimeSeries: _createPaths: obj: ", obj);
+
       // Slice datapoints within the start and end idx of the segment
+      let subPoints;
       if (obj.useData2) {
-        subPoints = points2.slice(obj.start, obj.end + 1);
+        subPoints = mergedData2Group.slice(obj.start, obj.end + 1);
       } else {
-        subPoints = points1.slice(obj.start, obj.end + 1);
+        subPoints = this._data1.slice(obj.start, obj.end + 1);
       }
 
-      // Clear any exisitng path, and create a d3 path with this data slice
-
-      path = d3
+      const path = d3
         .select(this._svg)
         .append("path")
         .attr("stroke", obj.color || "black")
@@ -370,25 +449,23 @@ export class TimeSeries {
           "d",
           d3
             .line()
-            .x((d) => this._xScale(d[0]))
-            .y((d) =>
-              obj.useData2 ? this._yScale2(d[1]) : this._yScale1(d[1]),
-            )(subPoints),
+            .x((d) => this._xScale(d.date))
+            .y((d) => (obj.useData2 ? this._yScale2(d.y) : this._yScale1(d.y)))(
+            subPoints,
+          ),
         );
-      length = path.node().getTotalLength();
+      const length = path.node().getTotalLength();
       // Set the path to be hidden initially
       path
         .attr("stroke-dasharray", length + " " + length)
         .attr("stroke-dashoffset", length);
 
-      duration = obj.duration || length * 4;
-      // return path and length as an object
+      const duration = obj.duration || length * 4;
+
+      // Return path and length
       return { path: path, length: length, duration: duration };
     });
 
-    //console.log(this._annotations.map(createPath));
-
-    // return this._annotations.map(createPath);
     // prettier-ignore
     console.log("TimeSeries1: _createPaths: _pathElements: ", this._pathElements);
   }
@@ -408,7 +485,7 @@ export class TimeSeries {
       if (!obj.annotation) return false;
 
       // If annotation obj defined - add to svg and set opacity to 0 (hide it)
-      anno = annoObj.id(`anim-anno-${idx}`);
+      anno = annoObj.id(`id-annotation-${idx}`);
       anno.addTo(this._svg);
 
       if (this._annoTop) {
@@ -416,10 +493,10 @@ export class TimeSeries {
         anno.updatePos(anno._x, anno._y);
       }
 
-      annoElem = d3.select(`#anim-anno-${idx}`).style("opacity", 0);
+      annoElem = d3.select(`#id-annotation-${idx}`).style("opacity", 0);
 
       if (this._showEventLines) {
-        const container = d3.select(`#anim-anno-${idx}`);
+        const container = d3.select(`#id-annotation-${idx}`);
         this._addEventLine(container, anno._tx, anno._ty);
       }
 
@@ -452,6 +529,7 @@ export class TimeSeries {
    * TODO: debug & test second data group
    */
   _fitPairedData() {
+    console.log(`TimeSeries5:_fitPairedData:`);
     let data2Comb = this._data2.group.reduce((comb, arr) => comb.concat(arr));
     let combData = this._data1.concat(data2Comb);
 
@@ -545,18 +623,6 @@ export class TimeSeries {
       .text(this._title)
       .attr("font-weight", "bold");
 
-    if (this._showPoints) {
-      selection
-        .append("g")
-        .selectAll("circle")
-        .data(this._data1.map(Object.values))
-        .join("circle")
-        .attr("r", 3)
-        .attr("cx", (d) => this._xScale(d[0]))
-        .attr("cy", (d) => this._yScale1(d[1]))
-        .style("fill", this._color);
-    }
-
     return this;
   }
 
@@ -572,40 +638,40 @@ export class TimeSeries {
    * Setter & Getter functions
    **************************************************************************************************************/
 
-  title(title) {
-    this._title = title;
-    return this;
-  }
+  // title(title) {
+  //   this._title = title;
+  //   return this;
+  // }
 
-  xLabel(xLabel) {
-    this._xLabel = xLabel;
-    return this;
-  }
+  // xLabel(xLabel) {
+  //   this._xLabel = xLabel;
+  //   return this;
+  // }
 
-  yLabel(yLabel) {
-    this._yLabel1 = yLabel;
-    return this;
-  }
+  // yLabel(yLabel) {
+  //   this._yLabel1 = yLabel;
+  //   return this;
+  // }
 
-  yLabel2(yLabel) {
-    this._yLabel2 = yLabel;
-    return this;
-  }
+  // yLabel2(yLabel) {
+  //   this._yLabel2 = yLabel;
+  //   return this;
+  // }
 
   color2(color) {
     this._color2 = color;
     return this;
   }
 
-  color(color) {
-    this._color = color;
-    return this;
-  }
+  // color(color) {
+  //   this._color1 = color;
+  //   return this;
+  // }
 
-  ticks(ticks) {
-    this._ticks = ticks;
-    return this;
-  }
+  // ticks(ticks) {
+  //   this._ticks = ticks;
+  //   return this;
+  // }
 
   height(height) {
     this._height = height;
@@ -632,15 +698,15 @@ export class TimeSeries {
     return this;
   }
 
-  showPoints() {
-    this._showPoints = true;
-    return this;
-  }
+  // showPoints() {
+  //   this._showPoints1 = true;
+  //   return this;
+  // }
 
-  showEventLines() {
-    this._showEventLines = true;
-    return this;
-  }
+  // showEventLines() {
+  //   this._showEventLines = true;
+  //   return this;
+  // }
 
   getXScale() {
     return this._xScale;
