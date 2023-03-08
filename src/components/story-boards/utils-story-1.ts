@@ -242,6 +242,9 @@ function calculateAnnotations() {
     selectedRegionData,
   );
 
+  // prettier-ignore
+  console.log("utils-story-1: calculateAnnotations: dataEventsBySegment", dataEventsBySegment);
+
   // Loop over all segments and apply feature-action rules
   // let annotations = [{ start: 0, end: 0 }];
   let currSeg = 0;
@@ -448,7 +451,7 @@ function writeText(text, date, data, showRedCircle = false) {
 
   return {
     end: idx,
-    annotation: anno,
+    graphAnnotation: anno,
     fadeout: true,
   } as IGraphAnnotationWrapper;
 }

@@ -219,15 +219,19 @@ export class MultiTimeSeries {
     if (this._annotations) {
       this._annotations.forEach((d, idx) => {
         console.log(typeof d, d);
-        d.annotation &&
-          d.annotation.id(`id-annotation-${idx}`).addTo(this._svg);
+        d.graphAnnotation &&
+          d.graphAnnotation.id(`id-annotation-${idx}`).addTo(this._svg);
       });
       if (this._showEventLines) {
         const container = d3.select(this._svg);
         this._annotations.forEach(
           (d) =>
-            d.annotation &&
-            this._addEventLine(container, d.annotation._tx, d.annotation._ty),
+            d.graphAnnotation &&
+            this._addEventLine(
+              container,
+              d.graphAnnotation._tx,
+              d.graphAnnotation._ty,
+            ),
         );
       }
     }
@@ -454,8 +458,8 @@ export class MultiTimeSeries {
 
     this._annotationElements = this._annotations.map((obj, idx) => {
       // Try to get the graphAnnotation object if undefined set array elem to false
-      annoObj = obj.annotation;
-      if (!obj.annotation) return false;
+      annoObj = obj.graphAnnotation;
+      if (!obj.graphAnnotation) return false;
 
       // If annotation obj defined - add to svg and set opacity to 0 (hide it)
       anno = annoObj.id(`id-annotation-${idx}`);

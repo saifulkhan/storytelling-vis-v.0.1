@@ -31,6 +31,7 @@ import {
   createPlot,
   animatePlot,
 } from "src/components/story-boards/utils-story-5";
+import { AnimationType } from "src/models/ITimeSeriesData";
 
 const Story5a = () => {
   const [loading, setLoading] = useState(true);
@@ -43,7 +44,6 @@ const Story5a = () => {
     console.log(`Story5a: handleRegionSelect: parameter: ${parameter}, newParameter: ${newParameter}`);
     setParameter(newParameter);
     if (newParameter) {
-      // createTimeSeries("#chartId");
       filterData(newParameter);
       createPlot("#chartId");
     }
@@ -52,19 +52,19 @@ const Story5a = () => {
   const handleBeginningClick = () => {
     // prettier-ignore
     console.log(`Story5a: handleBeginningClick:`);
-    animatePlot(0);
+    animatePlot("beginning");
   };
 
   const handleBackClick = () => {
     // prettier-ignore
     console.log(`Story5a: handleBackClick:`);
-    animatePlot(-1);
+    animatePlot("back");
   };
 
   const handlePlayClick = () => {
     // prettier-ignore
     console.log(`Story5a: handlePlayClick: `);
-    animatePlot(1);
+    animatePlot("play");
   };
 
   useEffect(() => {
@@ -74,7 +74,9 @@ const Story5a = () => {
       setParameters(getParameters());
       setLoading(false);
 
+      // TODO: remove this
       filterData("kernel_size");
+      createPlot("#chartId");
     };
 
     try {
@@ -84,9 +86,6 @@ const Story5a = () => {
       setLoading(false);
     }
   }, []);
-
-  // slider formatted value
-  const valuetext = (value) => `${value}`;
 
   return (
     <>
@@ -196,6 +195,7 @@ const Story5a = () => {
                     </FormGroup>
 
                     <div id="chartId" />
+                    <div id="chartId1" />
                   </>
                 )}
               </CardContent>

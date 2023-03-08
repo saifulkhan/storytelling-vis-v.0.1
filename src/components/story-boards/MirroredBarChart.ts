@@ -1,5 +1,5 @@
 /**
- * TimeSeries is a class that creates a time series graph
+ * MirroredBarChart is a class that creates a time series graph
  * It is used in the following stories: 1, 3 (with scrolling timeline), potentially in 5, 5a
  */
 
@@ -20,16 +20,25 @@ const xScale = (data: ITimeSeriesData[], w = WIDTH, m = MARGIN) => {
   return xScale;
 };
 
-const yScale = (data: ITimeSeriesData[], h = HEIGHT, m = MARGIN) => {
+const yScale1 = (data: ITimeSeriesData[], h = HEIGHT, m = MARGIN) => {
   const yScale = d3
     .scaleLinear()
     .domain(d3.extent(data, (d: ITimeSeriesData) => d.y))
     // .nice()
-    .range([h - m, m]);
+    .range([(h - m) / 2, m]);
   return yScale;
 };
 
-export class TimeSeries {
+const yScale2 = (data: ITimeSeriesData[], h = HEIGHT, m = MARGIN) => {
+  const yScale = d3
+    .scaleLinear()
+    .domain(d3.extent(data, (d: ITimeSeriesData) => d.y))
+    // .nice()
+    .range([h - m, (h - m) / 2]);
+  return yScale;
+};
+
+export class MirroredBarChart {
   _selector: string;
   _svg: SVGSVGElement;
   _data1: ITimeSeriesData[];
@@ -174,61 +183,6 @@ export class TimeSeries {
     return this;
   }
 
-  showPoints1() {
-    this._showPoints1 = true;
-    return this;
-  }
-
-  pointsColor1(pointsColor1) {
-    this._pointsColor1 = pointsColor1;
-    return this;
-  }
-
-  showEventLines() {
-    this._showEventLines = true;
-    return this;
-  }
-
-  /**
-   * x
-   */
-  annotations(annotations: IGraphAnnotationWrapper[]) {
-    console.log("TimeSeries1: annotations: 1 annotations: ", annotations);
-
-    // We need to draw the axis and labels before we can compute the coordinates of the annotations
-    this._drawAxisAndLabels();
-
-    annotations.forEach((d: IGraphAnnotationWrapper) => {
-      const annoObj: GraphAnnotation = d.graphAnnotation;
-
-      console.log("TimeSeries1: annotations: annoObj:", annoObj);
-
-      if (annoObj) {
-        annoObj.x(this._xScale(annoObj.unscaledTarget[0]));
-        annoObj.y(this._height / 2);
-
-        annoObj.target(
-          this._xScale(annoObj.unscaledTarget[0]),
-          this._yScale1(annoObj.unscaledTarget[1]),
-          true,
-          { left: annoObj.left, right: !annoObj.left }, // TODO: fix this
-        );
-      }
-
-      console.log("TimeSeries1: annotations: annoObj:", annoObj);
-    });
-
-    this._annotations = annotations;
-    console.log("TimeSeries1: annotations: 2 annotations: ", annotations);
-
-    return this;
-  }
-
-  annoTop() {
-    this._annoTop = true;
-    return this;
-  }
-
   /**************************************************************************************************************
    * Drawing methods
    **************************************************************************************************************/
@@ -237,7 +191,7 @@ export class TimeSeries {
    * When we don't want to animate- simply add static path derived from the data points.
    */
   plot() {
-    console.log("TimeSeries: plot:");
+    console.log("MirroredBarChart: plot:");
     this._clearSvg();
     this._drawAxisAndLabels();
 
@@ -369,15 +323,15 @@ export class TimeSeries {
    */
   _createPaths() {
     // prettier-ignore
-    console.log("TimeSeries: _createPaths: _data1: ", this._data1, "data2: ", this._data2);
+    console.log("MirroredBarChart: _createPaths: _data1: ", this._data1, "data2: ", this._data2);
 
     // TODO: debug this part with two lines and animation
     // const mergedData2Group = this._data2.group.map((d) => d);
     // const mergedData2Group = this._data2[0];
-    // console.log("TimeSeries: _createPaths: mergedData2Group", mergedData2Group);
+    // console.log("MirroredBarChart: _createPaths: mergedData2Group", mergedData2Group);
 
     this._pathElements = this._annotations.map((annotation) => {
-      console.log("TimeSeries: _createPaths: annotation = ", annotation);
+      console.log("MirroredBarChart: _createPaths: annotation = ", annotation);
 
       // TODO: debug this part with 2 lines animation
       // Slice datapoints within the start and end idx of the segment
@@ -669,7 +623,7 @@ export class TimeSeries {
    * Create axes and add labels
    */
   _drawAxisAndLabels() {
-    console.log(`TimeSeries:_drawAxisAndLabels:`);
+    console.log(`MirroredBarChart:_drawAxisAndLabels:`);
 
     // Combine all data before creating axis
     const data2Comb = this._data2?.reduce((comb, arr) => comb.concat(arr));
@@ -679,8 +633,8 @@ export class TimeSeries {
 
     this._xScale = xScale(data1Data2Comb, this._width, this._margin);
     // Making all axis same scale
-    this._yScale1 = yScale(data1Data2Comb, this._height, this._margin);
-    this._yScale2 = this._yScale1;
+    this._yScale1 = yScale1(data1Data2Comb, this._height, this._margin);
+    this._yScale2 = yScale2(data1Data2Comb, this._height, this._margin);
 
     // Clear axes and labels
     d3.select(this._svg).selectAll("#id-axes-labels").remove();
@@ -721,44 +675,37 @@ export class TimeSeries {
       .attr("text-anchor", "middle")
       .text(this._yLabel1);
 
-    if (this._data2 && !this._isSameScale) {
-      const axisRight = d3.axisRight(this._yScale2);
-      selection
-        .append("g")
-        .attr("transform", `translate(${this._width - this._margin},0)`)
-        .call(axisRight);
+    // if (this._data2 && !this._isSameScale) {
 
-      selection
-        .append("text")
-        .attr("transform", "rotate(90)")
-        .attr("x", this._height / 2)
-        .attr("y", -this._width + 15)
-        .attr("class", "y label")
-        .attr("text-anchor", "middle")
-        .text(this._yLabel2);
-    }
+    const axisRight1 = d3.axisRight(this._yScale1);
+    selection
+      .append("g")
+      .attr("transform", `translate(${this._width - this._margin},0)`)
+      .call(axisRight1);
 
-    // Display Title
     selection
       .append("text")
-      .style("font-size", "px")
-      .attr("x", this._width / 2)
-      .attr("y", this._margin / 2)
+      .attr("transform", "rotate(90)")
+      .attr("x", this._height / 2)
+      .attr("y", -this._width + 15)
+      .attr("class", "y label")
       .attr("text-anchor", "middle")
-      .text(this._title)
-      .attr("font-weight", "bold");
+      .text(this._yLabel1);
 
-    if (this._showPoints1) {
-      selection
-        .append("g")
-        .selectAll("circle")
-        .data(this._data1.map(Object.values))
-        .join("circle")
-        .attr("r", 3)
-        .attr("cx", (d) => this._xScale(d[0]))
-        .attr("cy", (d) => this._yScale1(d[1]))
-        .style("fill", this._color1);
-    }
+    const axisRight2 = d3.axisRight(this._yScale2);
+    selection
+      .append("g")
+      .attr("transform", `translate(${this._width - this._margin},0)`)
+      .call(axisRight2);
+
+    selection
+      .append("text")
+      .attr("transform", "rotate(90)")
+      .attr("x", this._height / 2)
+      .attr("y", -this._width + 15)
+      .attr("class", "y label")
+      .attr("text-anchor", "middle")
+      .text(this._yLabel2);
 
     return this;
   }
