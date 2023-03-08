@@ -423,21 +423,18 @@ export class TimeSeries {
       return;
     }
 
+    // TODO: We don't want to create excessive number of bars
     this._dotElements = this._graphAnnotations.map((d: IGraphAnnotationW) => {
       console.log("TimeSeries: _createPaths: annotation, d = ", d);
-
-      const subPoints = this._data1.slice(d.previous, d.current + 1);
-      if (!subPoints || !subPoints[0]) {
-        return;
-      }
+      const point = this._data1[d.current];
 
       // Take the first data point of the segment to draw a dot
       const dotElement = d3
         .select(this._svg)
         .append("circle")
         .attr("r", 3)
-        .attr("cx", () => this._xScale(subPoints[0].date))
-        .attr("cy", () => this._yScale1(subPoints[0].y))
+        .attr("cx", () => this._xScale(point.date))
+        .attr("cy", () => this._yScale1(point.y))
         .style("fill", this._pointsColor1)
         .style("opacity", 0);
       this._dotElements.push(dotElement);

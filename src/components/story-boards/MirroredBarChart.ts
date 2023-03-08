@@ -245,44 +245,35 @@ export class MirroredBarChart {
    * Private methods
    **************************************************************************************************************/
 
+  // TODO: We don't want to create excessive number of bars
   _createBars() {
     this._barElements = this._graphAnnotations.map((d: IGraphAnnotationW) => {
       console.log("MirroredBarChart: _createBars: annotation, d = ", d);
-
-      const subPoints = this._data.slice(d.previous, d.current + 1);
-      if (!subPoints || !subPoints[0]) {
-        return;
-      }
-
-      // TODO: We don't want to create excessive number of bars
+      const point = this._data[d.current];
 
       // Take the first data point of the segment to draw a dot
       const barElement = d3.select(this._svg).append("g").style("opacity", 0);
 
       barElement
         .append("rect")
-        .attr("x", (d) => this._xScale(subPoints[0].date))
+        .attr("x", (d) => this._xScale(point.date))
         .attr(
           "y",
-          (d) => this._yScale1(subPoints[0].mean_test_accuracy) - BAR_XAXIS_GAP,
+          (d) => this._yScale1(point.mean_test_accuracy) - BAR_XAXIS_GAP,
         )
         .attr("width", BAR_WIDTH)
         .attr(
           "height",
-          (d) =>
-            this._yScale1(0) - this._yScale1(subPoints[0].mean_test_accuracy),
+          (d) => this._yScale1(0) - this._yScale1(point.mean_test_accuracy),
         )
         .attr("fill", this._color1);
 
       barElement
         .append("rect")
-        .attr("x", (d) => this._xScale(subPoints[0].date))
+        .attr("x", (d) => this._xScale(point.date))
         .attr("y", (d) => this._height / 2 + 1.5 * BAR_XAXIS_GAP)
         .attr("width", BAR_WIDTH)
-        .attr(
-          "height",
-          (d) => -this._yScale2(0) + this._yScale2(subPoints[0].y),
-        )
+        .attr("height", (d) => -this._yScale2(0) + this._yScale2(point.y))
         .attr("fill", this._color2);
 
       return barElement;
@@ -349,6 +340,7 @@ export class MirroredBarChart {
 
     // If we have a previous annotation that needs to be faded out do so
     if (currBarElement) {
+      console.log(`MirroredBarChart: _animateForward: reveal`);
       currBarElement
         .transition()
         .ease(d3.easeLinear)
