@@ -104,8 +104,7 @@ function calculateAnnotationWs() {
     // <Stop to allow reading>
     if (idx === maxIdx) {
       // prettier-ignore
-      const msg =  `On ${d?.date?.toLocaleDateString()}, a newly-trained model achieved the best results so far 
-      </br> with testing accuracy ${d?.mean_test_accuracy?.toFixed(2)}% and training accuracy ${d?.mean_training_accuracy?.toFixed(2)}%.`
+      const msg =  `On ${d?.date?.toLocaleDateString()}, a newly-trained model achieved the best results so far with testing accuracy ${d?.mean_test_accuracy?.toFixed(2)}% and training accuracy ${d?.mean_training_accuracy?.toFixed(2)}%.`
       graphAnnotationWs.push(writeText(msg, d.date, selectedData, true));
     }
 
@@ -117,8 +116,7 @@ function calculateAnnotationWs() {
     // <Stop to allow reading>
     else if (idx === 0) {
       // prettier-ignore
-      const msg =  `On ${d?.date?.toLocaleDateString()}, a newly-trained model resulted in 
-      <br> testing accuracy of ${d?.mean_test_accuracy?.toFixed(2)}% and training accuracy of ${d?.mean_training_accuracy?.toFixed(2)}%, denoted as ${d?.mean_test_accuracy?.toFixed(2)}% [${d?.mean_training_accuracy?.toFixed(2)}%].`
+      const msg =  `On ${d?.date?.toLocaleDateString()}, a newly-trained model resulted in testing accuracy of ${d?.mean_test_accuracy?.toFixed(2)}% and training accuracy of ${d?.mean_training_accuracy?.toFixed(2)}%, denoted as ${d?.mean_test_accuracy?.toFixed(2)}% [${d?.mean_training_accuracy?.toFixed(2)}%].`
       graphAnnotationWs.push(writeText(msg, d.date, selectedData, true));
     } else {
       //
@@ -187,17 +185,19 @@ function writeText(text, date, data, showRedCircle = false): IGraphAnnotationW {
  *********************************************************************************************************/
 
 let ts;
+let bc;
 
-export function createPlot(selector: string) {
-  console.log("utils-story-5: createPlot: selector = ", selector);
+export function createPlot(selector1: string, selector2: string) {
+  // prettier-ignore
+  console.log("utils-story-5: createPlot: selector1 = ", selector1, ", selector2 = ", selector2);
 
   ts = new TimeSeries()
-    .selector(selector)
+    .selector(selector1)
     .data1(selectedData)
     .color1("#d3d3d3")
     .title(`Basic story of ${selectedParameter}`)
     .yLabel(`${selectedParameter}`)
-    .ticks(30)
+    .ticks(10)
     .showPoints1()
     .pointsColor1("#696969")
     // .plot(); // static plot
@@ -205,18 +205,23 @@ export function createPlot(selector: string) {
     .annoTop()
     .showEventLines();
 
-  // ts = new MirroredBarChart()
-  //   .selector("#chartId1")
-  //   .data1(selectedData)
-  //   .color1("#d3d3d3")
-  //   .title(`Basic story of ${selectedParameter}`)
-  //   .yLabel(`${selectedParameter}`)
-  //   .ticks(30)
-  //   .plot(); // static plot
+  bc = new MirroredBarChart()
+    .selector(selector2)
+    .data1(selectedData)
+    .color1("#d3d3d3")
+    .color2("#d3d3d3")
+    .title(`Basic story of ${selectedParameter}`)
+    .yLabel1(`accuracy`)
+    .yLabel2(`${selectedParameter}`)
+    .ticks(10)
+    .graphAnnotations(graphAnnotationWs);
+
+  // .plot(); // static plot
 }
 
 export function animatePlot(animationType: AnimationType) {
   // prettier-ignore
   console.log("utils-story-5: animatePlot: animationType = ", animationType);
   ts.animate(animationType);
+  bc.animate(animationType);
 }

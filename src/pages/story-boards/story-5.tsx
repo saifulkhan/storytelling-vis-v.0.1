@@ -45,7 +45,7 @@ const Story5a = () => {
     setParameter(newParameter);
     if (newParameter) {
       filterData(newParameter);
-      createPlot("#chartId");
+      createPlot("#chartId", "#chartId1");
     }
   };
 
@@ -73,10 +73,6 @@ const Story5a = () => {
       await loadData();
       setParameters(getParameters());
       setLoading(false);
-
-      // TODO: remove this
-      filterData("kernel_size");
-      createPlot("#chartId");
     };
 
     try {
@@ -109,7 +105,7 @@ const Story5a = () => {
                   </Avatar>
                 }
                 title="Story-5"
-                subheader="Choose a hyper parameter, and click play to animate the story."
+                subheader="Choose a hyperparameter, and click play to animate the story."
               />
               <CardContent sx={{ pt: "8px" }}>
                 {loading ? (

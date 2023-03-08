@@ -8,8 +8,9 @@ import { AnimationType, ITimeSeriesData } from "src/models/ITimeSeriesData";
 import { GraphAnnotation, IGraphAnnotationW } from "./GraphAnnotation_new";
 
 const WIDTH = 1200,
-  HEIGHT = 400,
+  HEIGHT = 250,
   MARGIN = 50;
+const YAXIS_LABEL_OFFSET = 10;
 
 const xScale = (data: ITimeSeriesData[], w = WIDTH, m = MARGIN) => {
   const xScale = d3
@@ -23,7 +24,7 @@ const xScale = (data: ITimeSeriesData[], w = WIDTH, m = MARGIN) => {
 const yScale = (data: ITimeSeriesData[], h = HEIGHT, m = MARGIN) => {
   const yScale = d3
     .scaleLinear()
-    .domain(d3.extent(data, (d: ITimeSeriesData) => d.y))
+    .domain([0, d3.max(data, (d: ITimeSeriesData) => d.y)])
     .nice()
     .range([h - m, m]);
   return yScale;
@@ -90,9 +91,6 @@ export class TimeSeries {
       .attr("height", this._height)
       .node();
 
-    // this.width(this._width);
-    // this.height(this._height);
-
     return this;
   }
 
@@ -102,14 +100,10 @@ export class TimeSeries {
    */
   svg(svg) {
     this._svg = svg;
-    // d3.select(this._selector).select("svg").remove();
 
     const bounds = svg.getBoundingClientRect();
     this.height = bounds.height;
     this.width = bounds.width;
-
-    // this.width(bounds.width);
-    // this.height(bounds.height);
 
     return this;
   }
@@ -204,7 +198,6 @@ export class TimeSeries {
       (this._xScale(this._data1[this._data1.length - 1].date) +
         this._xScale(this._data1[0].date)) *
       0.5;
-
     console.log("TimeSeries: graphAnnotations: xMid = ", xMid);
 
     // Set coordinates of the annotations
@@ -315,7 +308,6 @@ export class TimeSeries {
     }
 
     // Show points of data1
-
     if (this._showPoints1) {
       d3.select(this._svg)
         .append("g")
@@ -597,8 +589,6 @@ export class TimeSeries {
         .duration(duration)
         .style("opacity", 1);
     }
-
-    return;
   }
 
   /*
@@ -611,13 +601,16 @@ export class TimeSeries {
     const currIdx = this._animationCounter % pathNum;
     const prevIdx = (this._animationCounter - 1) % pathNum;
     // prettier-ignore
-    console.log(`TimeSeries5: _animateForward: prevIdx = ${prevIdx}, currIdx = ${currIdx}`);
+    console.log(`TimeSeries: _animateForward: prevIdx = ${prevIdx}, currIdx = ${currIdx}`);
 
     // Get path and annotations for current animation and previous one
     const currPathElement = this._pathElements[currIdx];
     const currAnnotationElement = this._annotationElements[currIdx];
     const prevAnnotationElement = this._annotationElements[prevIdx];
     const currDotElement = this._dotElements[currIdx];
+
+    let delay = 0;
+    let duration = 500;
 
     // Fade out previous annotation if it exists
     if (
@@ -628,40 +621,42 @@ export class TimeSeries {
       prevAnnotationElement.element
         .style("opacity", 1)
         .transition()
-        .duration(500)
+        .duration(duration)
         .style("opacity", 0);
+
+      delay += duration;
     }
 
     // We need to delay the following animations (value is 1000 if true)
-    let fadeOutDelay =
-      (prevAnnotationElement && prevAnnotationElement.fadeout && 500) + 500;
-    const duration = currPathElement.duration || 1000;
-
+    duration = currPathElement.duration || 500;
     // Animate current path with duration given by user
     currPathElement.path
       .transition()
       .ease(d3.easeLinear)
-      .delay(fadeOutDelay)
+      .delay(delay)
       .duration(duration)
       .attr("stroke-dashoffset", 0);
 
+    delay += duration;
+    duration = 500;
+
     if (currDotElement) {
-      fadeOutDelay += duration;
       currDotElement
         .transition()
         .ease(d3.easeLinear)
-        .delay(fadeOutDelay)
+        .delay(delay)
         .duration(duration)
         .style("opacity", 1);
+
+      delay += duration;
     }
 
     // Animate the fade in of annotation after the path has fully revealed itself
     if (currAnnotationElement) {
-      fadeOutDelay += duration;
       currAnnotationElement.element
         .transition()
-        .delay(fadeOutDelay)
-        .duration(500)
+        .delay(delay)
+        .duration(duration)
         .style("opacity", 1);
     }
 
@@ -729,7 +724,7 @@ export class TimeSeries {
       .append("text")
       .attr("transform", "rotate(-90)")
       .attr("x", -this._height / 2)
-      .attr("y", 15)
+      .attr("y", YAXIS_LABEL_OFFSET)
       .attr("class", "y label")
       .attr("text-anchor", "middle")
       .text(this._yLabel1);

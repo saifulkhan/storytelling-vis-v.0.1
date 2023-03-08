@@ -4,73 +4,68 @@
  */
 
 import * as d3 from "d3";
-import { ITimeSeriesData } from "src/models/ITimeSeriesData";
-import { GraphAnnotation, IGraphAnnotationWrapper } from "./GraphAnnotation";
+import { AnimationType, ITimeSeriesData1 } from "src/models/ITimeSeriesData";
+import { GraphAnnotation, IGraphAnnotationW } from "./GraphAnnotation_new";
 
 const WIDTH = 1200,
   HEIGHT = 400,
   MARGIN = 50;
+const BAR_WIDTH = 3;
+const BAR_XAXIS_GAP = 2;
+const YAXIS_LABEL_OFFSET = 10;
 
-const xScale = (data: ITimeSeriesData[], w = WIDTH, m = MARGIN) => {
+const xScale = (data: ITimeSeriesData1[], w = WIDTH, m = MARGIN) => {
   const xScale = d3
     .scaleTime()
-    .domain(d3.extent(data, (d: ITimeSeriesData) => d.date))
-    // .nice()
+    .domain(d3.extent(data, (d: ITimeSeriesData1) => d.date))
+    .nice()
     .range([m, w - m]);
   return xScale;
 };
 
-const yScale1 = (data: ITimeSeriesData[], h = HEIGHT, m = MARGIN) => {
+const yScale1 = (data: ITimeSeriesData1[], h = HEIGHT, m = MARGIN) => {
   const yScale = d3
     .scaleLinear()
-    .domain(d3.extent(data, (d: ITimeSeriesData) => d.y))
-    // .nice()
-    .range([(h - m) / 2, m]);
+    .domain([0, d3.max(data, (d: ITimeSeriesData1) => d.mean_test_accuracy)])
+    .nice()
+    .range([h / 2, m]);
   return yScale;
 };
 
-const yScale2 = (data: ITimeSeriesData[], h = HEIGHT, m = MARGIN) => {
+const yScale2 = (data: ITimeSeriesData1[], h = HEIGHT, m = MARGIN) => {
   const yScale = d3
     .scaleLinear()
-    .domain(d3.extent(data, (d: ITimeSeriesData) => d.y))
-    // .nice()
-    .range([h - m, (h - m) / 2]);
+    .domain([0, d3.max(data, (d: ITimeSeriesData1) => d.y)])
+    .nice()
+    .range([h / 2, h - m]);
   return yScale;
 };
 
 export class MirroredBarChart {
   _selector: string;
   _svg: SVGSVGElement;
-  _data1: ITimeSeriesData[];
-  _data2: ITimeSeriesData[][];
+  _data: ITimeSeriesData1[];
 
   _title = "";
   _xLabel = "";
   _yLabel1 = "";
   _yLabel2 = "";
   _color1 = "Black";
-  _color2: any[];
+  _color2 = "Blue";
   _width: number;
   _height: number;
   _margin: number;
   _ticks = false;
 
-  _showPoints1 = false; // TODO rename point or dot
-  _pointsColor1 = "#A9A9A9";
-  _showEventLines = true;
-
   _xScale: any;
   _yScale1: any;
   _yScale2: any;
-  _isSameScale = false;
 
-  _annotations: IGraphAnnotationWrapper[];
+  _graphAnnotations: IGraphAnnotationW[];
   _annoTop = false;
   _animationCounter = 0;
 
-  _pathElements = [];
-  _annotationElements = [];
-  _dotElements = []; // TODO rename point or dot
+  _barElements = [];
 
   constructor() {
     //
@@ -82,7 +77,6 @@ export class MirroredBarChart {
 
   /**
    * We pass height, width & margin here to keep it consistent with the svg() method.
-   * All stories except story 3 use this method.
    */
   selector(selector, height = HEIGHT, width = WIDTH, margin = MARGIN) {
     this._selector = selector;
@@ -99,37 +93,24 @@ export class MirroredBarChart {
       .attr("height", this._height)
       .node();
 
-    // this.width(this._width);
-    // this.height(this._height);
-
     return this;
   }
 
   /**
    * The svg canvas is passed as an argument.
-   * The story 3 used this method.
    */
   svg(svg) {
     this._svg = svg;
-    // d3.select(this._selector).select("svg").remove();
 
     const bounds = svg.getBoundingClientRect();
     this.height = bounds.height;
     this.width = bounds.width;
 
-    // this.width(bounds.width);
-    // this.height(bounds.height);
-
     return this;
   }
 
-  data1(data1: ITimeSeriesData[]) {
-    this._data1 = data1;
-    return this;
-  }
-
-  data2(data2: ITimeSeriesData[][]) {
-    this._data2 = data2;
+  data1(data: ITimeSeriesData1[]) {
+    this._data = data;
     return this;
   }
 
@@ -143,7 +124,7 @@ export class MirroredBarChart {
     return this;
   }
 
-  yLabel(yLabel) {
+  yLabel1(yLabel) {
     this._yLabel1 = yLabel;
     return this;
   }
@@ -153,7 +134,7 @@ export class MirroredBarChart {
     return this;
   }
 
-  color2(color: string[]) {
+  color2(color: string) {
     this._color2 = color;
     return this;
   }
@@ -183,6 +164,19 @@ export class MirroredBarChart {
     return this;
   }
 
+  /**
+   * x
+   */
+  graphAnnotations(graphAnnotationWs: IGraphAnnotationW[]) {
+    this._drawAxisAndLabels();
+
+    this._graphAnnotations = graphAnnotationWs;
+    // prettier-ignore
+    console.log("MirroredBarChart: graphAnnotations: after graphAnnotationWs: ", graphAnnotationWs);
+
+    return this;
+  }
+
   /**************************************************************************************************************
    * Drawing methods
    **************************************************************************************************************/
@@ -192,117 +186,52 @@ export class MirroredBarChart {
    */
   plot() {
     console.log("MirroredBarChart: plot:");
-    this._clearSvg();
     this._drawAxisAndLabels();
 
-    console.log(this._data1, this._color1);
-
-    const line1 = d3
-      .line()
-      .x((d) => {
-        return this._xScale(d.date);
-      })
-      .y((d) => {
-        return this._yScale1(d.y);
-      });
-
-    // Draw data1 line
     d3.select(this._svg)
-      .append("path")
-      .attr("stroke", this._color1)
-      .attr("stroke-width", 3)
-      .attr("fill", "none")
-      .attr("d", line1(this._data1));
+      .selectAll("bar")
+      .data(this._data)
+      .join("rect")
+      .attr("x", (d) => this._xScale(d.date))
+      .attr("y", (d) => this._yScale1(d.mean_test_accuracy) - BAR_XAXIS_GAP)
+      .attr("width", BAR_WIDTH)
+      .attr(
+        "height",
+        (d) => this._yScale1(0) - this._yScale1(d.mean_test_accuracy),
+      )
+      .attr("fill", this._color1);
 
-    // Draw all data2 lines
-    if (this._data2) {
-      const colors = this._color2;
-      this._data2.forEach((data, i) => {
-        d3.select(this._svg)
-          .append("path")
-          .attr("stroke", colors ? colors[i % colors.length] : this._color1)
-          .attr("stroke-width", 3)
-          .attr("fill", "none")
-          .attr(
-            "d",
-            d3
-              .line()
-              .x((d) => this._xScale(d.date))
-              .y((d) => this._yScale2(d.y))(data),
-          );
-      });
-    }
-
-    //
-    // Add static annotations
-    //
-    if (this._annotations) {
-      this._annotations.forEach((d, idx) => {
-        console.log(typeof d, d);
-        d.graphAnnotation &&
-          d.graphAnnotation.id(`id-annotation-${idx}`).addTo(this._svg);
-      });
-      if (this._showEventLines) {
-        const container = d3.select(this._svg);
-        this._annotations.forEach(
-          (d) =>
-            d.graphAnnotation &&
-            this._addEventLine(
-              container,
-              d.graphAnnotation._tx,
-              d.graphAnnotation._ty,
-            ),
-        );
-      }
-    }
-
-    // Show points of data1
-
-    if (this._showPoints1) {
-      d3.select(this._svg)
-        .append("g")
-        .selectAll("circle")
-        .data(this._data1)
-        .join("circle")
-        .attr("r", 3)
-        .attr("cx", (d) => this._xScale(d.date))
-        .attr("cy", (d) => this._yScale1(d.y))
-        .style("fill", this._pointsColor1);
-    }
+    d3.select(this._svg)
+      .selectAll("bar")
+      .data(this._data)
+      .join("rect")
+      .attr("x", (d) => this._xScale(d.date))
+      .attr("y", (d) => this._height / 2 + 1.5 * BAR_XAXIS_GAP)
+      .attr("width", BAR_WIDTH)
+      .attr("height", (d) => -this._yScale2(0) + this._yScale2(d.y))
+      .attr("fill", this._color2);
 
     return this._svg;
   }
 
-  animate(counter: -1 | 0 | 1) {
-    console.log("TimeSeries1: animate: counter: ", counter);
-
+  animate(animationType: AnimationType) {
+    console.log("MirroredBarChart: animate: animationType = ", animationType);
     //
     // At the beginning create a list of d3 paths and annotations
     //
-    if (
-      this._pathElements.length === 0 ||
-      this._annotationElements.length === 0
-    ) {
-      this._createPaths();
-      this._createAnnotations();
+    if (this._barElements.length === 0) {
+      this._createBars();
     }
 
-    //
-    // At the beginning create dots
-    //
-    if (this._dotElements.length === 0) {
-      this._createDots();
-    }
-
-    if (counter === -1 && this._animationCounter - 1 >= 0) {
+    if (animationType === "back" && this._animationCounter >= 0) {
       this._animateBack();
       this._animationCounter -= 1;
-    } else if (counter === 0) {
+    } else if (animationType === "beginning") {
       this._animateBeginning();
-      this._animationCounter = 0;
+      this._animationCounter = -1;
     } else if (
-      counter === 1 &&
-      this._animationCounter + 1 < this._annotations.length
+      animationType === "play" &&
+      this._animationCounter + 1 < this._graphAnnotations.length
     ) {
       this._animateForward();
       this._animationCounter += 1;
@@ -316,138 +245,51 @@ export class MirroredBarChart {
    * Private methods
    **************************************************************************************************************/
 
-  /*
-   * Loop through all the annotation objects,
-   * creates array of objects representing (for each annotation) segment path,
-   * their length and animation duration
-   */
-  _createPaths() {
-    // prettier-ignore
-    console.log("MirroredBarChart: _createPaths: _data1: ", this._data1, "data2: ", this._data2);
+  _createBars() {
+    this._barElements = this._graphAnnotations.map((d: IGraphAnnotationW) => {
+      console.log("MirroredBarChart: _createBars: annotation, d = ", d);
 
-    // TODO: debug this part with two lines and animation
-    // const mergedData2Group = this._data2.group.map((d) => d);
-    // const mergedData2Group = this._data2[0];
-    // console.log("MirroredBarChart: _createPaths: mergedData2Group", mergedData2Group);
-
-    this._pathElements = this._annotations.map((annotation) => {
-      console.log("MirroredBarChart: _createPaths: annotation = ", annotation);
-
-      // TODO: debug this part with 2 lines animation
-      // Slice datapoints within the start and end idx of the segment
-      let subPoints;
-      if (annotation.useData2 && this._data2[0]) {
-        subPoints = this._data2[0].slice(annotation.start, annotation.end + 1);
-      } else {
-        subPoints = this._data1.slice(annotation.start, annotation.end + 1);
+      const subPoints = this._data.slice(d.previous, d.current + 1);
+      if (!subPoints || !subPoints[0]) {
+        return;
       }
 
-      const path = d3
-        .select(this._svg)
-        .append("path")
-        .attr("stroke", annotation.color || this._color1)
-        .attr("stroke-width", 3)
-        .attr("fill", "none")
+      // TODO: We don't want to create excessive number of bars
+
+      // Take the first data point of the segment to draw a dot
+      const barElement = d3.select(this._svg).append("g").style("opacity", 0);
+
+      barElement
+        .append("rect")
+        .attr("x", (d) => this._xScale(subPoints[0].date))
         .attr(
-          "d",
-          d3
-            .line()
-            .x((d) => this._xScale(d.date))
-            .y((d) =>
-              annotation.useData2 ? this._yScale2(d.y) : this._yScale1(d.y),
-            )(subPoints),
-        );
+          "y",
+          (d) => this._yScale1(subPoints[0].mean_test_accuracy) - BAR_XAXIS_GAP,
+        )
+        .attr("width", BAR_WIDTH)
+        .attr(
+          "height",
+          (d) =>
+            this._yScale1(0) - this._yScale1(subPoints[0].mean_test_accuracy),
+        )
+        .attr("fill", this._color1);
 
-      const length = path.node().getTotalLength();
+      barElement
+        .append("rect")
+        .attr("x", (d) => this._xScale(subPoints[0].date))
+        .attr("y", (d) => this._height / 2 + 1.5 * BAR_XAXIS_GAP)
+        .attr("width", BAR_WIDTH)
+        .attr(
+          "height",
+          (d) => -this._yScale2(0) + this._yScale2(subPoints[0].y),
+        )
+        .attr("fill", this._color2);
 
-      // Set the path to be hidden initially
-      path
-        .attr("stroke-dasharray", length + " " + length)
-        .attr("stroke-dashoffset", length);
-
-      const duration = annotation.duration || length * 4;
-
-      return { path: path, length: length, duration: duration };
+      return barElement;
     });
 
     // prettier-ignore
-    console.log("TimeSeries1: _createPaths: _pathElements: ", this._pathElements);
-  }
-
-  _createDots() {
-    if (!this._showPoints1) {
-      return;
-    }
-
-    this._dotElements = this._annotations.map((_, idx) => {
-      const point = this._data1[idx];
-
-      if (point) {
-        return d3
-          .select(this._svg)
-          .append("circle")
-          .attr("r", 3)
-          .attr("cx", (d) => this._xScale(point.date))
-          .attr("cy", (d) => this._yScale1(point.y))
-          .style("fill", this._pointsColor1)
-          .style("opacity", 0);
-      }
-    });
-
-    // prettier-ignore
-    console.log("TimeSeries1: _createDots: _dotElements: ", this._dotElements);
-  }
-
-  /**
-   *  Returns an array of objects representing annotation type and persistence
-   */
-  _createAnnotations() {
-    let anno, annoObj, annoElem;
-
-    this._annotationElements = this._annotations.map((annotation, idx) => {
-      // Try to get the graphAnnotation object if undefined set array elem to false
-      annoObj = annotation.graphAnnotation;
-      if (!annotation.graphAnnotation) return false;
-
-      // If annotation obj defined - add to svg and set opacity to 0 (hide it)
-      anno = annoObj.id(`id-annotation-${idx}`);
-      anno.addTo(this._svg);
-
-      if (this._annoTop) {
-        anno.y(this._margin + anno._annoHeight / 2);
-        anno.updatePos(anno._x, anno._y);
-      }
-
-      annoElem = d3.select(`#id-annotation-${idx}`).style("opacity", 0);
-
-      if (this._showEventLines) {
-        const container = d3.select(`#id-annotation-${idx}`);
-        this._addEventLine(container, anno._tx, anno._ty);
-      }
-
-      // return d3 selection of anno element and boolean indication whether to persist annotation
-      return {
-        anno: annoElem,
-        fadeout: annotation.fadeout || false,
-      };
-    });
-
-    // return this._annotations.map(createAnno);
-    // prettier-ignore
-    console.log("TimeSeries1: _createAnnotations: _annotationElements: ", this._annotationElements);
-  }
-
-  _addEventLine(container, x, y) {
-    container
-      .append("line")
-      .attr("x1", x)
-      .attr("y1", y)
-      .attr("x2", x)
-      .attr("y2", this._height - this._margin)
-      .attr("stroke-dasharray", 5)
-      .style("stroke-width", 1)
-      .style("stroke", "#999")
-      .style("fill", "none");
+    console.log("MirroredBarChart: _createBars: _barElements: ", this._barElements);
   }
 
   /*
@@ -455,32 +297,12 @@ export class MirroredBarChart {
    * Show or hide the path elements to svg based on the animation counter value
    */
   _animateBeginning() {
-    const idxTo = 0;
-    const idxFrom = this._animationCounter + 1;
-    console.log(`TimeSeries1: _animateBeginning: ${idxTo} <- ${idxFrom}`);
+    console.log(`MirroredBarChart: _animateBeginning`);
 
-    // Disappear all annotations
-    this._annotationElements.forEach((a) => {
-      a.anno?.style("opacity", 0);
+    // Disappear all
+    this._barElements.forEach((d) => {
+      d.style("opacity", 0);
     });
-
-    // Hide dots
-    this._dotElements.forEach((d) => {
-      d?.style("opacity", 0);
-    });
-
-    // Disappear lines from back
-    this._pathElements
-      .slice(idxTo, idxFrom + 1)
-      .reverse()
-      .forEach((d, i) => {
-        d.path
-          .transition()
-          .ease(d3.easeLinear)
-          .delay(500 * i) // TODO timing
-          .duration(d.duration || 1000)
-          .attr("stroke-dashoffset", d.length);
-      });
 
     return;
   }
@@ -492,53 +314,20 @@ export class MirroredBarChart {
   _animateBack() {
     const currentIndex = this._animationCounter;
     // prettier-ignore
-    console.log(`TimeSeries1: _animateBack: ${currentIndex} <- ${currentIndex + 1}`);
+    console.log(`MirroredBarChart: _animateBack: ${currentIndex} <- ${currentIndex + 1}`);
 
-    // Hide all annotations first
-    this._annotationElements.forEach((a) => {
-      a.anno?.style("opacity", 0);
-    });
-
-    let delay = 500;
+    const delay = 500;
     const duration = 500;
 
-    // Hide the dot
-    const dotElement = this._dotElements[currentIndex];
-    if (dotElement) {
-      delay += duration;
-      dotElement
+    // Hide
+    const barElement = this._barElements[currentIndex];
+    if (barElement) {
+      barElement
         .transition()
         .delay(delay)
         .duration(duration)
         .style("opacity", 0);
     }
-
-    // Disappear lines from back
-    this._pathElements
-      .slice(currentIndex, currentIndex + 1)
-      .reverse()
-      .forEach((d) => {
-        // console.log(d);
-        d.path
-          .transition()
-          .ease(d3.easeLinear)
-          .delay(delay)
-          .duration(duration)
-          .attr("stroke-dashoffset", d.length);
-      });
-
-    // Show the earlier annotation
-    const annotationElement = this._annotationElements[currentIndex - 1];
-    if (annotationElement) {
-      delay += duration;
-      annotationElement.anno
-        .transition()
-        .delay(delay)
-        .duration(duration)
-        .style("opacity", 1);
-    }
-
-    return;
   }
 
   /*
@@ -546,77 +335,27 @@ export class MirroredBarChart {
    */
   _animateForward() {
     // Number of path segments
-    const pathNum = this._annotations.length;
+    const pathNum = this._graphAnnotations.length;
     // Use modulus to repeat animation sequence once counter > number of animation segments
     const currIdx = this._animationCounter % pathNum;
     const prevIdx = (this._animationCounter - 1) % pathNum;
-
-    // Get path and annotations for current animation and previous one
-    const currPathElement = this._pathElements[currIdx];
-    const duration = currPathElement.duration || 1000;
-    const currAnnotationElement = this._annotationElements[currIdx];
-    const prevAnnotationElement = this._annotationElements[prevIdx];
-    const currDotElement = this._dotElements[currIdx];
-
     // prettier-ignore
-    console.log(`TimeSeries5: _animateForward: ${pathNum}, ${prevIdx}, ${currIdx}`);
+    console.log(`MirroredBarChart: _animateForward: prevIdx = ${prevIdx}, currIdx = ${currIdx}`);
+
+    const currBarElement = this._barElements[currIdx];
+
+    let delay = 0;
+    let duration = 500;
 
     // If we have a previous annotation that needs to be faded out do so
-    if (
-      prevAnnotationElement &&
-      prevAnnotationElement.fadeout &&
-      prevIdx != pathNum - 1
-    ) {
-      prevAnnotationElement.anno
-        .style("opacity", 1)
-        .transition()
-        .duration(500)
-        .style("opacity", 0);
-    }
-
-    // If we have faded out we need to delay the following animations (value is 1000 if true)
-    let fadeOutDelay =
-      (prevAnnotationElement && prevAnnotationElement.fadeout && 500) + 500;
-
-    // Animate current path with duration given by user
-    currPathElement.path
-      .transition()
-      .ease(d3.easeLinear)
-      .delay(fadeOutDelay)
-      .duration(duration)
-      .attr("stroke-dashoffset", 0);
-
-    if (currDotElement) {
-      fadeOutDelay += duration;
-      currDotElement
+    if (currBarElement) {
+      currBarElement
         .transition()
         .ease(d3.easeLinear)
-        .delay(fadeOutDelay)
+        .delay(delay)
         .duration(duration)
         .style("opacity", 1);
     }
-
-    // Animate the fadein of annotation after the path has fully revealed itself
-    if (currAnnotationElement) {
-      fadeOutDelay += duration;
-      currAnnotationElement.anno
-        .transition()
-        .delay(fadeOutDelay)
-        .duration(500)
-        .style("opacity", 1);
-    }
-
-    // Set the paths before current path to be visible (default to invisible at each step)
-    this._pathElements
-      .slice(0, currIdx)
-      .forEach((p) => p.path.attr("stroke-dashoffset", 0));
-
-    // Set the persisting annotations to be visible (default to invisible at each step)
-    this._annotationElements.slice(0, currIdx).forEach((a) => {
-      if (a && !a.fadeout) {
-        a.anno.style("opacity", 1);
-      }
-    });
   }
 
   /**
@@ -624,17 +363,11 @@ export class MirroredBarChart {
    */
   _drawAxisAndLabels() {
     console.log(`MirroredBarChart:_drawAxisAndLabels:`);
+    console.log("MirroredBarChart:_drawAxisAndLabels: data1 = ", this._data);
 
-    // Combine all data before creating axis
-    const data2Comb = this._data2?.reduce((comb, arr) => comb.concat(arr));
-    const data1Data2Comb = data2Comb
-      ? this._data1.concat(data2Comb)
-      : this._data1;
-
-    this._xScale = xScale(data1Data2Comb, this._width, this._margin);
-    // Making all axis same scale
-    this._yScale1 = yScale1(data1Data2Comb, this._height, this._margin);
-    this._yScale2 = yScale2(data1Data2Comb, this._height, this._margin);
+    this._xScale = xScale(this._data, this._width, this._margin);
+    this._yScale1 = yScale1(this._data, this._height, this._margin);
+    this._yScale2 = yScale2(this._data, this._height, this._margin);
 
     // Clear axes and labels
     d3.select(this._svg).selectAll("#id-axes-labels").remove();
@@ -644,13 +377,13 @@ export class MirroredBarChart {
       .append("g")
       .attr("id", "id-axes-labels");
 
-    const axisBottom = d3.axisBottom(this._xScale);
-    this._ticks && axisBottom.ticks(this._ticks);
+    const axisX = d3.axisBottom(this._xScale);
+    this._ticks && axisX.ticks(this._ticks);
 
     selection
       .append("g")
-      .attr("transform", `translate(0, ${this._height - this._margin})`)
-      .call(axisBottom);
+      .attr("transform", `translate(0, ${this._height / 2})`)
+      .call(axisX);
 
     selection
       .append("text")
@@ -660,49 +393,32 @@ export class MirroredBarChart {
       .attr("y", this._height - 5)
       .text(this._xLabel);
 
-    const axisLeft = d3.axisLeft(this._yScale1);
+    const yAxis1 = d3.axisLeft(this._yScale1);
     selection
       .append("g")
       .attr("transform", `translate(${this._margin}, 0)`)
-      .call(axisLeft);
+      .call(yAxis1);
 
     selection
       .append("text")
       .attr("transform", "rotate(-90)")
-      .attr("x", -this._height / 2)
-      .attr("y", 15)
+      .attr("x", -this._height / 3)
+      .attr("y", YAXIS_LABEL_OFFSET)
       .attr("class", "y label")
       .attr("text-anchor", "middle")
       .text(this._yLabel1);
 
-    // if (this._data2 && !this._isSameScale) {
-
-    const axisRight1 = d3.axisRight(this._yScale1);
+    const yAxis2 = d3.axisLeft(this._yScale2);
     selection
       .append("g")
-      .attr("transform", `translate(${this._width - this._margin},0)`)
-      .call(axisRight1);
+      .attr("transform", `translate(${this._margin}, 0)`)
+      .call(yAxis2);
 
     selection
       .append("text")
-      .attr("transform", "rotate(90)")
-      .attr("x", this._height / 2)
-      .attr("y", -this._width + 15)
-      .attr("class", "y label")
-      .attr("text-anchor", "middle")
-      .text(this._yLabel1);
-
-    const axisRight2 = d3.axisRight(this._yScale2);
-    selection
-      .append("g")
-      .attr("transform", `translate(${this._width - this._margin},0)`)
-      .call(axisRight2);
-
-    selection
-      .append("text")
-      .attr("transform", "rotate(90)")
-      .attr("x", this._height / 2)
-      .attr("y", -this._width + 15)
+      .attr("transform", "rotate(-90)")
+      .attr("x", -this._height / 1.5)
+      .attr("y", YAXIS_LABEL_OFFSET)
       .attr("class", "y label")
       .attr("text-anchor", "middle")
       .text(this._yLabel2);
