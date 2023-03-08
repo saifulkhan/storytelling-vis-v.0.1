@@ -57,7 +57,7 @@ export class TimeSeries {
 
   _graphAnnotations: IGraphAnnotationW[];
   _annoTop = false;
-  _animationCounter = -1;
+  _animationCounter = 0;
 
   _pathElements = [];
   _annotationElements = [];
@@ -506,7 +506,7 @@ export class TimeSeries {
       .attr("y2", this._height - this._margin)
       .attr("stroke-dasharray", 5)
       .style("stroke-width", 1)
-      .style("stroke", "#999")
+      .style("stroke", "#999999")
       .style("fill", "none");
   }
 
@@ -610,18 +610,16 @@ export class TimeSeries {
     // Use modulus to repeat animation sequence once counter > number of animation segments
     const currIdx = this._animationCounter % pathNum;
     const prevIdx = (this._animationCounter - 1) % pathNum;
+    // prettier-ignore
+    console.log(`TimeSeries5: _animateForward: prevIdx = ${prevIdx}, currIdx = ${currIdx}`);
 
     // Get path and annotations for current animation and previous one
     const currPathElement = this._pathElements[currIdx];
-    const duration = currPathElement.duration || 1000;
     const currAnnotationElement = this._annotationElements[currIdx];
     const prevAnnotationElement = this._annotationElements[prevIdx];
     const currDotElement = this._dotElements[currIdx];
 
-    // prettier-ignore
-    console.log(`TimeSeries5: _animateForward: ${pathNum}, ${prevIdx}, ${currIdx}`);
-
-    // If we have a previous annotation that needs to be faded out do so
+    // Fade out previous annotation if it exists
     if (
       prevAnnotationElement &&
       prevAnnotationElement.fadeout &&
@@ -634,9 +632,10 @@ export class TimeSeries {
         .style("opacity", 0);
     }
 
-    // If we have faded out we need to delay the following animations (value is 1000 if true)
+    // We need to delay the following animations (value is 1000 if true)
     let fadeOutDelay =
       (prevAnnotationElement && prevAnnotationElement.fadeout && 500) + 500;
+    const duration = currPathElement.duration || 1000;
 
     // Animate current path with duration given by user
     currPathElement.path
