@@ -31,9 +31,8 @@ import {
   createPlot,
   animatePlot,
 } from "src/components/story-boards/utils-story-5";
-import { AnimationType } from "src/models/ITimeSeriesData";
 
-const Story5a = () => {
+const Story5 = () => {
   const [loading, setLoading] = useState(true);
   const [parameters, setParameters] = useState<string[]>([]);
   const [parameter, setParameter] = useState<string>("");
@@ -41,7 +40,7 @@ const Story5a = () => {
   const handleParameterSelect = (e) => {
     const newParameter = e.target.value;
     // prettier-ignore
-    console.log(`Story5a: handleRegionSelect: parameter: ${parameter}, newParameter: ${newParameter}`);
+    console.log(`Story5: handleRegionSelect: parameter: ${parameter}, newParameter: ${newParameter}`);
     setParameter(newParameter);
     if (newParameter) {
       filterData(newParameter);
@@ -51,19 +50,19 @@ const Story5a = () => {
 
   const handleBeginningClick = () => {
     // prettier-ignore
-    console.log(`Story5a: handleBeginningClick:`);
+    console.log(`Story5: handleBeginningClick:`);
     animatePlot("beginning");
   };
 
   const handleBackClick = () => {
     // prettier-ignore
-    console.log(`Story5a: handleBackClick:`);
+    console.log(`Story5: handleBackClick:`);
     animatePlot("back");
   };
 
   const handlePlayClick = () => {
     // prettier-ignore
-    console.log(`Story5a: handlePlayClick: `);
+    console.log(`Story5: handlePlayClick: `);
     animatePlot("play");
   };
 
@@ -203,4 +202,4 @@ const Story5a = () => {
   );
 };
 
-export default Story5a;
+export default Story5;

@@ -10,7 +10,21 @@ import { MirroredBarChart } from "./MirroredBarChart";
  *********************************************************************************************************/
 
 let allData; // all parameters data
-let peaksByRegion;
+
+const parameters = [
+  "channels",
+  "mean_training_accuracy",
+  "mean_test_accuracy",
+  "kernel_size",
+  "layers",
+  "samples_per_class",
+];
+const selectableParameters = [
+  "channels",
+  "kernel_size",
+  "layers",
+  "samples_per_class",
+];
 
 /*
  * Load data
@@ -21,7 +35,7 @@ export async function loadData(): Promise<void> {
   const csv = await readCSVFile(
     "/static/story-boards/ml-data/storyboard_data2.csv",
   );
-
+  // Convert to integer and date
   csv.forEach((row) => {
     row.date = new Date(row.date);
     row.layers = +row.layers;
@@ -34,7 +48,7 @@ export async function loadData(): Promise<void> {
 
   // prettier-ignore
   console.log("utils-story-5a: loadData: csv = ", csv);
-  const parameters = csv.columns.slice(0);
+  // const parameters = csv.columns.slice(0);
   // prettier-ignore
   console.log("utils-story-5a: loadData: parameters = ", parameters);
 
@@ -50,6 +64,7 @@ export async function loadData(): Promise<void> {
           date: row.date,
           mean_test_accuracy: row.mean_test_accuracy,
           mean_training_accuracy: row.mean_training_accuracy,
+
         });
       }
       // prettier-ignore
@@ -62,7 +77,7 @@ export async function loadData(): Promise<void> {
 }
 
 export function getParameters() {
-  return ["layers", "channels", "kernel_size", "samples_per_class"];
+  return selectableParameters;
 }
 
 /*********************************************************************************************************

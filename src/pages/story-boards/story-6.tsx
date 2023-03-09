@@ -30,43 +30,28 @@ import {
   filterData,
   createPlot,
   animatePlot,
-  // animateTimeSeries,
-  // createTimeSeries,
 } from "src/components/story-boards/utils-story-6";
 
 const Story6 = () => {
   const [loading, setLoading] = useState(true);
-  const [segment, setSegment] = useState<number>(3);
   const [parameters, setParameters] = useState<string[]>([]);
   const [parameter, setParameter] = useState<string>("");
-
-  const handleSegmentChange = (e) => {
-    const newSegment = e.target.value;
-    // prettier-ignore
-    console.log(`Story6: handleSegmentChange: segment: ${segment}, newSegment: ${newSegment}`,);
-    setSegment(newSegment);
-
-    if (segment && parameter) {
-      filterData(parameter, newSegment);
-      // createTimeSeries("#chartId");
-    }
-  };
 
   const handleParameterSelect = (e) => {
     const newParameter = e.target.value;
     // prettier-ignore
     console.log(`Story6: handleParameterSelect: parameter: ${parameter}, newParameter: ${newParameter}`);
     setParameter(newParameter);
-    if (segment && newParameter) {
-      filterData(newParameter, segment);
-      createPlot("#chartId", newParameter);
+    if (newParameter) {
+      filterData(newParameter);
+      createPlot("#chartId");
     }
   };
 
   const handleBeginningClick = () => {
     // prettier-ignore
     console.log(`Story6: handleBeginningClick:`);
-    animatePlot(0);
+    animatePlot("beginning");
   };
 
   const handleBackClick = () => {
@@ -78,7 +63,7 @@ const Story6 = () => {
   const handlePlayClick = () => {
     // prettier-ignore
     console.log(`Story6: handlePlayClick: `);
-    animatePlot(1);
+    animatePlot("play");
   };
 
   useEffect(() => {
@@ -87,9 +72,6 @@ const Story6 = () => {
       await loadData();
       setParameters(getParameters());
       setLoading(false);
-
-      // filterData("epochs", 3);
-      // createPlot("#chartId");
     };
 
     try {
@@ -99,9 +81,6 @@ const Story6 = () => {
       setLoading(false);
     }
   }, []);
-
-  // slider formatted value
-  const valuetext = (value) => `${value}`;
 
   return (
     <>
@@ -125,7 +104,7 @@ const Story6 = () => {
                   </Avatar>
                 }
                 title="Story-6"
-                subheader="Choose a ..."
+                subheader="Choose a hyperparameter, and click play to animate the story."
               />
               <CardContent sx={{ pt: "8px" }}>
                 {loading ? (
@@ -151,31 +130,6 @@ const Story6 = () => {
                         },
                       }}
                     >
-                      {/* <InputLabel
-                        sx={{ m: 1, mt: 0 }}
-                        id="segment-slider-label"
-                      >
-                        Set segment value
-                      </InputLabel>
-                      <FormControl
-                        sx={{ m: 1, width: 300, mt: 0 }}
-                        size="small"
-                      >
-                        <Slider
-                          // labelId="segment-slider"
-                          aria-label="Segments"
-                          // defaultValue={3}
-                          getAriaValueText={valuetext}
-                          step={1}
-                          marks
-                          min={0}
-                          max={5}
-                          valueLabelDisplay="auto"
-                          value={segment}
-                          onChange={handleSegmentChange}
-                        />
-                      </FormControl> */}
-
                       <FormControl
                         sx={{ m: 1, width: 300, mt: 0 }}
                         size="small"
