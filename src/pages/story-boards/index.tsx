@@ -92,6 +92,33 @@ const StoryBoards = () => {
                       </div>
                     </Link>
                   </Grid>
+
+                  <Grid item xs={6}>
+                    <Link href="/story-boards/story-5" passHref>
+                      <div className={styles.container}>
+                        <img
+                          src="/static/story-boards/story-5.png"
+                          className={styles.image}
+                        ></img>
+                        <div className={styles.overlay}>
+                          <div className={styles.text}>Story-5</div>
+                        </div>
+                      </div>
+                    </Link>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Link href="/story-boards/story-6" passHref>
+                      <div className={styles.container}>
+                        <img
+                          src="/static/story-boards/story-6.png"
+                          className={styles.image}
+                        ></img>
+                        <div className={styles.overlay}>
+                          <div className={styles.text}>Story-6</div>
+                        </div>
+                      </div>
+                    </Link>
+                  </Grid>
                 </Grid>
               </CardContent>
             </Card>
