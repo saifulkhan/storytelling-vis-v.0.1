@@ -9,7 +9,7 @@ import { GraphAnnotation, IGraphAnnotationW } from "./GraphAnnotation_new";
 
 const WIDTH = 1200,
   HEIGHT = 400,
-  MARGIN = 50;
+  MARGIN = { top: 50, right: 50, bottom: 50, left: 50 };
 const BAR_WIDTH = 3;
 const BAR_XAXIS_GAP = 2;
 const YAXIS_LABEL_OFFSET = 10;
@@ -19,7 +19,7 @@ const xScale = (data: ITimeSeriesData1[], w = WIDTH, m = MARGIN) => {
     .scaleTime()
     .domain(d3.extent(data, (d: ITimeSeriesData1) => d.date))
     .nice()
-    .range([m, w - m]);
+    .range([m.top, w - m.top]);
   return xScale;
 };
 
@@ -28,7 +28,7 @@ const yScale1 = (data: ITimeSeriesData1[], h = HEIGHT, m = MARGIN) => {
     .scaleLinear()
     .domain([0, d3.max(data, (d: ITimeSeriesData1) => d.mean_test_accuracy)])
     .nice()
-    .range([h / 2, m]);
+    .range([h / 2, m.top]);
   return yScale;
 };
 
@@ -37,7 +37,7 @@ const yScale2 = (data: ITimeSeriesData1[], h = HEIGHT, m = MARGIN) => {
     .scaleLinear()
     .domain([0, d3.max(data, (d: ITimeSeriesData1) => d.y)])
     .nice()
-    .range([h / 2, h - m]);
+    .range([h / 2, h - m.top]);
   return yScale;
 };
 
@@ -54,7 +54,7 @@ export class MirroredBarChart {
   _color2 = "Blue";
   _width: number;
   _height: number;
-  _margin: number;
+  _margin: any;
   _ticks = false;
 
   _xScale: any;
@@ -388,7 +388,7 @@ export class MirroredBarChart {
     const yAxis1 = d3.axisLeft(this._yScale1);
     selection
       .append("g")
-      .attr("transform", `translate(${this._margin}, 0)`)
+      .attr("transform", `translate(${this._margin.top}, 0)`)
       .call(yAxis1);
 
     selection
@@ -403,7 +403,7 @@ export class MirroredBarChart {
     const yAxis2 = d3.axisLeft(this._yScale2);
     selection
       .append("g")
-      .attr("transform", `translate(${this._margin}, 0)`)
+      .attr("transform", `translate(${this._margin.top}, 0)`)
       .call(yAxis2);
 
     selection

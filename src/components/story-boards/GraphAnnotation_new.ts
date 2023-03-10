@@ -99,9 +99,9 @@ export class GraphAnnotation {
       .node();
 
     // Maintain the order
-    this.node.appendChild(this._circle);
     this.node.appendChild(this._rect);
     this.node.appendChild(this._connector);
+    this.node.appendChild(this._circle);
     this.node.appendChild(this._textNode);
   }
 

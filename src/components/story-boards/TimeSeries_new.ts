@@ -9,7 +9,7 @@ import { GraphAnnotation, IGraphAnnotationW } from "./GraphAnnotation_new";
 
 const WIDTH = 1200,
   HEIGHT = 250,
-  MARGIN = 50;
+  MARGIN = { top: 50, right: 50, bottom: 50, left: 50 };
 const YAXIS_LABEL_OFFSET = 10;
 
 const xScale = (data: ITimeSeriesData[], w = WIDTH, m = MARGIN) => {
@@ -17,7 +17,7 @@ const xScale = (data: ITimeSeriesData[], w = WIDTH, m = MARGIN) => {
     .scaleTime()
     .domain(d3.extent(data, (d: ITimeSeriesData) => d.date))
     .nice()
-    .range([m, w - m]);
+    .range([m.left, w - m.left]);
   return xScale;
 };
 
@@ -26,7 +26,7 @@ const yScale = (data: ITimeSeriesData[], h = HEIGHT, m = MARGIN) => {
     .scaleLinear()
     .domain([0, d3.max(data, (d: ITimeSeriesData) => d.y)])
     .nice()
-    .range([h - m, m]);
+    .range([h - m.top, m.bottom]);
   return yScale;
 };
 
@@ -36,16 +36,19 @@ export class TimeSeries {
   _data1: ITimeSeriesData[];
   _data2: ITimeSeriesData[][];
 
+  _width: number;
+  _height: number;
+  _margin: any;
+  _ticks = false;
+
   _title = "";
   _xLabel = "";
   _yLabel1 = "";
   _yLabel2 = "";
+
   _color1 = "Black";
+  _strokeWidth1 = 2;
   _color2: any[];
-  _width: number;
-  _height: number;
-  _margin: number;
-  _ticks = false;
 
   _showPoints1 = false; // TODO rename point or dot
   _pointsColor1 = "#A9A9A9";
@@ -145,6 +148,11 @@ export class TimeSeries {
 
   color1(color: string) {
     this._color1 = color;
+    return this;
+  }
+
+  strokeWidth1(strokeWidth: number) {
+    this._strokeWidth1 = strokeWidth;
     return this;
   }
 
@@ -262,7 +270,7 @@ export class TimeSeries {
     d3.select(this._svg)
       .append("path")
       .attr("stroke", this._color1)
-      .attr("stroke-width", 3)
+      .attr("stroke-width", this._strokeWidth1)
       .attr("fill", "none")
       .attr("d", line1(this._data1));
 
@@ -391,7 +399,7 @@ export class TimeSeries {
         .select(this._svg)
         .append("path")
         .attr("stroke", d.color || this._color1)
-        .attr("stroke-width", 3)
+        .attr("stroke-width", this._strokeWidth1)
         .attr("fill", "none")
         .attr(
           "d",
@@ -461,7 +469,7 @@ export class TimeSeries {
       graphAnnotation.id(`id-annotation-${idx}`).addTo(this._svg);
 
       if (this._annoTop) {
-        graphAnnotation.y(this._margin + graphAnnotation._annoHeight / 2);
+        graphAnnotation.y(this._margin.top + graphAnnotation._annoHeight / 2);
         graphAnnotation.updatePos(graphAnnotation._x, graphAnnotation._y);
       }
 
@@ -492,7 +500,7 @@ export class TimeSeries {
       .attr("x1", x)
       .attr("y1", y)
       .attr("x2", x)
-      .attr("y2", this._height - this._margin)
+      .attr("y2", this._height - this._margin.bottom)
       .attr("stroke-dasharray", 5)
       .style("stroke-width", 1)
       .style("stroke", "#999999")
@@ -700,7 +708,7 @@ export class TimeSeries {
 
     selection
       .append("g")
-      .attr("transform", `translate(0, ${this._height - this._margin})`)
+      .attr("transform", `translate(0, ${this._height - this._margin.left})`)
       .call(axisBottom);
 
     selection
@@ -714,7 +722,7 @@ export class TimeSeries {
     const axisLeft = d3.axisLeft(this._yScale1);
     selection
       .append("g")
-      .attr("transform", `translate(${this._margin}, 0)`)
+      .attr("transform", `translate(${this._margin.top}, 0)`)
       .call(axisLeft);
 
     selection
@@ -730,7 +738,7 @@ export class TimeSeries {
       const axisRight = d3.axisRight(this._yScale2);
       selection
         .append("g")
-        .attr("transform", `translate(${this._width - this._margin},0)`)
+        .attr("transform", `translate(${this._width - this._margin.right},0)`)
         .call(axisRight);
 
       selection
@@ -748,7 +756,7 @@ export class TimeSeries {
       .append("text")
       .style("font-size", "px")
       .attr("x", this._width / 2)
-      .attr("y", this._margin / 2)
+      .attr("y", this._margin.left / 2)
       .attr("text-anchor", "middle")
       .text(this._title)
       .attr("font-weight", "bold");

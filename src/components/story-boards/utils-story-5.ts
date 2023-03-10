@@ -9,7 +9,7 @@ import { MirroredBarChart } from "./MirroredBarChart";
  * - Prepare data
  *********************************************************************************************************/
 
-let allData; // all parameters data
+let data; // all parameters data
 
 const parameters = [
   "channels",
@@ -30,7 +30,7 @@ const selectableParameters = [
  * Load data
  */
 export async function loadData(): Promise<void> {
-  allData = {};
+  data = {};
 
   const csv = await readCSVFile(
     "/static/story-boards/ml-data/storyboard_data2.csv",
@@ -54,12 +54,12 @@ export async function loadData(): Promise<void> {
 
   csv.forEach((row) => {
     parameters.forEach((parameter) => {
-      if (!allData[parameter]) { 
-        allData[parameter] = [];
-      } else if (allData[parameter].find(({ y }) => y === +row[parameter])) {
+      if (!data[parameter]) { 
+        data[parameter] = [];
+      } else if (data[parameter].find(({ y }) => y === +row[parameter])) {
          console.log("skip"); 
       } else {
-        allData[parameter].push({
+        data[parameter].push({
           y: row[parameter],
           date: row.date,
           mean_test_accuracy: row.mean_test_accuracy,
@@ -73,7 +73,7 @@ export async function loadData(): Promise<void> {
     // console.log(row);
   });
 
-  console.log("utils-story-5a: loadData: dataByParameters = ", allData);
+  console.log("utils-story-5a: loadData: dataByParameters = ", data);
 }
 
 export function getParameters() {
@@ -90,7 +90,7 @@ let graphAnnotationWs: IGraphAnnotationW[];
 
 export function filterData(_parameter: string) {
   selectedParameter = _parameter;
-  selectedData = allData[selectedParameter].sort(function (a, b) {
+  selectedData = data[selectedParameter].sort(function (a, b) {
     return a.date - b.date;
   });
   // prettier-ignore
@@ -98,6 +98,15 @@ export function filterData(_parameter: string) {
 
   calculateAnnotationWs();
 }
+
+/*********************************************************************************************************
+ * Create annotation objects
+ *********************************************************************************************************/
+
+const COLOR_LABEL_BEST = "#2196F3",
+  COLOR_LABEL_DEFAULT = "#474440",
+  COLOR_TITLE = "#696969",
+  COLOR_BACKGROUND = "#F5F5F5";
 
 function calculateAnnotationWs() {
   graphAnnotationWs = [];
@@ -120,7 +129,9 @@ function calculateAnnotationWs() {
     if (idx === maxIdx) {
       // prettier-ignore
       const msg =  `On ${d?.date?.toLocaleDateString()}, a newly-trained model achieved the best results so far with testing accuracy ${d?.mean_test_accuracy?.toFixed(2)}% and training accuracy ${d?.mean_training_accuracy?.toFixed(2)}%.`
-      graphAnnotationWs.push(writeText(msg, d.date, selectedData, true));
+      graphAnnotationWs.push(
+        writeText(msg, d.date, selectedData, COLOR_LABEL_BEST, true),
+      );
     }
 
     // feature 2:
@@ -132,7 +143,9 @@ function calculateAnnotationWs() {
     else if (idx === 0) {
       // prettier-ignore
       const msg =  `On ${d?.date?.toLocaleDateString()}, a newly-trained model resulted in testing accuracy of ${d?.mean_test_accuracy?.toFixed(2)}% and training accuracy of ${d?.mean_training_accuracy?.toFixed(2)}%, denoted as ${d?.mean_test_accuracy?.toFixed(2)}% [${d?.mean_training_accuracy?.toFixed(2)}%].`
-      graphAnnotationWs.push(writeText(msg, d.date, selectedData, true));
+      graphAnnotationWs.push(
+        writeText(msg, d.date, selectedData, COLOR_LABEL_DEFAULT, true),
+      );
     } else {
       //
       // feature 1:
@@ -144,7 +157,9 @@ function calculateAnnotationWs() {
       //
       // prettier-ignore
       const msg = `Accuracy: ${d?.mean_test_accuracy?.toFixed(2)}% [${d?.mean_training_accuracy?.toFixed(2)}%]`;
-      graphAnnotationWs.push(writeText(msg, d.date, selectedData, false));
+      graphAnnotationWs.push(
+        writeText(msg, d.date, selectedData, COLOR_LABEL_DEFAULT, false),
+      );
 
       // action 1b:
       // display the dot as a colour dot (e.g., dark orange), change all already-
@@ -168,28 +183,34 @@ function calculateAnnotationWs() {
   console.log("utils-story-5: calculateAnnotationWs: graphAnnotationWs = ", graphAnnotationWs);
 }
 
-function writeText(text, date, data, showRedCircle = false): IGraphAnnotationW {
+function writeText(
+  text,
+  date,
+  data,
+  labelColor = COLOR_LABEL_DEFAULT,
+  showRedCircle = false,
+): IGraphAnnotationW {
   // Find idx of event in data and set location of the annotation in opposite half of graph
   const idx = findDateIdx(date, data);
 
-  const graphAnno = new GraphAnnotation()
+  const graphAnnotation = new GraphAnnotation()
     .title(date.toLocaleDateString())
     .label(text)
-    .backgroundColor("#EEEEEE")
-    .color("Grey") // TODO: separately set color of connector, title, ...
-    .labelColor("Cyan")
+    .backgroundColor(COLOR_BACKGROUND)
+    .color(COLOR_TITLE)
+    .labelColor(labelColor)
     .wrap(500);
 
-  const target = data[idx];
-  graphAnno.unscaledTarget = [target.date, target.y];
-
   if (showRedCircle) {
-    graphAnno.circleHighlight();
+    graphAnnotation.circleHighlight(COLOR_CIRCLE_HIGHLIGHT, 10);
   }
+
+  const target = data[idx];
+  graphAnnotation.unscaledTarget = [target.date, target.y];
 
   return {
     current: idx,
-    graphAnnotation: graphAnno,
+    graphAnnotation: graphAnnotation,
     fadeout: true,
   } as IGraphAnnotationW;
 }
@@ -198,6 +219,13 @@ function writeText(text, date, data, showRedCircle = false): IGraphAnnotationW {
  * - Create or init TimeSeries.
  * - Animate when button is clicked.
  *********************************************************************************************************/
+
+const COLOR_ACCURACY_BAR = "#F96F4C",
+  COLOR_PARAMETER_BAR = "#d3d3d3",
+  COLOR_CIRCLE_HIGHLIGHT = "#F96F4C",
+  STROKE_WIDTH_LINE1 = 1.5,
+  COLOR_LINE1 = "#d3d3d3",
+  COLOR_POINT = "#696969";
 
 let ts;
 let bc;
@@ -209,12 +237,13 @@ export function createPlot(selector1: string, selector2: string) {
   ts = new TimeSeries()
     .selector(selector1)
     .data1(selectedData)
-    .color1("#d3d3d3")
+    .color1(COLOR_LINE1)
+    .strokeWidth1(STROKE_WIDTH_LINE1)
     .title(`Basic story of ${selectedParameter}`)
     .yLabel(`${selectedParameter}`)
     .ticks(10)
     .showPoints1()
-    .pointsColor1("#696969")
+    .pointsColor1(COLOR_POINT)
     // .plot(); // static plot
     .graphAnnotations(graphAnnotationWs)
     .annoTop()
@@ -223,8 +252,8 @@ export function createPlot(selector1: string, selector2: string) {
   bc = new MirroredBarChart()
     .selector(selector2)
     .data1(selectedData)
-    .color1("#d3d3d3")
-    .color2("#d3d3d3")
+    .color1(COLOR_ACCURACY_BAR)
+    .color2(COLOR_PARAMETER_BAR)
     .title(`Basic story of ${selectedParameter}`)
     .yLabel1(`accuracy`)
     .yLabel2(`${selectedParameter}`)
