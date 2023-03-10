@@ -1,12 +1,15 @@
 import { readCSVFile } from "./utils-data";
 import { ParallelCoordinate } from "./ParallelCoordinate";
 import { AnimationType } from "src/models/ITimeSeriesData";
+import { detectFeatures } from "./utils-feature-detection";
+import { eventsToGaussian, maxBounds } from "./utils-aggregation-segmentation";
 
 /*********************************************************************************************************
  * - Prepare data
  *********************************************************************************************************/
 
-let allData; // all parameters data
+let data; // all parameters data
+let peaks;
 
 const parameters = [
   "date",
@@ -28,7 +31,7 @@ const selectableParameters = [
  * Load data
  */
 export async function loadData(): Promise<void> {
-  allData = [];
+  data = [];
 
   const csv = await readCSVFile(
     // "/static/story-boards/ml-data/test-parallel-coordinate.csv",
@@ -45,18 +48,53 @@ export async function loadData(): Promise<void> {
     row.layers = +row.layers;
     row.samples_per_class = +row.samples_per_class;
 
-    allData.push(row);
+    data.push(row);
   });
   // parameters = data.columns.slice(1);
 
   console.log("utils-story-6:loadData: csv =", csv);
-  console.log("utils-story-6: loadData: allData = ", allData);
+  console.log("utils-story-6: loadData: data = ", data);
+
+  preparePeaks();
 }
 
 export function getParameters() {
   return selectableParameters;
 }
 
+function preparePeaks() {
+  const timeSeries = data.map((d) => ({
+    y: d.mean_training_accuracy,
+    date: d.date,
+  }));
+
+  peaks = detectFeatures(timeSeries, {
+    peaks: true,
+    metric: "Daily Cases",
+  });
+  // prettier-ignore
+  console.log("utils-story-6: preparePeaks: peaks = ", peaks);
+
+  const rankPeaks = (peaks) => {
+    const sorted = [...peaks].sort((p1, p2) => p1.height - p2.height);
+    const nPeaks = peaks.length;
+    const fifth = nPeaks / 5;
+
+    sorted.forEach((p, i) => p.setRank(1 + Math.floor(i / fifth)));
+  };
+
+  // we apply the ranking function to the peak events
+  rankPeaks(peaks);
+
+  //prettier-ignore
+  console.log("utils-story-6: preparePeaks: ranked peaks = ", peaks);
+
+  const peaksGauss = eventsToGaussian(peaks, timeSeries);
+  const peaksBounds = maxBounds(peaksGauss);
+
+  // prettier-ignore
+  console.log("utils-story-1: preparePeaks: peaksGauss = ", peaksGauss, ", peaksBounds = ", peaksBounds);
+}
 /*********************************************************************************************************
  * Filter/select parameter
  *********************************************************************************************************/
@@ -82,7 +120,7 @@ export function createPlot(selector: string) {
 
   plot = new ParallelCoordinate()
     .selector(selector)
-    .data(allData, parameters)
+    .data(data, parameters)
     .draw(selectedParameter);
 }
 

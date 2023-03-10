@@ -1,15 +1,22 @@
 import * as d3 from "d3";
 import { AnimationType } from "src/models/ITimeSeriesData";
-// import { legend as Legend } from "@d3/color-legend";
 
 const WIDTH = 1200,
-  HEIGHT = 800;
-const MARGIN = { top: 50, right: 50, bottom: 30, left: 50 };
-const LINE_COLOR_MAP = d3.interpolateBrBG;
-const LINE_COLOR_FIXED = "#d3d3d3";
-const LINE_WIDTH = 1.5;
-const LINE_OPACITY = 0.4;
-const DOT_RADIUS = 5;
+  HEIGHT = 800,
+  MARGIN = { top: 50, right: 50, bottom: 30, left: 50 };
+
+const LINE_COLOR_MAP = d3.interpolateBrBG,
+  LINE_COLOR = "#d3d3d3",
+  LINE_WIDTH = 1.5,
+  LINE_OPACITY = 0.4,
+  LINE_HIGHLIGHT_COLOR_ = "orange";
+
+const DOT_RADIUS = 5,
+  DOT_COLOR = "orange";
+
+const HIGHLIGHT_BEST = "#00bfa0";
+
+const AXIS_HIGHLIGHT_COLOR = "#DE4E6B";
 
 const xScaleMap = (data, keys, width, margin) => {
   return new Map(
@@ -133,10 +140,11 @@ export class ParallelCoordinate {
       .y(([key]) => this._yScale(key));
 
     // Sort data by selected keyz, e.g, "kernel_size"
-    let idx = 0;
+    let idx = -1;
     const sortedData = this._data
       .slice()
       .sort((a, b) => d3.ascending(a[keyz], b[keyz]))
+      .sort((a, b) => d3.ascending(a["date"], b["date"]))
       .map((d) => ({ ...d, index: idx++ })); // update the index to 0,1,2,...
     console.log("ParallelCoordinate: sortedData = ", sortedData);
 
@@ -155,7 +163,7 @@ export class ParallelCoordinate {
       .data(sortedData)
       .join("path")
       // .attr("stroke", (d) => this._colorScale(d[this._keyz])) // assign from a colormap
-      .attr("stroke", (d) => LINE_COLOR_FIXED)
+      .attr("stroke", (d) => LINE_COLOR)
       .attr("d", (d) => {
         const a = cross(d);
         // console.log("line-> d = ", d, ", cross = ", a);
@@ -194,10 +202,10 @@ export class ParallelCoordinate {
         return this._xScaleMap.get(key)(value);
       })
       .attr("cy", ([key]) => this._yScale(key))
-      .style("fill", "green");
+      .style("fill", DOT_COLOR);
 
     //
-    // Draw axis lines
+    // Draw axis and labels
     //
     const that = this;
     d3.select(this._svg)
@@ -209,16 +217,19 @@ export class ParallelCoordinate {
       .each(function (d) {
         d3.select(this).call(d3.axisBottom(that._xScaleMap.get(d)));
       })
-      // Draw name of axis
+      // Label axis
       .call((g) =>
         g
           .append("text")
           .attr("x", this._margin.left)
           .attr("y", -6)
           .attr("text-anchor", "start")
-          .attr("fill", "currentColor")
+          .attr("fill", (d) =>
+            d === keyz ? AXIS_HIGHLIGHT_COLOR : "currentColor",
+          )
           .text((d) => d),
-      );
+      )
+      .call((g) => g.selectAll(".x.axis line").style("stroke", "red"));
 
     return this;
   }
@@ -227,50 +238,55 @@ export class ParallelCoordinate {
    *
    */
   animate(animationType: AnimationType) {
-    const selectedPath = d3
-      .select(this._svg)
-      .select(`#id-line-${this._tmpCounter}`);
-    const prevColour = selectedPath.attr("fill");
-    const totalLength = selectedPath.node().getTotalLength();
-
-    selectedPath
-      // .attr("stroke-dasharray", totalLength + " " + totalLength)
-      // .attr("stroke-dashoffset", totalLength)
-      // .attr("stroke", "red")
-      .transition()
-      .duration(0)
+    // Current line
+    d3.select(this._svg)
+      .select(`#id-line-${this._tmpCounter}`)
       .style("stroke-opacity", 1)
-      // .transition()
-      // .duration(2000)
-      // .ease(d3.easeLinear)
-      // .attr("stroke-dashoffset", 0)
-      .transition()
-      .duration(0)
-      .style("stroke", "green")
-      .transition()
-      .duration(2000)
-      .ease(d3.easeBounceInOut)
-      .attr("stroke-width", 3)
-      .transition()
-      .duration(0)
-      .attr("stroke-width", LINE_WIDTH)
-      .transition()
-      .duration(0)
-      .style("stroke", prevColour)
-      .transition()
-      .duration(0)
-      .attr("stroke-opacity", LINE_OPACITY);
+      .style("stroke", "Orange");
 
-    const currentCircles = d3
-      .select(this._svg)
-      .select(`#id-circles-${this._tmpCounter}`)
-      .style("opacity", 1);
+    // Current dots
+    d3.select(this._svg)
+      .select(`#id-circles-${this._tmpCounter}`) // return group
+      .style("opacity", 1); // reveal the group which has circles
 
     const previousCircles = d3
       .select(this._svg)
       .select(`#id-circles-${this._tmpCounter - 1}`)
+      .transition()
+      .duration(2000)
       .style("opacity", 0);
 
+    // const prevColour = selectedPath.attr("fill");
+    // const totalLength = selectedPath.node().getTotalLength();
+
+    // selectedPath
+    //    .transition()
+    //   .duration(0)
+    //   .style("stroke-opacity", 1)
+    //   .transition()
+    //   .duration(0)
+    //   .style("stroke", DOT_COLOR) // change the line color to the dot color
+    //   .transition()
+    //   .duration(2000)
+    //   .ease(d3.easeBounceInOut)
+    //   .attr("stroke-width", 3)
+    //   .transition()
+    //   .duration(0)
+    //   .attr("stroke-width", LINE_WIDTH)
+    //   .transition()
+    //   .duration(0)
+    //   .style("stroke", prevColour)
+    //   .transition()
+    //   .duration(0)
+    //   .attr("stroke-opacity", LINE_OPACITY);
+
     this._tmpCounter++;
+  }
+
+  /**
+   *
+   */
+  _animateColorChange(element) {
+    //
   }
 }
