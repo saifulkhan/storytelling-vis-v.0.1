@@ -39,9 +39,10 @@ const Story6 = () => {
 
   const handleParameterSelect = (e) => {
     const newParameter = e.target.value;
+    setParameter((d) => newParameter);
     // prettier-ignore
     console.log(`Story6: handleParameterSelect: parameter: ${parameter}, newParameter: ${newParameter}`);
-    setParameter(newParameter);
+
     if (newParameter) {
       filterData(newParameter);
       createPlot("#chartId");

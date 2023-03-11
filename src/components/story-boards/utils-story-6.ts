@@ -5,7 +5,7 @@ import { detectFeatures } from "./utils-feature-detection";
 import { eventsToGaussian, maxBounds } from "./utils-aggregation-segmentation";
 
 /*********************************************************************************************************
- * - Prepare data
+ * Prepare data
  *********************************************************************************************************/
 
 let data; // all parameters data
@@ -95,6 +95,7 @@ function preparePeaks() {
   // prettier-ignore
   console.log("utils-story-1: preparePeaks: peaksGauss = ", peaksGauss, ", peaksBounds = ", peaksBounds);
 }
+
 /*********************************************************************************************************
  * Filter/select parameter
  *********************************************************************************************************/
@@ -108,8 +109,8 @@ export function filterData(_parameter: string) {
 }
 
 /*********************************************************************************************************
- * - Create or init TimeSeries.
- * - Animate when button is clicked.
+ * Create or init TimeSeries.
+ * Animate when button is clicked.
  *********************************************************************************************************/
 
 let plot;
