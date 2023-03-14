@@ -3,14 +3,21 @@ import * as d3 from "d3";
 //
 // Annotations used in parallel coordinate
 //
+export enum HIGHLIGHT_TYPE {
+  DEFAULT = "default",
+  BEST = "best",
+  WORST = "worst",
+}
+
 export interface PCAnnotation {
-  graphAnnotation?: GraphAnnotation;
+  graphAnnotation?: GraphAnnotation | null;
   origin?: number[]; // x, y coordinate at key axis
-  current?: number[]; // x, y coordinate
+  destination?: number[]; // x, y coordinate
   fadeout?: boolean;
   data?: number; //store data
   originAxis?: string; // the selected axis
-  highlightColor?: string; //
+  highlightColor?: string; // line, dot, and the circle
+  highlightType?: HIGHLIGHT_TYPE;
 }
 
 //
@@ -113,8 +120,8 @@ export class GraphAnnotation {
     // Maintain the order
     this.node.appendChild(this._rect);
     this.node.appendChild(this._connector);
-    this.node.appendChild(this._circle);
     this.node.appendChild(this._textNode);
+    this.node.appendChild(this._circle);
   }
 
   /*********************************************************************************
@@ -171,6 +178,7 @@ export class GraphAnnotation {
 
   circleHighlight(color = "red", radius = 0) {
     this._circle.setAttribute("stroke", color);
+    this._circle.setAttribute("opacity", 0.6);
     radius && this._circle.setAttribute("r", radius);
     return this;
   }
@@ -454,6 +462,12 @@ export class GraphAnnotation {
       rectX += (annoWidth + this._rectPadding) / 2;
       textX += annoWidth / 2 + this._rectPadding / 2;
     }
+
+    d3.select(this._circle)
+      .transition()
+      .ease(d3.easeQuadIn)
+      .duration(1500)
+      .attr("opacity", 0);
 
     d3.select(this._rect)
       .transition()

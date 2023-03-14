@@ -58,7 +58,7 @@ const Story6 = () => {
   const handleBackClick = () => {
     // prettier-ignore
     console.log(`Story6: handleBackClick:`);
-    animatePlot(-1);
+    animatePlot("back");
   };
 
   const handlePlayClick = () => {

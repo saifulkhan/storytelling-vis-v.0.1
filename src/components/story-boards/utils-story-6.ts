@@ -2,7 +2,13 @@ import * as d3 from "d3";
 import { readCSVFile } from "./utils-data";
 import { ParallelCoordinate } from "./ParallelCoordinate";
 import { AnimationType } from "src/models/ITimeSeriesData";
-import { GraphAnnotation, PCAnnotation } from "./GraphAnnotation_new";
+import {
+  GraphAnnotation,
+  PCAnnotation,
+  HIGHLIGHT_TYPE,
+} from "./GraphAnnotation_new";
+import { Oranges } from "./colormap";
+import { hi } from "date-fns/locale";
 
 /*********************************************************************************************************
  * Prepare data
@@ -138,12 +144,6 @@ function findLocalMinMax1(input: any[], keyz: string, window = 2): any {
 
 let selectedParameter;
 let min, max;
-let pcAnnotations: PCAnnotation[];
-
-const COLOR_TITLE = "#696969",
-  COLOR_BACKGROUND = "#F5F5F5",
-  HIGHLIGHT_BEST_COLOR = "#00bfa0",
-  HIGHLIGHT_WORST_COLOR = "#E84A5F";
 
 export function filterData(_parameter: string) {
   selectedParameter = _parameter;
@@ -166,6 +166,8 @@ export function filterData(_parameter: string) {
   console.log("utils-story-6: filterData: selectedParameter = ", selectedParameter);
 }
 
+let pcAnnotations: PCAnnotation[];
+
 function calculateAnnotations() {
   pcAnnotations = [];
 
@@ -174,51 +176,73 @@ function calculateAnnotations() {
     if (min.find((el) => el.index === idx)) {
       // prettier-ignore
       const msg = `Worst testing accuracy so far: ${d?.mean_test_accuracy?.toFixed(2,)}% [${d?.mean_training_accuracy?.toFixed(2)}%]`;
-      pcAnnotations.push(
-        writeText(msg, d.date, d, HIGHLIGHT_WORST_COLOR, false),
-      );
+      pcAnnotations.push(writeText(msg, d, HIGHLIGHT_TYPE.WORST, false));
     }
     // max annotation
     else if (max.find((el) => el.index === idx)) {
       // prettier-ignore
       const msg = `Best testing accuracy so far: ${d?.mean_test_accuracy?.toFixed(2,)}% [${d?.mean_training_accuracy?.toFixed(2)}%]`;
-      pcAnnotations.push(
-        writeText(msg, d.date, d, HIGHLIGHT_BEST_COLOR, false),
-      );
+      pcAnnotations.push(writeText(msg, d, HIGHLIGHT_TYPE.BEST, false));
     }
     // no annotation
     else {
-      pcAnnotations.push(null);
+      pcAnnotations.push(writeText(null, d, HIGHLIGHT_TYPE.DEFAULT, false));
     }
   });
 }
 
-function writeText(
-  text,
-  date,
-  data,
-  highlightColor,
-  showRedCircle,
-): PCAnnotation {
-  const graphAnnotation = new GraphAnnotation()
-    .title(date.toLocaleDateString())
-    .label(text)
-    .backgroundColor(COLOR_BACKGROUND)
-    .titleColor(COLOR_TITLE)
-    .labelColor(highlightColor)
-    .wrap(500);
+const TITLE_COLOR = "#696969",
+  COLOR_BACKGROUND = "#F5F5F5",
+  HIGHLIGHT_BEST_COLOR = "#00bfa0",
+  HIGHLIGHT_WORST_COLOR = "#E84A5F",
+  HIGHLIGHT_DEFAULT_COLOR = Oranges[0];
 
-  if (showRedCircle) {
-    graphAnnotation.circleHighlight(highlightColor, 10);
+function writeText(
+  text: string | null,
+  data: any,
+  highlightType: HIGHLIGHT_TYPE,
+  showRedCircle: boolean,
+): PCAnnotation {
+  // color of the line and annotation text
+  let highlightColor = HIGHLIGHT_DEFAULT_COLOR;
+  if (highlightType == HIGHLIGHT_TYPE.BEST) {
+    highlightColor = HIGHLIGHT_BEST_COLOR;
+  } else if (highlightType == HIGHLIGHT_TYPE.WORST) {
+    highlightColor = HIGHLIGHT_WORST_COLOR;
   }
 
-  return {
-    graphAnnotation: graphAnnotation,
-    fadeout: false,
-    highlightColor: highlightColor,
-    originAxis: "mean_test_accuracy",
-    data: data,
-  } as PCAnnotation;
+  // No annotation; just set color of the line and data
+  if (text === null) {
+    return {
+      graphAnnotation: null,
+      fadeout: true,
+      originAxis: "mean_test_accuracy",
+      data: data,
+      highlightColor: highlightColor,
+      highlightType: highlightType,
+    } as PCAnnotation;
+  } else {
+    const graphAnnotation = new GraphAnnotation()
+      .title(data["date"].toLocaleDateString())
+      .label(text)
+      .backgroundColor(COLOR_BACKGROUND)
+      .titleColor(TITLE_COLOR)
+      .labelColor(highlightColor)
+      .wrap(500);
+
+    if (showRedCircle) {
+      graphAnnotation.circleHighlight(highlightColor, 10);
+    }
+
+    return {
+      graphAnnotation: graphAnnotation,
+      fadeout: false,
+      originAxis: "mean_test_accuracy",
+      data: data,
+      highlightColor: highlightColor,
+      highlightType: highlightType,
+    } as PCAnnotation;
+  }
 }
 
 /*********************************************************************************************************
