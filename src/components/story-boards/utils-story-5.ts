@@ -103,10 +103,10 @@ export function filterData(_parameter: string) {
  * Create annotation objects
  *********************************************************************************************************/
 
-const COLOR_LABEL_BEST = "#2196F3",
-  COLOR_LABEL_DEFAULT = "#474440",
-  COLOR_TITLE = "#696969",
-  COLOR_BACKGROUND = "#F5F5F5";
+const HIGHLIGHT_BEST_COLOR = "#2196F3",
+  HIGHLIGHT_DEFAULT_COLOR = "#474440",
+  TITLE_COLOR = "#696969",
+  BACKGROUND_COLOR = "#F5F5F5";
 
 function calculateAnnotations() {
   lpAnnotations = [];
@@ -130,7 +130,7 @@ function calculateAnnotations() {
       // prettier-ignore
       const msg =  `On ${d?.date?.toLocaleDateString()}, a newly-trained model achieved the best results so far with testing accuracy ${d?.mean_test_accuracy?.toFixed(2)}% and training accuracy ${d?.mean_training_accuracy?.toFixed(2)}%.`
       lpAnnotations.push(
-        writeText(msg, d.date, selectedData, COLOR_LABEL_BEST, true),
+        writeText(msg, d.date, selectedData, HIGHLIGHT_BEST_COLOR, true),
       );
     }
 
@@ -144,7 +144,7 @@ function calculateAnnotations() {
       // prettier-ignore
       const msg =  `On ${d?.date?.toLocaleDateString()}, a newly-trained model resulted in testing accuracy of ${d?.mean_test_accuracy?.toFixed(2)}% and training accuracy of ${d?.mean_training_accuracy?.toFixed(2)}%, denoted as ${d?.mean_test_accuracy?.toFixed(2)}% [${d?.mean_training_accuracy?.toFixed(2)}%].`
       lpAnnotations.push(
-        writeText(msg, d.date, selectedData, COLOR_LABEL_DEFAULT, true),
+        writeText(msg, d.date, selectedData, HIGHLIGHT_DEFAULT_COLOR, true),
       );
     } else {
       //
@@ -158,7 +158,7 @@ function calculateAnnotations() {
       // prettier-ignore
       const msg = `Accuracy: ${d?.mean_test_accuracy?.toFixed(2)}% [${d?.mean_training_accuracy?.toFixed(2)}%]`;
       lpAnnotations.push(
-        writeText(msg, d.date, selectedData, COLOR_LABEL_DEFAULT, false),
+        writeText(msg, d.date, selectedData, HIGHLIGHT_DEFAULT_COLOR, false),
       );
 
       // action 1b:
@@ -187,7 +187,7 @@ function writeText(
   text,
   date,
   data,
-  labelColor = COLOR_LABEL_DEFAULT,
+  labelColor = HIGHLIGHT_DEFAULT_COLOR,
   showRedCircle = false,
 ): LinePlotAnnotation {
   // Find idx of event in data and set location of the annotation in opposite half of graph
@@ -196,13 +196,13 @@ function writeText(
   const graphAnnotation = new GraphAnnotation()
     .title(date.toLocaleDateString())
     .label(text)
-    .backgroundColor(COLOR_BACKGROUND)
-    .titleColor(COLOR_TITLE)
+    .backgroundColor(BACKGROUND_COLOR)
+    .titleColor(TITLE_COLOR)
     .labelColor(labelColor)
     .wrap(500);
 
   if (showRedCircle) {
-    graphAnnotation.circleHighlight(COLOR_CIRCLE_HIGHLIGHT, 10);
+    graphAnnotation.circleHighlight(CIRCLE_HIGHLIGHT_COLOR, 10);
   }
 
   const target = data[idx];
@@ -220,12 +220,12 @@ function writeText(
  * - Animate when button is clicked.
  *********************************************************************************************************/
 
-const COLOR_ACCURACY_BAR = "#F96F4C",
-  COLOR_PARAMETER_BAR = "#d3d3d3",
-  COLOR_CIRCLE_HIGHLIGHT = "#F96F4C",
-  STROKE_WIDTH_LINE1 = 1.5,
-  COLOR_LINE1 = "#d3d3d3",
-  COLOR_POINT = "#696969";
+const ACCURACY_BAR_COLOR = "#F96F4C",
+  PARAMETER_BAR_COLOR = "#d3d3d3",
+  CIRCLE_HIGHLIGHT_COLOR = "#F96F4C",
+  LINE1_STROKE_WIDTH = 1.5,
+  LINE1_COLOR = "#d3d3d3",
+  POINT_COLOR = "#696969";
 
 let ts;
 let bc;
@@ -237,23 +237,23 @@ export function createPlot(selector1: string, selector2: string) {
   ts = new TimeSeries()
     .selector(selector1)
     .data1(selectedData)
-    .color1(COLOR_LINE1)
-    .strokeWidth1(STROKE_WIDTH_LINE1)
+    .color1(LINE1_COLOR)
+    .strokeWidth1(LINE1_STROKE_WIDTH)
     .title(`Basic story of ${selectedParameter}`)
     .yLabel(`${selectedParameter}`)
     .ticks(10)
     .showPoints1()
-    .pointsColor1(COLOR_POINT)
+    .pointsColor1(POINT_COLOR)
     // .plot(); // static plot
-    .lpAnnotations(lpAnnotations)
+    .annotations(lpAnnotations)
     .annoTop()
     .showEventLines();
 
   bc = new MirroredBarChart()
     .selector(selector2)
     .data1(selectedData)
-    .color1(COLOR_ACCURACY_BAR)
-    .color2(COLOR_PARAMETER_BAR)
+    .color1(ACCURACY_BAR_COLOR)
+    .color2(PARAMETER_BAR_COLOR)
     .title(`Basic story of ${selectedParameter}`)
     .yLabel1(`accuracy`)
     .yLabel2(`${selectedParameter}`)
