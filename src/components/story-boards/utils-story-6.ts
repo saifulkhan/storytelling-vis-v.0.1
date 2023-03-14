@@ -8,7 +8,6 @@ import {
   HIGHLIGHT_TYPE,
 } from "./GraphAnnotation_new";
 import { Oranges } from "./colormap";
-import { hi } from "date-fns/locale";
 
 /*********************************************************************************************************
  * Prepare data
