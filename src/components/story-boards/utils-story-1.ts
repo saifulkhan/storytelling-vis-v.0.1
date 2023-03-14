@@ -10,10 +10,11 @@ import {
   splitDataAndEvents,
 } from "./utils-aggregation-segmentation";
 
-import { GraphAnnotation, IGraphAnnotationWrapper } from "./GraphAnnotation";
+import { GraphAnnotation, LinePlotAnnotation } from "./GraphAnnotation_new";
 import { DataEvent } from "./DataEvent";
-import { TimeSeries } from "./TimeSeries";
+import { TimeSeries } from "./TimeSeries_new";
 import { linRegGrad } from "./utils-data-processing";
+import { AnimationType } from "src/models/ITimeSeriesData";
 
 /*********************************************************************************************************
  * - Prepare data
@@ -192,7 +193,7 @@ let splitsByRegion = {};
 let segment: number;
 let region: string;
 let selectedRegionData;
-let annotations: IGraphAnnotationWrapper[];
+let annotations: LinePlotAnnotation[];
 
 export function filterData(_region: string, _segment: number) {
   selectedRegionData = [];
@@ -224,6 +225,18 @@ function segmentData() {
   // prettier-ignore
   console.log("utils-story-1: segmentData: splitsByRegion = ", splitsByRegion);
 }
+
+/*********************************************************************************************************
+ * Create annotation objects
+ *********************************************************************************************************/
+
+const HIGHLIGHT_DEFAULT_COLOR = "#474440",
+  TITLE_COLOR = "#696969",
+  BACKGROUND_COLOR = "#F5F5F5";
+
+const CIRCLE_HIGHLIGHT_COLOR = "#F96F4C",
+  LINE1_STROKE_WIDTH = 2.0,
+  LINE1_COLOR = "#696969";
 
 function calculateAnnotations() {
   annotations = [];
@@ -312,7 +325,13 @@ function calculateAnnotations() {
           if (e.rank > 3 && e instanceof SemanticEvent) {
             annotations.push(
               // @ts-expect-error -- fix accessing protected _date
-              writeText(e.description, e._date, selectedRegionData, true),
+              writeText(
+                e.description,
+                e._date,
+                selectedRegionData,
+                HIGHLIGHT_DEFAULT_COLOR,
+                true,
+              ),
             );
           }
 
@@ -342,7 +361,13 @@ function calculateAnnotations() {
           if (e.rank > 3 && e instanceof SemanticEvent) {
             annotations.push(
               // @ts-expect-error -- fix accessing protected _date
-              writeText(e.description, e._date, selectedRegionData, true),
+              writeText(
+                e.description,
+                e._date,
+                selectedRegionData,
+                HIGHLIGHT_DEFAULT_COLOR,
+                true,
+              ),
             );
           }
 
@@ -350,7 +375,13 @@ function calculateAnnotations() {
           if (e.rank > 3 && e.type == DataEvent.TYPES.PEAK) {
             const peakText = `By ${e.date}, the number of cases peaks at ${e.height}.`;
             annotations.push(
-              writeText(peakText, e._date, selectedRegionData, true),
+              writeText(
+                peakText,
+                e._date,
+                selectedRegionData,
+                HIGHLIGHT_DEFAULT_COLOR,
+                true,
+              ),
             );
           }
         });
@@ -404,7 +435,13 @@ function calculateAnnotations() {
           if (e.rank > 3 && e instanceof SemanticEvent) {
             annotations.push(
               // @ts-expect-error -- fix accessing protected _date
-              writeText(e.description, e._date, selectedRegionData, true),
+              writeText(
+                e.description,
+                e._date,
+                selectedRegionData,
+                HIGHLIGHT_DEFAULT_COLOR,
+                true,
+              ),
             );
           }
 
@@ -412,7 +449,13 @@ function calculateAnnotations() {
           if (e.rank > 3 && e.type == DataEvent.TYPES.PEAK) {
             const peakText = `By ${e.date}, the number of cases peaks at ${e.height}.`;
             annotations.push(
-              writeText(peakText, e._date, selectedRegionData, true),
+              writeText(
+                peakText,
+                e._date,
+                selectedRegionData,
+                HIGHLIGHT_DEFAULT_COLOR,
+                true,
+              ),
             );
           }
         });
@@ -421,39 +464,48 @@ function calculateAnnotations() {
   }
 
   // Sort annotations and set annotations starts to the end of the previous annotation
-  annotations.sort((a1, a2) => a1.end - a2.end);
-  annotations.push({ end: selectedRegionData.length - 1 });
-  annotations.slice(1).forEach((anno, i) => (anno.start = annotations[i].end));
+  annotations.sort((a1, a2) => a1.current - a2.current);
+  annotations.push({ current: selectedRegionData.length - 1 });
+  annotations
+    .slice(1)
+    .forEach(
+      (anno: LinePlotAnnotation, i) => (anno.previous = annotations[i].current),
+    );
 
   // prettier-ignore
   console.log("utils-story-1: calculateAnnotations: annotations = ", annotations);
 }
 
-function writeText(text, date, data, showRedCircle = false) {
+function writeText(
+  text,
+  date,
+  data,
+  labelColor = HIGHLIGHT_DEFAULT_COLOR,
+  showRedCircle = false,
+) {
   // Find idx of event in data and set location of the annotation in opposite half of graph
   const idx = findDateIdx(date, data);
-
-  const target = data[idx];
 
   const anno = new GraphAnnotation()
     .title(date.toLocaleDateString())
     .label(text)
-    .backgroundColor("#EEE")
+    .backgroundColor(BACKGROUND_COLOR)
+    .titleColor(TITLE_COLOR)
+    .labelColor(labelColor)
     .wrap(500);
 
-  // @ts-expect-error -- investigate
-  anno.left = idx < data.length / 2;
-  anno.unscaledTarget = [target.date, target.y];
-
   if (showRedCircle) {
-    anno.circleHighlight();
+    anno.circleHighlight(CIRCLE_HIGHLIGHT_COLOR, 10);
   }
 
+  const target = data[idx];
+  anno.unscaledTarget = [target.date, target.y];
+
   return {
-    end: idx,
+    current: idx,
     graphAnnotation: anno,
     fadeout: true,
-  } as IGraphAnnotationWrapper;
+  } as LinePlotAnnotation;
 }
 
 /*********************************************************************************************************
@@ -468,19 +520,21 @@ export function createTimeSeries(selector: string) {
   console.log("createTimeSeries: annotations = ", annotations);
 
   ts = new TimeSeries()
-    .selector(selector)
+    .selector(selector, 400, 1200, { top: 50, right: 50, bottom: 50, left: 50 })
     .data1(selectedRegionData)
-    .color1("#545454")
+    .color1(LINE1_COLOR)
+    .strokeWidth1(LINE1_STROKE_WIDTH)
     .title(`Basic story of COVID-19 in ${region}`)
     .yLabel("Cases per Day")
     .ticks(30)
-    // .plot() // static plot
+    // .plot(); // static plot
     .annotations(annotations)
-    .annoTop();
+    .annoTop()
+    .showEventLines();
 }
 
-export function animateTimeSeries(animationCounter: number) {
+export function animateTimeSeries(animationType: AnimationType) {
   // prettier-ignore
-  console.log("animateTimeSeries: animationCounter: ", animationCounter);
-  ts.animate(animationCounter);
+  console.log("animateTimeSeries: animationType: ", animationType);
+  ts.animate(animationType);
 }

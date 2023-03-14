@@ -42,9 +42,8 @@ const Story1 = () => {
     const newSegment = e.target.value;
     // prettier-ignore
     console.log(`Story1: handleSegmentChange: segment: ${segment}, newSegment: ${newSegment}`,);
-    setSegment(newSegment);
-
-    if (segment && region) {
+    setSegment((d) => newSegment);
+    if (newSegment && region) {
       filterData(region, newSegment);
       createTimeSeries("#chartId");
     }
@@ -54,7 +53,7 @@ const Story1 = () => {
     const newRegion = e.target.value;
     // prettier-ignore
     console.log(`Story1: handleRegionSelect: region: ${region}, newRegion: ${newRegion}`);
-    setRegion(newRegion);
+    setRegion((d) => newRegion);
     if (segment && newRegion) {
       filterData(newRegion, segment);
       createTimeSeries("#chartId");
@@ -64,19 +63,19 @@ const Story1 = () => {
   const handleBeginningClick = () => {
     // prettier-ignore
     console.log(`Story1: handleBeginningClick:`);
-    animateTimeSeries(0);
+    animateTimeSeries("beginning");
   };
 
   const handleBackClick = () => {
     // prettier-ignore
     console.log(`Story1: handleBackClick:`);
-    animateTimeSeries(-1);
+    animateTimeSeries("back");
   };
 
   const handlePlayClick = () => {
     // prettier-ignore
     console.log(`Story1: handlePlayClick: `);
-    animateTimeSeries(1);
+    animateTimeSeries("play");
   };
 
   useEffect(() => {

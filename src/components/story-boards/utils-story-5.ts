@@ -108,6 +108,13 @@ const HIGHLIGHT_BEST_COLOR = "#2196F3",
   TITLE_COLOR = "#696969",
   BACKGROUND_COLOR = "#F5F5F5";
 
+const ACCURACY_BAR_COLOR = "#F96F4C",
+  PARAMETER_BAR_COLOR = "#d3d3d3",
+  CIRCLE_HIGHLIGHT_COLOR = "#F96F4C",
+  LINE1_STROKE_WIDTH = 1.5,
+  LINE1_COLOR = "#d3d3d3",
+  POINT_COLOR = "#696969";
+
 function calculateAnnotations() {
   lpAnnotations = [];
 
@@ -219,13 +226,6 @@ function writeText(
  * - Create or init TimeSeries.
  * - Animate when button is clicked.
  *********************************************************************************************************/
-
-const ACCURACY_BAR_COLOR = "#F96F4C",
-  PARAMETER_BAR_COLOR = "#d3d3d3",
-  CIRCLE_HIGHLIGHT_COLOR = "#F96F4C",
-  LINE1_STROKE_WIDTH = 1.5,
-  LINE1_COLOR = "#d3d3d3",
-  POINT_COLOR = "#696969";
 
 let ts;
 let bc;
