@@ -5,7 +5,7 @@
 
 import * as d3 from "d3";
 import { AnimationType, ITimeSeriesData } from "src/models/ITimeSeriesData";
-import { GraphAnnotation, IGraphAnnotationW } from "./GraphAnnotation_new";
+import { GraphAnnotation, LinePlotAnnotation } from "./GraphAnnotation_new";
 
 const WIDTH = 1200,
   HEIGHT = 250,
@@ -59,7 +59,7 @@ export class TimeSeries {
   _yScale2: any;
   _isSameScale = false;
 
-  _graphAnnotations: IGraphAnnotationW[];
+  _lpAnnotations: LinePlotAnnotation[];
   _annoTop = false;
   _animationCounter = 0;
 
@@ -194,9 +194,9 @@ export class TimeSeries {
   /**
    * x
    */
-  graphAnnotations(graphAnnotationWs: IGraphAnnotationW[]) {
+  lpAnnotations(lpAnnotations: LinePlotAnnotation[]) {
     // prettier-ignore
-    console.log("TimeSeries: graphAnnotations: graphAnnotationWs = ", graphAnnotationWs);
+    console.log("TimeSeries: graphAnnotations: lpAnnotations = ", lpAnnotations);
 
     // We need to draw the axis and labels before we can compute the coordinates of the annotations
     this._drawAxisAndLabels();
@@ -209,7 +209,7 @@ export class TimeSeries {
     console.log("TimeSeries: graphAnnotations: xMid = ", xMid);
 
     // Set coordinates of the annotations
-    graphAnnotationWs.forEach((d: IGraphAnnotationW) => {
+    lpAnnotations.forEach((d: LinePlotAnnotation) => {
       const graphAnnotation: GraphAnnotation = d.graphAnnotation;
 
       if (graphAnnotation) {
@@ -228,12 +228,12 @@ export class TimeSeries {
       }
 
       // prettier-ignore
-      console.log("TimeSeries: graphAnnotations: graphAnnotation = ", graphAnnotation);
+      console.log("TimeSeries: lpAnnotations: graphAnnotation = ", graphAnnotation);
     });
 
-    this._graphAnnotations = graphAnnotationWs;
+    this._lpAnnotations = lpAnnotations;
     // prettier-ignore
-    console.log("TimeSeries: graphAnnotations: after graphAnnotationWs: ", graphAnnotationWs);
+    console.log("TimeSeries: lpAnnotations: lpAnnotations = ", lpAnnotations);
 
     return this;
   }
@@ -296,14 +296,14 @@ export class TimeSeries {
     //
     // Add static annotations
     //
-    if (this._graphAnnotations) {
-      this._graphAnnotations.forEach((d, idx) => {
+    if (this._lpAnnotations) {
+      this._lpAnnotations.forEach((d, idx) => {
         d.graphAnnotation &&
           d.graphAnnotation.id(`id-annotation-${idx}`).addTo(this._svg);
       });
       if (this._showEventLines) {
         const container = d3.select(this._svg);
-        this._graphAnnotations.forEach(
+        this._lpAnnotations.forEach(
           (d) =>
             d.graphAnnotation &&
             this._addEventLine(
@@ -356,7 +356,7 @@ export class TimeSeries {
       this._animationCounter = -1;
     } else if (
       animationType === "play" &&
-      this._animationCounter + 1 < this._graphAnnotations.length
+      this._animationCounter + 1 < this._lpAnnotations.length
     ) {
       this._animateForward();
       this._animationCounter += 1;
@@ -379,7 +379,7 @@ export class TimeSeries {
     // prettier-ignore
     console.log("TimeSeries: _createPaths: _data1: ", this._data1, "data2: ", this._data2);
 
-    this._pathElements = this._graphAnnotations.map((d: IGraphAnnotationW) => {
+    this._pathElements = this._lpAnnotations.map((d: LinePlotAnnotation) => {
       console.log("TimeSeries: _createPaths: annotation, d = ", d);
 
       // TODO: debug this part - case for 2 lines
@@ -432,7 +432,7 @@ export class TimeSeries {
     }
 
     // TODO: We don't want to create excessive number of bars
-    this._dotElements = this._graphAnnotations.map((d: IGraphAnnotationW) => {
+    this._dotElements = this._lpAnnotations.map((d: LinePlotAnnotation) => {
       console.log("TimeSeries: _createPaths: annotation, d = ", d);
       const point = this._data1[d.current];
 
@@ -460,7 +460,7 @@ export class TimeSeries {
   _createGraphAnnotations() {
     this._annotationElements = [];
 
-    this._graphAnnotations.forEach((d, idx) => {
+    this._lpAnnotations.forEach((d, idx) => {
       // Try to get the graphAnnotation object if undefined set array elem to false
       const graphAnnotation: GraphAnnotation = d?.graphAnnotation;
       if (!graphAnnotation) return;
@@ -601,7 +601,7 @@ export class TimeSeries {
    */
   _animateForward() {
     // Number of path segments
-    const pathNum = this._graphAnnotations.length;
+    const pathNum = this._lpAnnotations.length;
     // Use modulus to repeat animation sequence once counter > number of animation segments
     const currIdx = this._animationCounter % pathNum;
     const prevIdx = (this._animationCounter - 1) % pathNum;

@@ -1,15 +1,14 @@
+import * as d3 from "d3";
 import { readCSVFile } from "./utils-data";
 import { ParallelCoordinate } from "./ParallelCoordinate";
 import { AnimationType } from "src/models/ITimeSeriesData";
-import { detectFeatures } from "./utils-feature-detection";
-import { eventsToGaussian, maxBounds } from "./utils-aggregation-segmentation";
+import { GraphAnnotation, PCAnnotation } from "./GraphAnnotation_new";
 
 /*********************************************************************************************************
  * Prepare data
  *********************************************************************************************************/
 
-let data; // all parameters data
-let peaks;
+let data;
 
 const parameters = [
   "date",
@@ -54,46 +53,83 @@ export async function loadData(): Promise<void> {
 
   console.log("utils-story-6:loadData: csv =", csv);
   console.log("utils-story-6: loadData: data = ", data);
-
-  preparePeaks();
 }
 
 export function getParameters() {
   return selectableParameters;
 }
 
-function preparePeaks() {
-  const timeSeries = data.map((d) => ({
-    y: d.mean_training_accuracy,
-    date: d.date,
-  }));
+/**
+ * Given a list of numbers, find the local minimum and maximum data points
+ */
 
-  peaks = detectFeatures(timeSeries, {
-    peaks: true,
-    metric: "Daily Cases",
-  });
+function findLocalMinMax1(input: any[], keyz: string, window = 2): any {
   // prettier-ignore
-  console.log("utils-story-6: preparePeaks: peaks = ", peaks);
+  console.log("utils-story-6: findLocalMinMax1: input = ", input, ", keyz = ", keyz);
 
-  const rankPeaks = (peaks) => {
-    const sorted = [...peaks].sort((p1, p2) => p1.height - p2.height);
-    const nPeaks = peaks.length;
-    const fifth = nPeaks / 5;
-
-    sorted.forEach((p, i) => p.setRank(1 + Math.floor(i / fifth)));
+  // Given two numbers, return -1, 0, or 1
+  const compare = (a: number, b: number): number => {
+    if (a === b) {
+      return 0;
+    }
+    if (a < b) {
+      return -1;
+    }
+    return 1;
   };
 
-  // we apply the ranking function to the peak events
-  rankPeaks(peaks);
+  const outputMin = [];
+  const outputMax = [];
 
-  //prettier-ignore
-  console.log("utils-story-6: preparePeaks: ranked peaks = ", peaks);
+  // keep track of the direction: down vs up
+  let direction = 0;
+  let prevEqual = true;
 
-  const peaksGauss = eventsToGaussian(peaks, timeSeries);
-  const peaksBounds = maxBounds(peaksGauss);
+  // if 0th != 1st, 0th is a local min / max
+  if (input[0][keyz] !== input[1][keyz]) {
+    direction = compare(input[0][keyz], input[1][keyz]);
+    prevEqual = false;
+
+    direction === -1 && outputMin.push(input[0]);
+    direction === 1 && outputMax.push(input[0]);
+  }
+
+  // loop through other numbers
+  for (let i = 1; i < input.length - 1; i++) {
+    // compare this to next
+    const nextDirection = compare(input[i][keyz], input[i + 1][keyz]);
+    if (nextDirection !== 0) {
+      if (nextDirection !== direction) {
+        direction = nextDirection;
+        // if we didn't already count value, add it here
+        if (!prevEqual) {
+          direction === -1 && outputMin.push(input[i]);
+          direction === 1 && outputMax.push(input[i]);
+        }
+      }
+      prevEqual = false;
+    } else if (!prevEqual) {
+      // if the previous value is different and the next are equal
+      // then we've found a min/max
+      prevEqual = true;
+      direction === -1 && outputMin.push(input[i]);
+      direction === 1 && outputMax.push(input[i]);
+    }
+  }
+
+  // check last index
+  if (
+    compare(input[input.length - 2][keyz], input[input.length - 1][keyz]) !== 0
+  ) {
+    direction === -1 && outputMin.push(input[input.length - 1]);
+    direction === 1 && outputMax.push(input[input.length - 1]);
+  }
 
   // prettier-ignore
-  console.log("utils-story-1: preparePeaks: peaksGauss = ", peaksGauss, ", peaksBounds = ", peaksBounds);
+  console.log("utils-story-6: findLocalMinMax1: outputMin = ", outputMin);
+  console.log("utils-story-6: findLocalMinMax1: outputMax = ", outputMax);
+
+  return [outputMin, outputMax];
 }
 
 /*********************************************************************************************************
@@ -101,11 +137,88 @@ function preparePeaks() {
  *********************************************************************************************************/
 
 let selectedParameter;
+let min, max;
+let pcAnnotations: PCAnnotation[];
+
+const COLOR_TITLE = "#696969",
+  COLOR_BACKGROUND = "#F5F5F5",
+  HIGHLIGHT_BEST_COLOR = "#00bfa0",
+  HIGHLIGHT_WORST_COLOR = "#E84A5F";
 
 export function filterData(_parameter: string) {
   selectedParameter = _parameter;
+
+  // Sort data by selected keyz, e.g, "kernel_size"
+  let idx = 0;
+  data = data
+    .slice()
+    .sort((a, b) => d3.ascending(a[selectedParameter], b[selectedParameter]))
+    .sort((a, b) => d3.ascending(a["date"], b["date"]))
+    .map((d) => ({ ...d, index: idx++ })); // update index of the reordered data 0, 1, 2,...
+
+  [min, max] = findLocalMinMax1(data, "mean_test_accuracy");
+
+  console.log("utils-story-6: filterData: data (after sorting) = ", data);
+
+  calculateAnnotations();
+
   // prettier-ignore
-  console.log("utils-story-6: filterData: selectedParameter", selectedParameter);
+  console.log("utils-story-6: filterData: selectedParameter = ", selectedParameter);
+}
+
+function calculateAnnotations() {
+  pcAnnotations = [];
+
+  data.forEach((d, idx) => {
+    // min annotation
+    if (min.find((el) => el.index === idx)) {
+      // prettier-ignore
+      const msg = `Worst testing accuracy so far: ${d?.mean_test_accuracy?.toFixed(2,)}% [${d?.mean_training_accuracy?.toFixed(2)}%]`;
+      pcAnnotations.push(
+        writeText(msg, d.date, d, HIGHLIGHT_WORST_COLOR, false),
+      );
+    }
+    // max annotation
+    else if (max.find((el) => el.index === idx)) {
+      // prettier-ignore
+      const msg = `Best testing accuracy so far: ${d?.mean_test_accuracy?.toFixed(2,)}% [${d?.mean_training_accuracy?.toFixed(2)}%]`;
+      pcAnnotations.push(
+        writeText(msg, d.date, d, HIGHLIGHT_BEST_COLOR, false),
+      );
+    }
+    // no annotation
+    else {
+      pcAnnotations.push(null);
+    }
+  });
+}
+
+function writeText(
+  text,
+  date,
+  data,
+  highlightColor,
+  showRedCircle,
+): PCAnnotation {
+  const graphAnnotation = new GraphAnnotation()
+    .title(date.toLocaleDateString())
+    .label(text)
+    .backgroundColor(COLOR_BACKGROUND)
+    .titleColor(COLOR_TITLE)
+    .labelColor(highlightColor)
+    .wrap(500);
+
+  if (showRedCircle) {
+    graphAnnotation.circleHighlight(highlightColor, 10);
+  }
+
+  return {
+    graphAnnotation: graphAnnotation,
+    fadeout: false,
+    highlightColor: highlightColor,
+    originAxis: "mean_test_accuracy",
+    data: data,
+  } as PCAnnotation;
 }
 
 /*********************************************************************************************************
@@ -121,8 +234,9 @@ export function createPlot(selector: string) {
 
   plot = new ParallelCoordinate()
     .selector(selector)
-    .data(data, parameters)
-    .draw(selectedParameter);
+    .data(data, parameters, selectedParameter)
+    // .plot(); // static plot
+    .annotations(pcAnnotations);
 }
 
 export function animatePlot(animationType: AnimationType) {

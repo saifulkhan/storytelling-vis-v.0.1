@@ -1,6 +1,7 @@
 import * as d3 from "d3";
 import { AnimationType } from "src/models/ITimeSeriesData";
 import { Oranges } from "./colormap";
+import { GraphAnnotation, PCAnnotation } from "./GraphAnnotation_new";
 
 const WIDTH = 1200,
   HEIGHT = 800,
@@ -12,7 +13,6 @@ const STATIC_LINE_COLORMAP = d3.interpolateBrBG,
 
 const ANIMATE_COLORMAP = Oranges,
   HIGHLIGHT_COLOR = ANIMATE_COLORMAP[0],
-  HIGHLIGHT_BEST_COLOR = "#00bfa0",
   LINE_WIDTH = 1.5;
 const DOT_RADIUS = 5;
 const AXIS_HIGHLIGHT_COLOR = "#DE4E6B";
@@ -20,16 +20,12 @@ const AXIS_HIGHLIGHT_COLOR = "#DE4E6B";
 const xScaleMap = (data, keys, width, margin) => {
   return new Map(
     Array.from(keys, (key) => {
-      console.log(key);
-
+      // array of all keys, e.g.,  ['date', 'mean_test_accuracy', 'channels', 'kernel_size', 'layers', ...]
+      // key is one of teh key, e.g., 'date'
       let scale;
       if (key === "date") {
         scale = d3.scaleTime(
-          d3.extent(data, (d) => {
-            // prettier-ignore
-            // console.log("ParallelCoordinate: d[key]:", d[key], new Date(d[key]));
-            return d[key];
-          }),
+          d3.extent(data, (d) => d[key]),
           [margin.left, width - margin.right],
         );
       } else {
@@ -57,15 +53,16 @@ export class ParallelCoordinate {
   _margin: any;
 
   _data: any[];
-  _keys: string[];
-  _keyz: string;
+  _AxisNames: string[];
+  _selectedAxis: string;
 
   _xScaleMap;
   _yScale;
   _colorScale;
 
   _tmpCounter = 0;
-
+  _pcAnnotations: PCAnnotation[] = [];
+  _annotationElements: any[] = [];
   constructor() {
     //
   }
@@ -96,274 +93,54 @@ export class ParallelCoordinate {
     return this;
   }
 
-  data(data: any[], keys: string[]) {
+  data(data: any[], keys: string[], selectedAxis: string) {
     this._data = data;
-    this._keys = keys;
+    this._AxisNames = keys;
+    this._selectedAxis = selectedAxis;
+
+    console.log("ParallelCoordinate: data = ", this._data);
+    // prettier-ignore
+    console.log("ParallelCoordinate: data: selector = ", this._selector, ", _AxisNames = ", this._AxisNames, ", _selectedAxis = ", this._selectedAxis);
+
     return this;
   }
 
   /**
    *
    */
-  drawStatic(keyz: string) {
-    d3.select(this._svg).selectAll("svg > *").remove();
+  annotations(pcAnnotations: PCAnnotation[]) {
+    this._pcAnnotations = pcAnnotations;
+    // prettier-ignore
+    console.log("ParallelCoordinate: annotations: _pcAnnotations = ", this._pcAnnotations);
 
-    // Selected key
-    this._keyz = keyz;
+    // We need to draw the axis and labels before we can compute the coordinates of the annotations
+    this._drawAxisAndLabels();
+    this._createPathsAndDots();
 
-    this._xScaleMap = xScaleMap(
-      this._data,
-      this._keys,
-      this._width,
-      this._margin,
-    );
-    this._yScale = yScale(this._keys, this._height, this._margin);
-    this._colorScale = d3.scaleSequential(
-      this._xScaleMap.get(this._keyz).domain().reverse(),
-      STATIC_LINE_COLORMAP,
-    );
+    // Middle of the any x-axis
+    const dateScale = this._xScaleMap.get("date");
+    const xMid =
+      dateScale(this._data[this._data.length - 1].date) +
+      dateScale(this._data[0].date) * 0.5;
+    console.log("ParallelCoordinate: graphAnnotations: xMid = ", xMid);
+
+    this._pcAnnotations.forEach((pcAnnotation: PCAnnotation) => {
+      const graphAnnotation: GraphAnnotation = pcAnnotation?.graphAnnotation;
+
+      if (pcAnnotation && graphAnnotation) {
+        const xScale = this._xScaleMap.get(pcAnnotation.originAxis);
+        const x = xScale(pcAnnotation.data[pcAnnotation.originAxis]);
+        const y = this._yScale("mean_test_accuracy");
+
+        graphAnnotation.x(x);
+        graphAnnotation.y(y);
+      }
+    });
+
+    this._createGraphAnnotations();
 
     // prettier-ignore
-    console.log("ParallelCoordinate: draw: selector = ", this._selector, ", data = ", this._data, ", keys = ", this._keys, ", keyz = ", this._keyz);
-    // prettier-ignore
-    console.log("ParallelCoordinate: draw: _xScaleMap = ", this._xScaleMap);
-
-    const line = d3
-      .line()
-      .defined(([, value]) => value != null)
-      .x(([key, value]) => {
-        // prettier-ignore
-        // console.log("line-> key = ", key, "value = ", value);
-        return this._xScaleMap.get(key)(value);
-      })
-      .y(([key]) => this._yScale(key));
-
-    // Sort data by selected keyz, e.g, "kernel_size"
-    let idx = -1;
-    const sortedData = this._data
-      .slice()
-      .sort((a, b) => d3.ascending(a[keyz], b[keyz]))
-      .sort((a, b) => d3.ascending(a["date"], b["date"]))
-      .map((d) => ({ ...d, index: idx++ })); // update the index to 0,1,2,...
-    console.log("ParallelCoordinate: sortedData = ", sortedData);
-
-    const cross = (d) => d3.cross(this._keys, [d], (key, d) => [key, +d[key]]);
-
-    //
-    // Draw lines
-    //
-    const path = d3
-      .select(this._svg)
-      .append("g")
-      .attr("fill", "none")
-      .attr("stroke-width", LINE_WIDTH)
-      .attr("stroke-opacity", STATIC_LINE_OPACITY)
-      .selectAll("path")
-      .data(sortedData)
-      .join("path")
-      .attr("stroke", (d) => this._colorScale(d[this._keyz])) // assign from a colormap
-      .attr("d", (d) => {
-        const a = cross(d);
-        // console.log("line-> d = ", d, ", cross = ", a);
-        const l = line(a);
-        return l;
-      })
-      .attr("id", (d) => `id-line-${d.index}`)
-      .append("title") // giving title to the line
-      .text((d) => {
-        // console.log("d.name = ", d);
-        return d.name; // TODO: assign proper values
-      });
-
-    //
-    // Append circles to the line
-    //
-    d3.select(this._svg)
-      // .append("g")
-      .selectAll("g")
-      .data(sortedData)
-      .enter()
-      .append("g")
-      .attr("id", (d) => {
-        console.log("circle group-> d = ", d);
-        return `id-circles-${d.index}`;
-      })
-      .selectAll("circle")
-      .data((d) => cross(d))
-      .enter()
-      .append("circle")
-      .attr("r", DOT_RADIUS)
-      .attr("cx", ([key, value]) => {
-        // const a = cross(d);
-        console.log("circle -> key = ", key, ", value = ", value);
-        return this._xScaleMap.get(key)(value);
-      })
-      .attr("cy", ([key]) => this._yScale(key))
-      // .style("fill", (d) => this._colorScale(d[this._keyz])) // TODO: assign from a colormap
-      .style("fill", "Gray")
-      .style("opacity", STATIC_DOT_OPACITY);
-
-    //
-    // Draw axis and labels
-    //
-    const that = this;
-    d3.select(this._svg)
-      .append("g")
-      .selectAll("g")
-      .data(this._keys)
-      .join("g")
-      .attr("transform", (d) => `translate(0,${this._yScale(d)})`)
-      .each(function (d) {
-        d3.select(this).call(d3.axisBottom(that._xScaleMap.get(d)));
-      })
-      // Label axis
-      .call((g) =>
-        g
-          .append("text")
-          .attr("x", this._margin.left)
-          .attr("y", -6)
-          .attr("text-anchor", "start")
-          .attr("fill", (d) =>
-            d === keyz ? AXIS_HIGHLIGHT_COLOR : "currentColor",
-          )
-          .text((d) => d),
-      )
-      .call((g) => g.selectAll(".x.axis line").style("stroke", "red"));
-
-    return this;
-  }
-
-  draw(keyz: string) {
-    d3.select(this._svg).selectAll("svg > *").remove();
-
-    // Selected key
-    this._keyz = keyz;
-
-    this._xScaleMap = xScaleMap(
-      this._data,
-      this._keys,
-      this._width,
-      this._margin,
-    );
-    this._yScale = yScale(this._keys, this._height, this._margin);
-    this._colorScale = d3.scaleSequential(
-      this._xScaleMap.get(this._keyz).domain().reverse(),
-      STATIC_LINE_COLORMAP,
-    );
-
-    // prettier-ignore
-    console.log("ParallelCoordinate: draw: selector = ", this._selector, ", data = ", this._data, ", keys = ", this._keys, ", keyz = ", this._keyz);
-    // prettier-ignore
-    console.log("ParallelCoordinate: draw: _xScaleMap = ", this._xScaleMap);
-
-    const line = d3
-      .line()
-      .defined(([, value]) => value != null)
-      .x(([key, value]) => {
-        // prettier-ignore
-        // console.log("line-> key = ", key, "value = ", value);
-        return this._xScaleMap.get(key)(value);
-      })
-      .y(([key]) => this._yScale(key));
-
-    // Sort data by selected keyz, e.g, "kernel_size"
-    let idx = -1;
-    const sortedData = this._data
-      .slice()
-      .sort((a, b) => d3.ascending(a[keyz], b[keyz]))
-      .sort((a, b) => d3.ascending(a["date"], b["date"]))
-      .map((d) => ({ ...d, index: idx++ })); // update the index to 0,1,2,...
-    console.log("ParallelCoordinate: sortedData = ", sortedData);
-
-    const cross = (d) => d3.cross(this._keys, [d], (key, d) => [key, +d[key]]);
-
-    //
-    // Draw lines
-    //
-    const path = d3
-      .select(this._svg)
-      .append("g")
-      .attr("fill", "none")
-      .attr("stroke-width", LINE_WIDTH)
-      .attr("stroke-opacity", 0)
-      .selectAll("path")
-      .data(sortedData)
-      .join("path")
-      .attr("stroke", (d) => HIGHLIGHT_COLOR)
-      .attr("d", (d) => {
-        const a = cross(d);
-        // console.log("line-> d = ", d, ", cross = ", a);
-        const l = line(a);
-        return l;
-      })
-      .attr("id", (d) => `id-line-${d.index}`)
-      .append("title") // giving title to the line
-      .text((d) => {
-        // console.log("d.name = ", d);
-        return d.name; // TODO: assign proper values
-      });
-
-    //
-    // Append circles to the line
-    //
-    d3.select(this._svg)
-      // .append("g")
-      .selectAll("g")
-      .data(sortedData)
-      .enter()
-      .append("g")
-      .attr("id", (d) => {
-        console.log("circle group-> d = ", d);
-        return `id-circles-${d.index}`;
-      })
-      .selectAll("circle")
-      .data((d) => cross(d))
-      .enter()
-      .append("circle")
-      .attr("r", DOT_RADIUS)
-      .attr("cx", ([key, value]) => {
-        // const a = cross(d);
-        console.log("circle -> key = ", key, ", value = ", value);
-        return this._xScaleMap.get(key)(value);
-      })
-      .attr("cy", ([key]) => this._yScale(key))
-      .style("fill", HIGHLIGHT_COLOR)
-      .style("opacity", 0);
-
-    //
-    // Draw axis and labels
-    //
-    const that = this;
-    d3.select(this._svg)
-      .append("g")
-      .selectAll("g")
-      .data(this._keys)
-      .join("g")
-      .attr("transform", (d) => `translate(0,${this._yScale(d)})`)
-      .each(function (d) {
-        // draw axis for d = date, layers, kernel_size, ... etc.
-        // change color of the selected axis for d = keyz
-        if (d === keyz) {
-          d3.select(this)
-            .attr("color", AXIS_HIGHLIGHT_COLOR)
-            .call(d3.axisBottom(that._xScaleMap.get(d)));
-        } else {
-          d3.select(this).call(d3.axisBottom(that._xScaleMap.get(d)));
-        }
-      })
-      // Label axis
-      .call((g) =>
-        g
-          .append("text")
-          .attr("x", this._margin.left)
-          .attr("y", -6)
-          .attr("text-anchor", "start")
-          .attr("fill", (d) =>
-            // change color of the selected axis label for d = keyz
-            d === keyz ? AXIS_HIGHLIGHT_COLOR : "currentColor",
-          )
-          .text((d) => d),
-      );
+    console.log("ParallelCoordinate: annotations: _pcAnnotations = ", this._pcAnnotations);
 
     return this;
   }
@@ -372,6 +149,9 @@ export class ParallelCoordinate {
    *
    */
   animate(animationType: AnimationType) {
+    if (this._pcAnnotations[this._tmpCounter]) {
+    }
+
     //
     // Reveal current line
     //
@@ -395,9 +175,8 @@ export class ParallelCoordinate {
       .select(`#id-line-${this._tmpCounter - 1}`);
 
     // Slowly change color
-    const duration = 3000 / ANIMATE_COLORMAP.length;
+    const duration = 2000 / ANIMATE_COLORMAP.length;
     let delay = 0;
-    console.log("duration = ", duration);
     for (const d of ANIMATE_COLORMAP) {
       prevLine
         .transition()
@@ -406,7 +185,6 @@ export class ParallelCoordinate {
         .duration(duration)
         .style("stroke", d);
       delay += duration;
-      console.log("delay = ", delay);
     }
     // Disappear the line and change the color back to the original
     prevLine
@@ -427,7 +205,6 @@ export class ParallelCoordinate {
 
     // Slowly change color
     delay = 0;
-    console.log("duration = ", duration);
     for (const d of ANIMATE_COLORMAP) {
       prevCircles
         .transition()
@@ -436,7 +213,6 @@ export class ParallelCoordinate {
         .duration(duration)
         .style("fill", d);
       delay += duration;
-      console.log("delay = ", delay);
     }
     // Disappear the circles and change the color back to the original
     prevCircles
@@ -447,13 +223,291 @@ export class ParallelCoordinate {
       .style("opacity", 0)
       .style("fill", HIGHLIGHT_COLOR);
 
+    this._animateAnnotation();
     this._tmpCounter++;
+  }
+
+  /**
+   * Static plot of the parallel coordinate
+   */
+  plot() {
+    this._drawAxisAndLabels();
+
+    const line = d3
+      .line()
+      .defined(([, value]) => value != null)
+      .x(([key, value]) => {
+        // parameter and its value, e.g., kernel_size:11, layers:13, etc
+        return this._xScaleMap.get(key)(value);
+      })
+      .y(([key]) => this._yScale(key));
+
+    const cross = (d) =>
+      d3.cross(this._AxisNames, [d], (key, d) => [key, +d[key]]);
+
+    //
+    // Draw lines
+    //
+    d3.select(this._svg)
+      .append("g")
+      .attr("fill", "none")
+      .attr("stroke-width", LINE_WIDTH)
+      .attr("stroke-opacity", STATIC_LINE_OPACITY)
+      .selectAll("path")
+      .data(this._data)
+      .join("path")
+      .attr("stroke", (d) => this._colorScale(d[this._selectedAxis])) // assign from a colormap
+      .attr("d", (d) => {
+        // d is a row of the data, e.g., {kernel_size: 11, layers: 13, ...}
+        // cross returns an array of [key, value] pairs ['date', 1677603855000], ['mean_training_accuracy', 0.9], ['channels', 32], ['kernel_size', 3], ['layers', 13], ...
+        const a = cross(d);
+        const l = line(a);
+        return l;
+      })
+      .attr("id", (d) => `id-line-${d.index}`);
+
+    //
+    // Append circles to the line
+    //
+    d3.select(this._svg)
+      .append("g")
+      .selectAll("g")
+      .data(this._data)
+      .enter()
+      .append("g")
+      .attr("id", (d) => {
+        // d is a row of the data, e.g., {kernel_size: 11, layers: 13, ...}
+        return `id-circles-${d.index}`;
+      })
+      .selectAll("circle")
+      .data((d) => cross(d))
+      .enter()
+      .append("circle")
+      .attr("r", DOT_RADIUS)
+      .attr("cx", ([key, value]) => {
+        // parameter and its value, e.g., kernel_size:11, layers:13, etc
+        return this._xScaleMap.get(key)(value);
+      })
+      .attr("cy", ([key]) => this._yScale(key))
+      // .style("fill", (d) => this._colorScale(d[this._selectedAxis])) // TODO: assign from _colorScale colormap
+      .style("fill", "Gray")
+      .style("opacity", STATIC_DOT_OPACITY);
+
+    return this;
+  }
+
+  _createPathsAndDots() {
+    const line = d3
+      .line()
+      .defined(([, value]) => value != null)
+      .x(([key, value]) => {
+        // parameter and its value, e.g., kernel_size: 11, layers: 13, etc
+        return this._xScaleMap.get(key)(value);
+      })
+      .y(([key]) => this._yScale(key));
+
+    const cross = (d) => {
+      // given d is a row of the data, e.g., {date: 1677603855000, kernel_size: 11, layers: 13, ...},
+      // cross returns an array of [key, value] pairs ['date', 1677603855000], ['mean_training_accuracy', 0.9], ['channels', 32], ['kernel_size', 3], ['layers', 13], ...
+      return d3.cross(this._AxisNames, [d], (key, d) => [key, +d[key]]);
+    };
+
+    //
+    // Draw lines
+    //
+    d3.select(this._svg)
+      .append("g")
+      .attr("fill", "none")
+      .attr("stroke-width", LINE_WIDTH)
+      .attr("stroke-opacity", 0)
+      .selectAll("path")
+      .data(this._data)
+      .join("path")
+      .attr("stroke", (d) => HIGHLIGHT_COLOR)
+      .attr("d", (d) => {
+        // d is a row of the data, e.g., {kernel_size: 11, layers: 13, ...}
+        // cross returns an array of [key, value] pairs ['date', 1677603855000], ['mean_training_accuracy', 0.9], ['channels', 32], ['kernel_size', 3], ['layers', 13], ...
+        const a = cross(d);
+        const l = line(a);
+        return l;
+      })
+      .attr("id", (d) => `id-line-${d.index}`);
+
+    //
+    // Append circles to the line
+    //
+    d3.select(this._svg)
+      .append("g")
+      .selectAll("g")
+      .data(this._data)
+      .enter()
+      .append("g")
+      .attr("id", (d) => {
+        // d is a row of the data, e.g., {kernel_size: 11, layers: 13, ...}
+        return `id-circles-${d.index}`;
+      })
+      .selectAll("circle")
+      .data((d) => cross(d))
+      .enter()
+      .append("circle")
+      .attr("r", DOT_RADIUS)
+      .attr("cx", ([key, value]) => {
+        // parameter and its value, e.g., key/value: kernel_size/11, layers/13, etc
+        return this._xScaleMap.get(key)(value);
+      })
+      .attr("cy", ([key]) => this._yScale(key))
+      .style("fill", HIGHLIGHT_COLOR)
+      .style("opacity", 0);
+  }
+
+  /**
+   * Create axes and add labels
+   */
+  _drawAxisAndLabels() {
+    // Clear existing axis and labels
+    d3.select(this._svg).selectAll("svg > *").remove();
+
+    this._xScaleMap = xScaleMap(
+      this._data,
+      this._AxisNames,
+      this._width,
+      this._margin,
+    );
+    this._yScale = yScale(this._AxisNames, this._height, this._margin);
+    this._colorScale = d3.scaleSequential(
+      this._xScaleMap.get(this._selectedAxis).domain().reverse(),
+      STATIC_LINE_COLORMAP,
+    );
+    // prettier-ignore
+    console.log("ParallelCoordinate: _drawAxisAndLabels: _xScaleMap = ", this._xScaleMap);
+
+    //
+    // Draw axis and labels
+    //
+    const that = this;
+    d3.select(this._svg)
+      .append("g")
+      .selectAll("g")
+      .data(this._AxisNames)
+      .join("g")
+      .attr("transform", (d) => `translate(0,${this._yScale(d)})`)
+      .each(function (d) {
+        // draw axis for d = date, layers, kernel_size, ... etc.
+        // change color of the selected axis for d = keyz
+        if (d === that._selectedAxis) {
+          d3.select(this)
+            .attr("color", AXIS_HIGHLIGHT_COLOR)
+            .call(d3.axisBottom(that._xScaleMap.get(d)));
+        } else {
+          d3.select(this).call(d3.axisBottom(that._xScaleMap.get(d)));
+        }
+      })
+      // Label axis
+      .call((g) =>
+        g
+          .append("text")
+          .attr("x", this._margin.left)
+          .attr("y", -6)
+          .attr("text-anchor", "start")
+          .attr("fill", (d) =>
+            // change color of the selected axis label for d = keyz
+            d === this._selectedAxis ? AXIS_HIGHLIGHT_COLOR : "currentColor",
+          )
+          .text((d) => d),
+      );
+
+    return this;
+  }
+
+  /**
+   *  Returns an array of objects representing annotation type and persistence
+   */
+  _createGraphAnnotations() {
+    this._annotationElements = [];
+
+    this._pcAnnotations.forEach((d, idx) => {
+      // Try to get the graphAnnotation object if undefined set array elem to false
+      const graphAnnotation: GraphAnnotation = d?.graphAnnotation;
+      if (!graphAnnotation) {
+        this._annotationElements.push(null);
+        return;
+      }
+
+      // If add to svg and set opacity to 0 (to hide it)
+      graphAnnotation.id(`id-annotation-${idx}`).addTo(this._svg);
+
+      // if (this._annoTop) {
+      //   graphAnnotation.y(this._margin.top + graphAnnotation._annoHeight / 2);
+      //   graphAnnotation.updatePos(graphAnnotation._x, graphAnnotation._y);
+      // }
+
+      // const annotationElement = d3
+      //   .select(`#id-annotation-${idx}`)
+      //   .style("opacity", 0);
+
+      graphAnnotation.hide();
+
+      // // Show the event line (dotted line) if enabled
+      // if (this._showEventLines) {
+      //   const container = d3.select(`#id-annotation-${idx}`);
+      //   this._addEventLine(container, graphAnnotation._tx, graphAnnotation._ty);
+      // }
+
+      // d3 selection of annotation element and boolean indication whether to persist annotation
+      this._annotationElements.push({
+        // element: annotationElement,
+        fadeout: d.fadeout || false,
+      });
+    });
+
+    // prettier-ignore
+    console.log("TimeSeries: _createGraphAnnotations: _annotationElements: ", this._annotationElements);
   }
 
   /**
    *
    */
-  _animateColorChange(element) {
-    //
+  _animateAnnotation() {
+    let delay = 0;
+    let duration = 1000;
+
+    const annotation = this._pcAnnotations[this._tmpCounter];
+    if (!annotation) {
+      return;
+    }
+    annotation.graphAnnotation.show();
+
+    annotation.graphAnnotation.updatePosAnimate(600, 20);
+
+    // currAnnotationElement.element
+    //   .transition()
+    //   .ease(d3.easeQuadIn)
+    //   .duration(2000)
+    //   .attr("transform", `translate(${0},${0})`);
+
+    // let randomPointDate = this._data[this._tmpCounter].date;
+    // let obj = this._data.find((d) => d.date === randomPointDate);
+    // // prettier-ignore
+    // console.log("ParallelCoordinate: _animateAnnotation: randomPointDate = ", randomPointDate, "obj = ", obj);
+
+    // const testAccScale = this._xScaleMap.get("mean_test_accuracy");
+    // const x = testAccScale(obj["mean_test_accuracy"]);
+    // const y = this._yScale("mean_test_accuracy");
+    // console.log("ParallelCoordinate: _animateAnnotation: x, y = ", x, y);
+
+    // // draw circle at initial location
+    // const circle = d3
+    //   .select(this._svg)
+    //   .append("circle")
+    //   .attr("fill", "red")
+    //   .attr("r", 5)
+    //   .attr("transform", `translate(${x},${y})`);
+
+    // // animate
+    // circle
+    //   .transition()
+    //   .ease(d3.easeQuadIn)
+    //   .duration(2000)
+    //   .attr("transform", `translate(${0},${0})`);
   }
 }

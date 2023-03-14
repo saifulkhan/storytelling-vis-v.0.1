@@ -1,14 +1,27 @@
 import * as d3 from "d3";
 
 //
+// Annotations used in parallel coordinate
+//
+export interface PCAnnotation {
+  graphAnnotation?: GraphAnnotation;
+  origin?: number[]; // x, y coordinate at key axis
+  current?: number[]; // x, y coordinate
+  fadeout?: boolean;
+  data?: number; //store data
+  originAxis?: string; // the selected axis
+  highlightColor?: string; //
+}
+
+//
 // Wrapper containing additional properties for the GraphAnnotation
 //
-export interface IGraphAnnotationW {
-  current?: number;
+export interface LinePlotAnnotation {
   graphAnnotation?: GraphAnnotation;
-  fadeout?: boolean;
+  current?: number;
   previous?: number;
   date?: any;
+  fadeout?: boolean;
   useData2?: boolean;
 }
 
@@ -41,7 +54,6 @@ export class GraphAnnotation {
   _annoWidth: number;
   _annoHeight: number;
 
-  unscaledX;
   unscaledTarget;
 
   constructor(id = "") {
@@ -174,7 +186,7 @@ export class GraphAnnotation {
     return this;
   }
 
-  color(color) {
+  titleColor(color) {
     this._color = color;
     this._textNode.style.fill = this._color;
 
@@ -373,8 +385,8 @@ export class GraphAnnotation {
     this._connector.setAttribute("stroke", this._color);
   }
 
-  addTo(ctx) {
-    d3.select(ctx).append(() => this.node);
+  addTo(svg) {
+    d3.select(svg).append(() => this.node);
     this._formatText();
     this._repositionAnnotation();
 
@@ -404,5 +416,62 @@ export class GraphAnnotation {
     if (!(this._tx == this._x && this._ty == this._y) && this._showConnector) {
       this._addConnector();
     }
+  }
+
+  /*********************************************************************************************************
+   * Animation used in story 6
+   *********************************************************************************************************/
+
+  hide() {
+    d3.select(this.node).attr("opacity", 0);
+  }
+
+  show() {
+    d3.select(this.node).attr("opacity", 1);
+  }
+
+  updatePosAnimate(x, y) {
+    this._x = x;
+    this._y = y;
+
+    this._repositionAnnotationAnimate();
+  }
+
+  _repositionAnnotationAnimate() {
+    const { width: annoWidth, height: annoHeight } =
+      this._textNode.getBoundingClientRect();
+
+    this._annoWidth = annoWidth;
+    this._annoHeight = annoHeight;
+
+    let rectX = this._x - (annoWidth + this._rectPadding) / 2;
+    let textX = this._x - annoWidth / 2;
+
+    if (this._connectorOptions && this._connectorOptions.left) {
+      rectX -= (annoWidth + this._rectPadding) / 2;
+      textX -= annoWidth / 2 + this._rectPadding / 2;
+    } else if (this._connectorOptions && this._connectorOptions.right) {
+      rectX += (annoWidth + this._rectPadding) / 2;
+      textX += annoWidth / 2 + this._rectPadding / 2;
+    }
+
+    d3.select(this._rect)
+      .transition()
+      .ease(d3.easeQuadIn)
+      .duration(1500)
+      .attr(
+        "transform",
+        `translate(${rectX},${this._y - (annoHeight + this._rectPadding) / 2})`,
+      );
+
+    d3.select(this._textNode)
+      .transition()
+      .ease(d3.easeQuadIn)
+      .duration(1500)
+      .attr("transform", `translate(${textX},${this._y - annoHeight / 2})`);
+
+    // Align text correctly
+    this._correctTextAlignment(this._title);
+    this._correctTextAlignment(this._label);
   }
 }

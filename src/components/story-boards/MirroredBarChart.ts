@@ -5,7 +5,7 @@
 
 import * as d3 from "d3";
 import { AnimationType, ITimeSeriesData1 } from "src/models/ITimeSeriesData";
-import { GraphAnnotation, IGraphAnnotationW } from "./GraphAnnotation_new";
+import { LinePlotAnnotation } from "./GraphAnnotation_new";
 
 const WIDTH = 1200,
   HEIGHT = 400,
@@ -61,7 +61,7 @@ export class MirroredBarChart {
   _yScale1: any;
   _yScale2: any;
 
-  _graphAnnotations: IGraphAnnotationW[];
+  _lpAnnotations: LinePlotAnnotation[];
   _annoTop = false;
   _animationCounter = 0;
 
@@ -167,12 +167,12 @@ export class MirroredBarChart {
   /**
    * x
    */
-  graphAnnotations(graphAnnotationWs: IGraphAnnotationW[]) {
+  lpAnnotations(lpAnnotations: LinePlotAnnotation[]) {
     this._drawAxisAndLabels();
 
-    this._graphAnnotations = graphAnnotationWs;
+    this._lpAnnotations = lpAnnotations;
     // prettier-ignore
-    console.log("MirroredBarChart: graphAnnotations: after graphAnnotationWs: ", graphAnnotationWs);
+    console.log("MirroredBarChart: graphAnnotations: after lpAnnotations = ", this._lpAnnotations);
 
     return this;
   }
@@ -231,7 +231,7 @@ export class MirroredBarChart {
       this._animationCounter = -1;
     } else if (
       animationType === "play" &&
-      this._animationCounter + 1 < this._graphAnnotations.length
+      this._animationCounter + 1 < this._lpAnnotations.length
     ) {
       this._animateForward();
       this._animationCounter += 1;
@@ -247,7 +247,7 @@ export class MirroredBarChart {
 
   // TODO: We don't want to create excessive number of bars
   _createBars() {
-    this._barElements = this._graphAnnotations.map((d: IGraphAnnotationW) => {
+    this._barElements = this._lpAnnotations.map((d: LinePlotAnnotation) => {
       console.log("MirroredBarChart: _createBars: annotation, d = ", d);
       const point = this._data[d.current];
 
@@ -326,7 +326,7 @@ export class MirroredBarChart {
    */
   _animateForward() {
     // Number of path segments
-    const pathNum = this._graphAnnotations.length;
+    const pathNum = this._lpAnnotations.length;
     // Use modulus to repeat animation sequence once counter > number of animation segments
     const currIdx = this._animationCounter % pathNum;
     const prevIdx = (this._animationCounter - 1) % pathNum;

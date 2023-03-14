@@ -1,9 +1,9 @@
 import { readCSVFile } from "./utils-data";
-import { GraphAnnotation, IGraphAnnotationW } from "./GraphAnnotation_new";
-import { TimeSeries } from "./TimeSeries_new";
 import { findDateIdx } from "./utils-feature-detection";
 import { AnimationType } from "src/models/ITimeSeriesData";
 import { MirroredBarChart } from "./MirroredBarChart";
+import { TimeSeries } from "./TimeSeries_new";
+import { GraphAnnotation, LinePlotAnnotation } from "./GraphAnnotation_new";
 
 /*********************************************************************************************************
  * - Prepare data
@@ -86,7 +86,7 @@ export function getParameters() {
 
 let selectedData = []; // selected parameter data
 let selectedParameter;
-let graphAnnotationWs: IGraphAnnotationW[];
+let lpAnnotations: LinePlotAnnotation[];
 
 export function filterData(_parameter: string) {
   selectedParameter = _parameter;
@@ -96,7 +96,7 @@ export function filterData(_parameter: string) {
   // prettier-ignore
   console.log("utils-story-5: filterData: selectedData = ", selectedData);
 
-  calculateAnnotationWs();
+  calculateAnnotations();
 }
 
 /*********************************************************************************************************
@@ -108,8 +108,8 @@ const COLOR_LABEL_BEST = "#2196F3",
   COLOR_TITLE = "#696969",
   COLOR_BACKGROUND = "#F5F5F5";
 
-function calculateAnnotationWs() {
-  graphAnnotationWs = [];
+function calculateAnnotations() {
+  lpAnnotations = [];
 
   // Find index of highest attr (e.g., highest testing accuracy)
   const indexOfMax = (arr, attr) => {
@@ -118,7 +118,7 @@ function calculateAnnotationWs() {
   };
   const maxIdx = indexOfMax(selectedData, "mean_test_accuracy");
 
-  console.log("utils-story-5: calculateAnnotationWs: maxIdx = ", maxIdx);
+  console.log("utils-story-5: calculateAnnotations: maxIdx = ", maxIdx);
 
   selectedData.forEach((d, idx) => {
     // feature 3:
@@ -129,7 +129,7 @@ function calculateAnnotationWs() {
     if (idx === maxIdx) {
       // prettier-ignore
       const msg =  `On ${d?.date?.toLocaleDateString()}, a newly-trained model achieved the best results so far with testing accuracy ${d?.mean_test_accuracy?.toFixed(2)}% and training accuracy ${d?.mean_training_accuracy?.toFixed(2)}%.`
-      graphAnnotationWs.push(
+      lpAnnotations.push(
         writeText(msg, d.date, selectedData, COLOR_LABEL_BEST, true),
       );
     }
@@ -143,7 +143,7 @@ function calculateAnnotationWs() {
     else if (idx === 0) {
       // prettier-ignore
       const msg =  `On ${d?.date?.toLocaleDateString()}, a newly-trained model resulted in testing accuracy of ${d?.mean_test_accuracy?.toFixed(2)}% and training accuracy of ${d?.mean_training_accuracy?.toFixed(2)}%, denoted as ${d?.mean_test_accuracy?.toFixed(2)}% [${d?.mean_training_accuracy?.toFixed(2)}%].`
-      graphAnnotationWs.push(
+      lpAnnotations.push(
         writeText(msg, d.date, selectedData, COLOR_LABEL_DEFAULT, true),
       );
     } else {
@@ -157,7 +157,7 @@ function calculateAnnotationWs() {
       //
       // prettier-ignore
       const msg = `Accuracy: ${d?.mean_test_accuracy?.toFixed(2)}% [${d?.mean_training_accuracy?.toFixed(2)}%]`;
-      graphAnnotationWs.push(
+      lpAnnotations.push(
         writeText(msg, d.date, selectedData, COLOR_LABEL_DEFAULT, false),
       );
 
@@ -170,17 +170,17 @@ function calculateAnnotationWs() {
   });
 
   // Sort annotations
-  graphAnnotationWs.sort((a1, a2) => a1.current - a2.current);
-  graphAnnotationWs.push({ current: selectedData.length - 1 });
+  lpAnnotations.sort((a1, a2) => a1.current - a2.current);
+  lpAnnotations.push({ current: selectedData.length - 1 });
   // Set annotations starts to the previous annotation's end/current
-  graphAnnotationWs
+  lpAnnotations
     .slice(1)
     .forEach(
-      (d: IGraphAnnotationW, i) => (d.previous = graphAnnotationWs[i].current),
+      (d: LinePlotAnnotation, i) => (d.previous = lpAnnotations[i].current),
     );
 
   // prettier-ignore
-  console.log("utils-story-5: calculateAnnotationWs: graphAnnotationWs = ", graphAnnotationWs);
+  console.log("utils-story-5: calculateAnnotations: lpAnnotations = ", lpAnnotations);
 }
 
 function writeText(
@@ -189,7 +189,7 @@ function writeText(
   data,
   labelColor = COLOR_LABEL_DEFAULT,
   showRedCircle = false,
-): IGraphAnnotationW {
+): LinePlotAnnotation {
   // Find idx of event in data and set location of the annotation in opposite half of graph
   const idx = findDateIdx(date, data);
 
@@ -197,7 +197,7 @@ function writeText(
     .title(date.toLocaleDateString())
     .label(text)
     .backgroundColor(COLOR_BACKGROUND)
-    .color(COLOR_TITLE)
+    .titleColor(COLOR_TITLE)
     .labelColor(labelColor)
     .wrap(500);
 
@@ -212,7 +212,7 @@ function writeText(
     current: idx,
     graphAnnotation: graphAnnotation,
     fadeout: true,
-  } as IGraphAnnotationW;
+  } as LinePlotAnnotation;
 }
 
 /*********************************************************************************************************
@@ -245,7 +245,7 @@ export function createPlot(selector1: string, selector2: string) {
     .showPoints1()
     .pointsColor1(COLOR_POINT)
     // .plot(); // static plot
-    .graphAnnotations(graphAnnotationWs)
+    .lpAnnotations(lpAnnotations)
     .annoTop()
     .showEventLines();
 
@@ -258,7 +258,7 @@ export function createPlot(selector1: string, selector2: string) {
     .yLabel1(`accuracy`)
     .yLabel2(`${selectedParameter}`)
     .ticks(10)
-    .graphAnnotations(graphAnnotationWs);
+    .lpAnnotations(lpAnnotations);
 
   // .plot(); // static plot
 }
