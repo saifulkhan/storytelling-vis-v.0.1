@@ -520,7 +520,7 @@ export function createTimeSeries(selector: string) {
   console.log("createTimeSeries: annotations = ", annotations);
 
   ts = new TimeSeries()
-    .selector(selector, 400, 1200, { top: 50, right: 50, bottom: 50, left: 50 })
+    .selector(selector, 400, 1200, { top: 10, right: 50, bottom: 50, left: 50 })
     .data1(selectedRegionData)
     .color1(LINE1_COLOR)
     .strokeWidth1(LINE1_STROKE_WIDTH)

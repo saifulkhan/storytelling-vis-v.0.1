@@ -72,6 +72,10 @@ const Story5 = () => {
       await loadData();
       setParameters(getParameters());
       setLoading(false);
+
+      // debug
+      // filterData("channels");
+      // createPlot("#chartId", "#chartId1");
     };
 
     try {

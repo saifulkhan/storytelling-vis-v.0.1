@@ -11,13 +11,14 @@ const WIDTH = 1200,
   HEIGHT = 250,
   MARGIN = { top: 50, right: 50, bottom: 50, left: 50 };
 const YAXIS_LABEL_OFFSET = 10;
+const MAGIC_NO = 10;
 
 const xScale = (data: ITimeSeriesData[], w = WIDTH, m = MARGIN) => {
   const xScale = d3
     .scaleTime()
     .domain(d3.extent(data, (d: ITimeSeriesData) => d.date))
     .nice()
-    .range([m.left, w - m.left]);
+    .range([m.left, w - m.right]);
   return xScale;
 };
 
@@ -26,7 +27,7 @@ const yScale = (data: ITimeSeriesData[], h = HEIGHT, m = MARGIN) => {
     .scaleLinear()
     .domain([0, d3.max(data, (d: ITimeSeriesData) => d.y)])
     .nice()
-    .range([h - m.top, m.bottom]);
+    .range([h - m.bottom, m.top]);
   return yScale;
 };
 
@@ -38,7 +39,8 @@ export class TimeSeries {
 
   _width: number;
   _height: number;
-  _margin: any;
+  _margin: { top: number; right: number; bottom: number; left: number };
+
   _ticks = false;
 
   _title = "";
@@ -92,6 +94,7 @@ export class TimeSeries {
       .append("svg")
       .attr("width", this._width)
       .attr("height", this._height)
+      // .style("background-color", "pink") // debug
       .node();
 
     return this;
@@ -214,7 +217,7 @@ export class TimeSeries {
 
       if (graphAnnotation) {
         graphAnnotation.x(this._xScale(graphAnnotation.unscaledTarget[0]));
-        graphAnnotation.y(this._height / 2);
+        graphAnnotation.y(this._height / 2 + this._margin.top);
 
         graphAnnotation.target(
           this._xScale(graphAnnotation.unscaledTarget[0]),
@@ -703,13 +706,12 @@ export class TimeSeries {
       .append("g")
       .attr("id", "id-axes-labels");
 
-    const axisBottom = d3.axisBottom(this._xScale);
-    this._ticks && axisBottom.ticks(this._ticks);
-
+    const xAxis = d3.axisBottom(this._xScale);
+    this._ticks && xAxis.ticks(this._ticks);
     selection
       .append("g")
-      .attr("transform", `translate(0, ${this._height - this._margin.left})`)
-      .call(axisBottom);
+      .attr("transform", `translate(0, ${this._height - this._margin.bottom})`)
+      .call(xAxis);
 
     selection
       .append("text")
@@ -722,7 +724,7 @@ export class TimeSeries {
     const axisLeft = d3.axisLeft(this._yScale1);
     selection
       .append("g")
-      .attr("transform", `translate(${this._margin.top}, 0)`)
+      .attr("transform", `translate(${this._margin.left}, 0)`)
       .call(axisLeft);
 
     selection
@@ -732,7 +734,7 @@ export class TimeSeries {
       .attr("y", YAXIS_LABEL_OFFSET)
       .attr("class", "y label")
       .attr("text-anchor", "middle")
-      .text(this._yLabel1);
+      .text(this._yLabel1?.toLowerCase());
 
     if (this._data2 && !this._isSameScale) {
       const axisRight = d3.axisRight(this._yScale2);
@@ -756,10 +758,11 @@ export class TimeSeries {
       .append("text")
       .style("font-size", "px")
       .attr("x", this._width / 2)
-      .attr("y", this._margin.left / 2)
+      .attr("y", this._margin.top + MAGIC_NO)
       .attr("text-anchor", "middle")
       .text(this._title)
-      .attr("font-weight", "bold");
+      .attr("font-weight", "bold")
+      .style("fill", "#696969");
 
     if (this._showPoints1) {
       selection

@@ -235,7 +235,12 @@ export function createPlot(selector1: string, selector2: string) {
   console.log("utils-story-5: createPlot: selector1 = ", selector1, ", selector2 = ", selector2);
 
   ts = new TimeSeries()
-    .selector(selector1)
+    .selector(selector1, 300, 1000, {
+      top: 10,
+      right: 20,
+      bottom: 20,
+      left: 50,
+    })
     .data1(selectedData)
     .color1(LINE1_COLOR)
     .strokeWidth1(LINE1_STROKE_WIDTH)
@@ -244,13 +249,18 @@ export function createPlot(selector1: string, selector2: string) {
     .ticks(10)
     .showPoints1()
     .pointsColor1(POINT_COLOR)
-    // .plot(); // static plot
+    // .plot(); // static plot // debug
     .annotations(lpAnnotations)
     .annoTop()
     .showEventLines();
 
   bc = new MirroredBarChart()
-    .selector(selector2)
+    .selector(selector2, 300, 1000, {
+      top: 10,
+      right: 20,
+      bottom: 20,
+      left: 50,
+    })
     .data1(selectedData)
     .color1(ACCURACY_BAR_COLOR)
     .color2(PARAMETER_BAR_COLOR)
@@ -258,9 +268,8 @@ export function createPlot(selector1: string, selector2: string) {
     .yLabel1(`accuracy`)
     .yLabel2(`${selectedParameter}`)
     .ticks(10)
-    .lpAnnotations(lpAnnotations);
-
-  // .plot(); // static plot
+    // .plot(); // static plot // debug
+    .annotations(lpAnnotations);
 }
 
 export function animatePlot(animationType: AnimationType) {

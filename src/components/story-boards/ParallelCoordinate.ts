@@ -7,8 +7,8 @@ import {
   PCAnnotation,
 } from "./GraphAnnotation_new";
 
-const WIDTH = 1200,
-  HEIGHT = 800,
+const WIDTH = 1000,
+  HEIGHT = 600,
   MARGIN = { top: 50, right: 50, bottom: 30, left: 50 };
 
 const STATIC_LINE_COLORMAP = d3.interpolateBrBG,
@@ -470,7 +470,8 @@ export class ParallelCoordinate {
       .ease(d3.easeLinear)
       .delay(DELAY)
       .duration(DURATION1)
-      .style("stroke-opacity", 0);
+      .style("stroke-opacity", 0.5)
+      .style("stroke", "#d3d3d3");
   }
 
   private _hideDotWithId(id: number) {

@@ -19,7 +19,7 @@ const xScale = (data: ITimeSeriesData1[], w = WIDTH, m = MARGIN) => {
     .scaleTime()
     .domain(d3.extent(data, (d: ITimeSeriesData1) => d.date))
     .nice()
-    .range([m.top, w - m.top]);
+    .range([m.left, w - m.right]);
   return xScale;
 };
 
@@ -27,8 +27,9 @@ const yScale1 = (data: ITimeSeriesData1[], h = HEIGHT, m = MARGIN) => {
   const yScale = d3
     .scaleLinear()
     .domain([0, d3.max(data, (d: ITimeSeriesData1) => d.mean_test_accuracy)])
+    // .domain(d3.extent(data, (d: ITimeSeriesData1) => d.mean_test_accuracy))
     .nice()
-    .range([h / 2, m.top]);
+    .range([(h - m.top - m.bottom) / 2, m.top]);
   return yScale;
 };
 
@@ -36,8 +37,9 @@ const yScale2 = (data: ITimeSeriesData1[], h = HEIGHT, m = MARGIN) => {
   const yScale = d3
     .scaleLinear()
     .domain([0, d3.max(data, (d: ITimeSeriesData1) => d.y)])
+    //.domain(d3.extent(data, (d: ITimeSeriesData1) => d.y))
     .nice()
-    .range([h / 2, h - m.top]);
+    .range([(h - m.bottom - m.top) / 2, h - m.bottom]);
   return yScale;
 };
 
@@ -54,7 +56,7 @@ export class MirroredBarChart {
   _color2 = "Blue";
   _width: number;
   _height: number;
-  _margin: any;
+  _margin: { top: number; right: number; bottom: number; left: number };
   _ticks = false;
 
   _xScale: any;
@@ -91,6 +93,7 @@ export class MirroredBarChart {
       .append("svg")
       .attr("width", this._width)
       .attr("height", this._height)
+      // .style("background-color", "pink") // debug
       .node();
 
     return this;
@@ -167,7 +170,7 @@ export class MirroredBarChart {
   /**
    * x
    */
-  lpAnnotations(lpAnnotations: LinePlotAnnotation[]) {
+  annotations(lpAnnotations: LinePlotAnnotation[]) {
     this._drawAxisAndLabels();
 
     this._lpAnnotations = lpAnnotations;
@@ -206,7 +209,12 @@ export class MirroredBarChart {
       .data(this._data)
       .join("rect")
       .attr("x", (d) => this._xScale(d.date))
-      .attr("y", (d) => this._height / 2 + 1.5 * BAR_XAXIS_GAP)
+      .attr(
+        "y",
+        (d) =>
+          (this._height - this._margin.top - this._margin.bottom) / 2 +
+          BAR_XAXIS_GAP,
+      )
       .attr("width", BAR_WIDTH)
       .attr("height", (d) => -this._yScale2(0) + this._yScale2(d.y))
       .attr("fill", this._color2);
@@ -271,7 +279,12 @@ export class MirroredBarChart {
       barElement
         .append("rect")
         .attr("x", (d) => this._xScale(point.date))
-        .attr("y", (d) => this._height / 2 + 1.5 * BAR_XAXIS_GAP)
+        .attr(
+          "y",
+          (d) =>
+            (this._height - this._margin.top - this._margin.bottom) / 2 +
+            BAR_XAXIS_GAP,
+        )
         .attr("width", BAR_WIDTH)
         .attr("height", (d) => -this._yScale2(0) + this._yScale2(point.y))
         .attr("fill", this._color2);
@@ -371,10 +384,14 @@ export class MirroredBarChart {
 
     const axisX = d3.axisBottom(this._xScale);
     this._ticks && axisX.ticks(this._ticks);
-
     selection
       .append("g")
-      .attr("transform", `translate(0, ${this._height / 2})`)
+      .attr(
+        "transform",
+        `translate(0, ${
+          (this._height - this._margin.top - this._margin.bottom) / 2
+        })`,
+      )
       .call(axisX);
 
     selection
@@ -388,7 +405,7 @@ export class MirroredBarChart {
     const yAxis1 = d3.axisLeft(this._yScale1);
     selection
       .append("g")
-      .attr("transform", `translate(${this._margin.top}, 0)`)
+      .attr("transform", `translate(${this._margin.left}, 0)`)
       .call(yAxis1);
 
     selection
@@ -403,7 +420,7 @@ export class MirroredBarChart {
     const yAxis2 = d3.axisLeft(this._yScale2);
     selection
       .append("g")
-      .attr("transform", `translate(${this._margin.top}, 0)`)
+      .attr("transform", `translate(${this._margin.left}, 0)`)
       .call(yAxis2);
 
     selection
