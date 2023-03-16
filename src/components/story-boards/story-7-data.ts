@@ -64,10 +64,10 @@ export function getParameters() {
  *********************************************************************************************************/
 
 let selectedParameter;
-let min1 = 0,
-  max1 = 0,
-  min2 = 0,
-  max2 = 0;
+let min1 = +Infinity,
+  max1 = -Infinity,
+  min2 = +Infinity,
+  max2 = -Infinity;
 
 let filteredData: LearningCurveData[] = [];
 
@@ -108,6 +108,16 @@ export function filterData(_parameter: string) {
 
   // prettier-ignore
   console.log("story-7-data: filterData: filteredData = ", filteredData);
+  // prettier-ignore
+  console.log("story-7-data: filterData: min1 = ", min1, ", max1 = ", max1, ", min2 = ", min2, ", max2 = ", max2);
+}
+
+export function getTestingAccuracy() {
+  return [Math.round(min1 * 100), Math.round(max1 * 100)];
+}
+
+export function getTrainingAccuracy() {
+  return [Math.round(min2 * 100), Math.round(max2 * 100)];
 }
 
 /*********************************************************************************************************

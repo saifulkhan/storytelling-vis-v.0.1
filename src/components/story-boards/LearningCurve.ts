@@ -9,7 +9,7 @@ export type LearningCurveData = {
   x: number; // parameter
 };
 
-const WIDTH = 960;
+const WIDTH = 800;
 let HEIGHT = 0;
 const MARGIN1 = { top: 20, right: 20, bottom: 0, left: 40, height: 200 },
   MARGIN2 = { top: 0, right: 20, bottom: 30, left: 40, height: 200 },

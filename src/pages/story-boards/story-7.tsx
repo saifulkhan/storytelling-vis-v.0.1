@@ -17,6 +17,8 @@ import {
   OutlinedInput,
   Select,
   Fade,
+  Grid,
+  Typography,
 } from "@mui/material";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
@@ -30,12 +32,20 @@ import {
   filterData,
   createPlot,
   animatePlot,
+  getTestingAccuracy,
+  getTrainingAccuracy,
 } from "src/components/story-boards/story-7-data";
 
 const Story7 = () => {
   const [loading, setLoading] = useState(true);
   const [parameters, setParameters] = useState<string[]>([]);
   const [parameter, setParameter] = useState<string>("");
+  const [testingAccuracy, setTestingAccuracy] = useState<[number, number]>([
+    0, 0,
+  ]);
+  const [trainingAccuracy, setTrainingAccuracy] = useState<[number, number]>([
+    0, 0,
+  ]);
 
   const handleParameterSelect = (e) => {
     const newParameter = e.target.value;
@@ -45,6 +55,11 @@ const Story7 = () => {
 
     if (newParameter) {
       filterData(newParameter);
+      setTestingAccuracy((d) => getTestingAccuracy());
+      setTrainingAccuracy((d) => getTrainingAccuracy());
+
+      // prettier-ignore
+      // console.log(`Story7: handleParameterSelect: min: ${min}, max: ${max} | ${minTestingAccuracy()}, ${maxTestingAccuracy()}`);
       createPlot("#chartId");
     }
   };
@@ -193,7 +208,80 @@ const Story7 = () => {
                       </FormControl>
                     </FormGroup>
 
-                    <div id="chartId" />
+                    <Grid container spacing={0}>
+                      <Grid xs={1}>
+                        <Grid xs={12} rowSpacing={1}>
+                          <Card sx={{ minWidth: 180 }}>
+                            <CardContent>
+                              <Typography
+                                sx={{ fontSize: 12 }}
+                                color="text.secondary"
+                                gutterBottom
+                              >
+                                Testing Accuracy
+                              </Typography>
+                              <Typography
+                                variant="h5"
+                                component="div"
+                                color="#33eb91"
+                              >
+                                Max: {testingAccuracy[1]}%
+                              </Typography>
+                              <Typography
+                                variant="h6"
+                                component="div"
+                                color="#f73378"
+                              >
+                                Min: {testingAccuracy[0]}%
+                              </Typography>
+                              {/* <Typography variant="body2">
+                                Hyperparameter: {parameter}
+                              </Typography> */}
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                        <Grid xs={12} rowSpacing={1}>
+                          <Card sx={{ minWidth: 180 }}>
+                            <CardContent>
+                              <Typography
+                                sx={{ fontSize: 12 }}
+                                color="text.secondary"
+                                gutterBottom
+                              >
+                                Training Accuracy
+                              </Typography>
+                              <Typography
+                                variant="h5"
+                                component="div"
+                                color="#33eb91"
+                              >
+                                Max: {trainingAccuracy[1]}%
+                              </Typography>
+                              <Typography
+                                variant="h6"
+                                component="div"
+                                color="#f73378"
+                              >
+                                Min: {trainingAccuracy[0]}%
+                              </Typography>
+
+                              {/* <Typography variant="body2">
+                                Hyperparameter: {parameter}
+                              </Typography> */}
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                        {/* <Grid xs={12}>3</Grid> */}
+                      </Grid>
+                      <Grid xs={1}> </Grid>
+                      <Grid xs={10}>
+                        <Card sx={{ minWidth: 275 }}>
+                          <CardContent>
+                            <div id="chartId" />
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    </Grid>
                   </>
                 )}
               </CardContent>
