@@ -4,26 +4,30 @@
  */
 
 import * as d3 from "d3";
-import { ITimeSeriesData } from "src/models/ITimeSeriesData";
 import { GraphAnnotation, IGraphAnnotationWrapper } from "./GraphAnnotation";
+
+export type TimeSeriesData = {
+  date: Date;
+  y: number;
+};
 
 const WIDTH = 1200,
   HEIGHT = 400,
   MARGIN = 50;
 
-const xScale = (data: ITimeSeriesData[], w = WIDTH, m = MARGIN) => {
+const xScale = (data: TimeSeriesData[], w = WIDTH, m = MARGIN) => {
   const xScale = d3
     .scaleTime()
-    .domain(d3.extent(data, (d: ITimeSeriesData) => d.date))
+    .domain(d3.extent(data, (d: TimeSeriesData) => d.date))
     // .nice()
     .range([m, w - m]);
   return xScale;
 };
 
-const yScale = (data: ITimeSeriesData[], h = HEIGHT, m = MARGIN) => {
+const yScale = (data: TimeSeriesData[], h = HEIGHT, m = MARGIN) => {
   const yScale = d3
     .scaleLinear()
-    .domain(d3.extent(data, (d: ITimeSeriesData) => d.y))
+    .domain(d3.extent(data, (d: TimeSeriesData) => d.y))
     // .nice()
     .range([h - m, m]);
   return yScale;
@@ -32,8 +36,8 @@ const yScale = (data: ITimeSeriesData[], h = HEIGHT, m = MARGIN) => {
 export class TimeSeries {
   _selector: string;
   _svg: SVGSVGElement;
-  _data1: ITimeSeriesData[];
-  _data2: ITimeSeriesData[][];
+  _data1: TimeSeriesData[];
+  _data2: TimeSeriesData[][];
 
   _title = "";
   _xLabel = "";
@@ -114,12 +118,12 @@ export class TimeSeries {
     return this;
   }
 
-  data1(data1: ITimeSeriesData[]) {
+  data1(data1: TimeSeriesData[]) {
     this._data1 = data1;
     return this;
   }
 
-  data2(data2: ITimeSeriesData[][]) {
+  data2(data2: TimeSeriesData[][]) {
     this._data2 = data2;
     return this;
   }

@@ -4,8 +4,13 @@
  */
 
 import * as d3 from "d3";
-import { AnimationType, ITimeSeriesData } from "src/models/ITimeSeriesData";
+import { AnimationType } from "src/models/AnimationType";
 import { GraphAnnotation, LinePlotAnnotation } from "./GraphAnnotation_new";
+
+export type TimeSeriesData = {
+  date: Date;
+  y: number;
+};
 
 const WIDTH = 1200,
   HEIGHT = 250,
@@ -13,19 +18,19 @@ const WIDTH = 1200,
 const YAXIS_LABEL_OFFSET = 10;
 const MAGIC_NO = 10;
 
-const xScale = (data: ITimeSeriesData[], w = WIDTH, m = MARGIN) => {
+const xScale = (data: TimeSeriesData[], w = WIDTH, m = MARGIN) => {
   const xScale = d3
     .scaleTime()
-    .domain(d3.extent(data, (d: ITimeSeriesData) => d.date))
+    .domain(d3.extent(data, (d: TimeSeriesData) => d.date)) // TODO: check if this is correct
     .nice()
     .range([m.left, w - m.right]);
   return xScale;
 };
 
-const yScale = (data: ITimeSeriesData[], h = HEIGHT, m = MARGIN) => {
+const yScale = (data: TimeSeriesData[], h = HEIGHT, m = MARGIN) => {
   const yScale = d3
     .scaleLinear()
-    .domain([0, d3.max(data, (d: ITimeSeriesData) => d.y)])
+    .domain([0, d3.max(data, (d: TimeSeriesData) => d.y)]) // TODO: check if this is correct
     .nice()
     .range([h - m.bottom, m.top]);
   return yScale;
@@ -34,8 +39,8 @@ const yScale = (data: ITimeSeriesData[], h = HEIGHT, m = MARGIN) => {
 export class TimeSeries {
   _selector: string;
   _svg: SVGSVGElement;
-  _data1: ITimeSeriesData[];
-  _data2: ITimeSeriesData[][];
+  _data1: TimeSeriesData[];
+  _data2: TimeSeriesData[][];
 
   _width: number;
   _height: number;
@@ -114,12 +119,12 @@ export class TimeSeries {
     return this;
   }
 
-  data1(data1: ITimeSeriesData[]) {
+  data1(data1: TimeSeriesData[]) {
     this._data1 = data1;
     return this;
   }
 
-  data2(data2: ITimeSeriesData[][]) {
+  data2(data2: TimeSeriesData[][]) {
     this._data2 = data2;
     return this;
   }

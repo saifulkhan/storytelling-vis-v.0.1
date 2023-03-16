@@ -1,30 +1,34 @@
 import * as d3 from "d3";
-import { ITimeSeriesData } from "src/models/ITimeSeriesData";
 import { GraphAnnotation, IGraphAnnotationWrapper } from "./GraphAnnotation";
+
+export type TimeSeriesData = {
+  date: Date;
+  y: number;
+};
 
 const WIDTH = 1200,
   HEIGHT = 400,
   MARGIN = 50;
 
-const xScale = (data: ITimeSeriesData[], w = WIDTH, m = MARGIN) => {
+const xScale = (data: TimeSeriesData[], w = WIDTH, m = MARGIN) => {
   const xScale = d3
     .scaleTime()
-    .domain(d3.extent(data, (d: ITimeSeriesData) => d.date))
+    .domain(d3.extent(data, (d: TimeSeriesData) => d.date))
     .nice()
     .range([m, w - m]);
   return xScale;
 };
 
-const yScale = (data: ITimeSeriesData[], h = HEIGHT, m = MARGIN) => {
+const yScale = (data: TimeSeriesData[], h = HEIGHT, m = MARGIN) => {
   const yScale = d3
     .scaleLinear()
-    .domain(d3.extent(data, (d: ITimeSeriesData) => d.y))
+    .domain(d3.extent(data, (d: TimeSeriesData) => d.y))
     .range([h - m, m]);
   return yScale;
 };
 
 export class MultiTimeSeries {
-  _data1: ITimeSeriesData[];
+  _data1: TimeSeriesData[];
   _data2;
   _svg: SVGSVGElement;
   _title = "";
@@ -61,7 +65,7 @@ export class MultiTimeSeries {
   /**
    * 1. Add data
    */
-  data(data1: ITimeSeriesData[], data2 = null, isSameScale = true) {
+  data(data1: TimeSeriesData[], data2 = null, isSameScale = true) {
     this._data1 = data1;
     this._data2 = data2;
     this._isSameScale = isSameScale;

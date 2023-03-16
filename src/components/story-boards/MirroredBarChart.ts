@@ -4,8 +4,15 @@
  */
 
 import * as d3 from "d3";
-import { AnimationType, ITimeSeriesData1 } from "src/models/ITimeSeriesData";
+import { AnimationType } from "src/models/AnimationType";
 import { LinePlotAnnotation } from "./GraphAnnotation_new";
+
+export type MirroredBarChartData = {
+  date: Date;
+  y: number; // parameter
+  mean_test_accuracy?: number;
+  mean_training_accuracy?: number;
+};
 
 const WIDTH = 1200,
   HEIGHT = 400,
@@ -14,30 +21,33 @@ const BAR_WIDTH = 3;
 const BAR_XAXIS_GAP = 2;
 const YAXIS_LABEL_OFFSET = 10;
 
-const xScale = (data: ITimeSeriesData1[], w = WIDTH, m = MARGIN) => {
+const xScale = (data: MirroredBarChartData[], w = WIDTH, m = MARGIN) => {
   const xScale = d3
     .scaleTime()
-    .domain(d3.extent(data, (d: ITimeSeriesData1) => d.date))
+    .domain(d3.extent(data, (d: MirroredBarChartData) => d.date))
     .nice()
     .range([m.left, w - m.right]);
   return xScale;
 };
 
-const yScale1 = (data: ITimeSeriesData1[], h = HEIGHT, m = MARGIN) => {
+const yScale1 = (data: MirroredBarChartData[], h = HEIGHT, m = MARGIN) => {
   const yScale = d3
     .scaleLinear()
-    .domain([0, d3.max(data, (d: ITimeSeriesData1) => d.mean_test_accuracy)])
-    // .domain(d3.extent(data, (d: ITimeSeriesData1) => d.mean_test_accuracy))
+    .domain([
+      0,
+      d3.max(data, (d: MirroredBarChartData) => d.mean_test_accuracy),
+    ])
+    // .domain(d3.extent(data, (d: MirroredBarChartData) => d.mean_test_accuracy))
     .nice()
     .range([(h - m.top - m.bottom) / 2, m.top]);
   return yScale;
 };
 
-const yScale2 = (data: ITimeSeriesData1[], h = HEIGHT, m = MARGIN) => {
+const yScale2 = (data: MirroredBarChartData[], h = HEIGHT, m = MARGIN) => {
   const yScale = d3
     .scaleLinear()
-    .domain([0, d3.max(data, (d: ITimeSeriesData1) => d.y)])
-    //.domain(d3.extent(data, (d: ITimeSeriesData1) => d.y))
+    .domain([0, d3.max(data, (d: MirroredBarChartData) => d.y)])
+    //.domain(d3.extent(data, (d: MirroredBarChartData) => d.y))
     .nice()
     .range([(h - m.bottom - m.top) / 2, h - m.bottom]);
   return yScale;
@@ -46,7 +56,7 @@ const yScale2 = (data: ITimeSeriesData1[], h = HEIGHT, m = MARGIN) => {
 export class MirroredBarChart {
   _selector: string;
   _svg: SVGSVGElement;
-  _data: ITimeSeriesData1[];
+  _data: MirroredBarChartData[];
 
   _title = "";
   _xLabel = "";
@@ -112,7 +122,7 @@ export class MirroredBarChart {
     return this;
   }
 
-  data1(data: ITimeSeriesData1[]) {
+  data1(data: MirroredBarChartData[]) {
     this._data = data;
     return this;
   }
@@ -382,8 +392,8 @@ export class MirroredBarChart {
       .append("g")
       .attr("id", "id-axes-labels");
 
-    const axisX = d3.axisBottom(this._xScale);
-    this._ticks && axisX.ticks(this._ticks);
+    const xAxis = d3.axisBottom(this._xScale);
+    this._ticks && xAxis.ticks(this._ticks);
     selection
       .append("g")
       .attr(
@@ -392,9 +402,8 @@ export class MirroredBarChart {
           (this._height - this._margin.top - this._margin.bottom) / 2
         })`,
       )
-      .call(axisX);
-
-    selection
+      .call(xAxis)
+      // X-axis label
       .append("text")
       .attr("class", "x-label")
       .attr("text-anchor", "middle")
@@ -402,13 +411,12 @@ export class MirroredBarChart {
       .attr("y", this._height - 5)
       .text(this._xLabel);
 
-    const yAxis1 = d3.axisLeft(this._yScale1);
+    const yAxisTop = d3.axisLeft(this._yScale1);
     selection
       .append("g")
       .attr("transform", `translate(${this._margin.left}, 0)`)
-      .call(yAxis1);
-
-    selection
+      .call(yAxisTop)
+      // Y-axis label
       .append("text")
       .attr("transform", "rotate(-90)")
       .attr("x", -this._height / 3)
@@ -417,13 +425,12 @@ export class MirroredBarChart {
       .attr("text-anchor", "middle")
       .text(this._yLabel1);
 
-    const yAxis2 = d3.axisLeft(this._yScale2);
+    const yAxisBottom = d3.axisLeft(this._yScale2);
     selection
       .append("g")
       .attr("transform", `translate(${this._margin.left}, 0)`)
-      .call(yAxis2);
-
-    selection
+      .call(yAxisBottom)
+      // Y-axis label
       .append("text")
       .attr("transform", "rotate(-90)")
       .attr("x", -this._height / 1.5)
