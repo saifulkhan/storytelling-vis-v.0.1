@@ -136,8 +136,8 @@ export class LearningCurve {
         [0, 0],
         [this.width2, this.height2],
       ])
-      .on("end", brushed); // Generate one event at the end. This is useful while debugging
-    // .on("brush end", brushed); // Generate events while brushing. Looks good while using.
+      // .on("end", brushed); // Generate one event at the end. This is useful while debugging
+      .on("brush end", brushed); // Generate events while brushing. Looks good while using.
 
     //
     // Initialize brush
