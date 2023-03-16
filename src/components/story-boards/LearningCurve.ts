@@ -210,8 +210,13 @@ export class LearningCurve {
   data(data: LearningCurveData[]) {
     this._data = data;
 
-    this.x1.domain(d3.extent(this._data, (d) => d.x));
-    this.x2.domain(d3.extent(this._data, (d) => d.x));
+    // Extend the domain by 1% on both sides
+    let [min, max] = d3.extent(this._data, (d) => d.x);
+    min -= (max - min) * 0.01;
+    max += (max - min) * 0.01;
+
+    this.x1.domain([min, max]).nice();
+    this.x2.domain([min, max]).nice();
     this.y2.domain([0, d3.max(this._data, (d) => d3.max(d.y))]).nice();
     this.y1.domain([0, d3.max(this._data, (d) => d3.max(d.y))]); // to be set by brushing event
 
@@ -452,7 +457,11 @@ export class LearningCurve {
         return xScale(parent?.x);
       })
       .attr("cy", (d) => yScale(d))
-      .style("fill", color);
+      .style("fill", color)
+      .style("opacity", function (d) {
+        const parent = d3.select(this.parentNode).datum();
+        return parent?.y.length > 1 ? 0.5 : 1;
+      });
   }
 
   private static drawLine(selection, data, xScale, yScale, color, stroke) {
