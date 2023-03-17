@@ -1,8 +1,3 @@
-/**
- * TimeSeries is a class that creates a time series graph
- * It is used in the following stories: 1, 3 (with scrolling timeline), potentially in 5, 5a
- */
-
 import * as d3 from "d3";
 import { AnimationType } from "src/models/AnimationType";
 import { GraphAnnotation, LinePlotAnnotation } from "./GraphAnnotation_new";
@@ -16,7 +11,9 @@ const WIDTH = 1200,
   HEIGHT = 250,
   MARGIN = { top: 50, right: 50, bottom: 50, left: 50 };
 const YAXIS_LABEL_OFFSET = 10;
-const MAGIC_NO = 10;
+const MAGIC_NO = 10,
+  FONT_SIZE = "12px",
+  TITLE_FONT_SIZE = "13px";
 
 const xScale = (data: TimeSeriesData[], w = WIDTH, m = MARGIN) => {
   const xScale = d3
@@ -716,7 +713,8 @@ export class TimeSeries {
     selection
       .append("g")
       .attr("transform", `translate(0, ${this._height - this._margin.bottom})`)
-      .call(xAxis);
+      .call(xAxis)
+      .style("font-size", FONT_SIZE);
 
     selection
       .append("text")
@@ -726,11 +724,15 @@ export class TimeSeries {
       .attr("y", this._height - 5)
       .text(this._xLabel);
 
-    const axisLeft = d3.axisLeft(this._yScale1);
+    const axisLeft = d3.axisLeft(this._yScale1).tickFormat((d) => {
+      let prefix = d3.formatPrefix(".0", d);
+      return prefix(d);
+    });
     selection
       .append("g")
       .attr("transform", `translate(${this._margin.left}, 0)`)
-      .call(axisLeft);
+      .call(axisLeft)
+      .style("font-size", FONT_SIZE);
 
     selection
       .append("text")
@@ -742,11 +744,15 @@ export class TimeSeries {
       .text(this._yLabel1?.toLowerCase());
 
     if (this._data2 && !this._isSameScale) {
-      const axisRight = d3.axisRight(this._yScale2);
+      const axisRight = d3.axisRight(this._yScale2).tickFormat((d) => {
+        let prefix = d3.formatPrefix(".0", d);
+        return prefix(d);
+      });
       selection
         .append("g")
         .attr("transform", `translate(${this._width - this._margin.right},0)`)
-        .call(axisRight);
+        .call(axisRight)
+        .style("font-size", FONT_SIZE);
 
       selection
         .append("text")
@@ -767,7 +773,8 @@ export class TimeSeries {
       .attr("text-anchor", "middle")
       .text(this._title)
       .attr("font-weight", "bold")
-      .style("fill", "#696969");
+      .style("fill", "#696969")
+      .style("font-size", TITLE_FONT_SIZE);
 
     if (this._showPoints1) {
       selection

@@ -23,6 +23,11 @@ const DELAY = 500,
   DURATION1 = 1000,
   DURATION2 = 1500;
 
+const FONT_SIZE = "12px",
+  TITLE_FONT_SIZE = "13px",
+  ANNOTATION_Y_POS = 20,
+  ANNOTATION_XMID_OFFSET = 140;
+
 const xScaleMap = (data, keys, width, margin) => {
   return new Map(
     Array.from(keys, (key) => {
@@ -211,6 +216,7 @@ export class ParallelCoordinate {
       .data(this._AxisNames)
       .join("g")
       .attr("transform", (d) => `translate(0,${this._yScale(d)})`)
+      .style("font-size", FONT_SIZE)
       .each(function (d) {
         // draw axis for d = date, layers, kernel_size, ... etc.
         // change color of the selected axis for d = keyz
@@ -392,11 +398,10 @@ export class ParallelCoordinate {
         d.origin = [x, y];
 
         if (d.highlightType === HIGHLIGHT_TYPE.BEST) {
-          d.destination = [xMid - 120, 20];
+          d.destination = [xMid - ANNOTATION_XMID_OFFSET, ANNOTATION_Y_POS];
         } else if (d.highlightType === HIGHLIGHT_TYPE.WORST) {
-          d.destination = [xMid + 120, 20];
+          d.destination = [xMid + ANNOTATION_XMID_OFFSET, ANNOTATION_Y_POS];
         }
-        // TODO: fix 120, 20
       }
     });
   }

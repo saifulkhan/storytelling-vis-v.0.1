@@ -1,7 +1,6 @@
 import * as d3 from "d3";
 import { readCSVFile } from "./utils-data";
-import { AnimationType } from "src/models/ITimeSeriesData";
-
+import { AnimationType } from "src/models/AnimationType";
 import { LearningCurve, LearningCurveData } from "./LearningCurve";
 
 /*********************************************************************************************************

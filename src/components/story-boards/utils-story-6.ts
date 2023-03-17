@@ -174,13 +174,13 @@ function calculateAnnotations() {
     // min annotation
     if (min.find((el) => el.index === idx)) {
       // prettier-ignore
-      const msg = `Worst testing accuracy so far: ${d?.mean_test_accuracy?.toFixed(2,)}% [${d?.mean_training_accuracy?.toFixed(2)}%]`;
+      const msg = `Worst testing accuracy so far: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
       pcAnnotations.push(writeText(msg, d, HIGHLIGHT_TYPE.WORST, false));
     }
     // max annotation
     else if (max.find((el) => el.index === idx)) {
       // prettier-ignore
-      const msg = `Best testing accuracy so far: ${d?.mean_test_accuracy?.toFixed(2,)}% [${d?.mean_training_accuracy?.toFixed(2)}%]`;
+      const msg = `Best testing accuracy so far: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
       pcAnnotations.push(writeText(msg, d, HIGHLIGHT_TYPE.BEST, false));
     }
     // no annotation
@@ -222,11 +222,12 @@ function writeText(
     } as PCAnnotation;
   } else {
     const graphAnnotation = new GraphAnnotation()
-      .title(data["date"].toLocaleDateString())
+      .title(data["date"].toLocaleDateString("en-GB"))
       .label(text)
       .backgroundColor(COLOR_BACKGROUND)
       .titleColor(TITLE_COLOR)
       .labelColor(highlightColor)
+      .fontSize("14px")
       .wrap(500);
 
     if (showRedCircle) {

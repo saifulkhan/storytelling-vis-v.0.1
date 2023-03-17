@@ -70,7 +70,6 @@ export async function loadData(): Promise<void> {
       // prettier-ignore
       // console.log("utils-story-5:loadData: parameter:", parameter, "row[parameter]:", row[parameter]);
     });
-    // console.log(row);
   });
 
   console.log("utils-story-5a: loadData: dataByParameters = ", data);
@@ -135,7 +134,7 @@ function calculateAnnotations() {
     // <Stop to allow reading>
     if (idx === maxIdx) {
       // prettier-ignore
-      const msg =  `On ${d?.date?.toLocaleDateString()}, a newly-trained model achieved the best results so far with testing accuracy ${d?.mean_test_accuracy?.toFixed(2)}% and training accuracy ${d?.mean_training_accuracy?.toFixed(2)}%.`
+      const msg =  `On ${d?.date?.toLocaleDateString('en-GB')}, a newly-trained model achieved the best results so far with testing accuracy ${Math.round(d?.mean_test_accuracy * 100)}% and training accuracy ${Math.round(d?.mean_training_accuracy * 100)}%.`
       lpAnnotations.push(
         writeText(msg, d.date, selectedData, HIGHLIGHT_BEST_COLOR, true),
       );
@@ -149,7 +148,7 @@ function calculateAnnotations() {
     // <Stop to allow reading>
     else if (idx === 0) {
       // prettier-ignore
-      const msg =  `On ${d?.date?.toLocaleDateString()}, a newly-trained model resulted in testing accuracy of ${d?.mean_test_accuracy?.toFixed(2)}% and training accuracy of ${d?.mean_training_accuracy?.toFixed(2)}%, denoted as ${d?.mean_test_accuracy?.toFixed(2)}% [${d?.mean_training_accuracy?.toFixed(2)}%].`
+      const msg =  `On ${d?.date?.toLocaleDateString('en-GB')}, a newly-trained model resulted in testing accuracy of ${Math.round(d?.mean_test_accuracy * 100)}% and training accuracy of ${Math.round(d?.mean_training_accuracy * 100)}%, denoted as ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%].`
       lpAnnotations.push(
         writeText(msg, d.date, selectedData, HIGHLIGHT_DEFAULT_COLOR, true),
       );
@@ -163,7 +162,7 @@ function calculateAnnotations() {
       // cyan), where y% is the testing accuracy, and x% is the training accuracy.
       //
       // prettier-ignore
-      const msg = `Accuracy: ${d?.mean_test_accuracy?.toFixed(2)}% [${d?.mean_training_accuracy?.toFixed(2)}%]`;
+      const msg = `Accuracy: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
       lpAnnotations.push(
         writeText(msg, d.date, selectedData, HIGHLIGHT_DEFAULT_COLOR, false),
       );
@@ -201,11 +200,12 @@ function writeText(
   const idx = findDateIdx(date, data);
 
   const graphAnnotation = new GraphAnnotation()
-    .title(date.toLocaleDateString())
+    .title(date.toLocaleDateString("en-GB"))
     .label(text)
     .backgroundColor(BACKGROUND_COLOR)
     .titleColor(TITLE_COLOR)
     .labelColor(labelColor)
+    .fontSize("14px")
     .wrap(500);
 
   if (showRedCircle) {
@@ -235,7 +235,7 @@ export function createPlot(selector1: string, selector2: string) {
   console.log("utils-story-5: createPlot: selector1 = ", selector1, ", selector2 = ", selector2);
 
   ts = new TimeSeries()
-    .selector(selector1, 300, 1000, {
+    .selector(selector1, 200, 800, {
       top: 10,
       right: 20,
       bottom: 20,
@@ -255,7 +255,7 @@ export function createPlot(selector1: string, selector2: string) {
     .showEventLines();
 
   bc = new MirroredBarChart()
-    .selector(selector2, 300, 1000, {
+    .selector(selector2, 250, 800, {
       top: 10,
       right: 20,
       bottom: 20,

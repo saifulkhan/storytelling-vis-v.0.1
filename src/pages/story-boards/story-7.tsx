@@ -1,7 +1,6 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import Box from "@mui/material/Box";
-import Slider from "@mui/material/Slider";
 import {
   Avatar,
   Button,
@@ -18,7 +17,6 @@ import {
   Select,
   Fade,
   Grid,
-  Typography,
 } from "@mui/material";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
@@ -35,6 +33,14 @@ import {
   getTestingAccuracy,
   getTrainingAccuracy,
 } from "src/components/story-boards/story-7-data";
+import DisplayAccuracyCard from "src/components/story-boards/DisplayAccuracyCard";
+
+const styling = {
+  container: {
+    // paddingRight: 2,
+    // paddingBottom: 2,
+  },
+};
 
 const Story7 = () => {
   const [loading, setLoading] = useState(true);
@@ -208,74 +214,24 @@ const Story7 = () => {
                       </FormControl>
                     </FormGroup>
 
-                    <Grid container spacing={0}>
-                      <Grid xs={1}>
-                        <Grid xs={12} rowSpacing={1}>
-                          <Card sx={{ minWidth: 180 }}>
-                            <CardContent>
-                              <Typography
-                                sx={{ fontSize: 12 }}
-                                color="text.secondary"
-                                gutterBottom
-                              >
-                                Testing Accuracy
-                              </Typography>
-                              <Typography
-                                variant="h5"
-                                component="div"
-                                color="#33eb91"
-                              >
-                                Max: {testingAccuracy[1]}%
-                              </Typography>
-                              <Typography
-                                variant="h6"
-                                component="div"
-                                color="#f73378"
-                              >
-                                Min: {testingAccuracy[0]}%
-                              </Typography>
-                              {/* <Typography variant="body2">
-                                Hyperparameter: {parameter}
-                              </Typography> */}
-                            </CardContent>
-                          </Card>
+                    <Grid container sx={styling.container} spacing={2}>
+                      <Grid item xs={12} md={2}>
+                        <Grid item xs={12} sx={{ paddingBottom: 2 }}>
+                          <DisplayAccuracyCard
+                            title="Testing Accuracy"
+                            val={testingAccuracy}
+                          />
                         </Grid>
-                        <Grid xs={12} rowSpacing={1}>
-                          <Card sx={{ minWidth: 180 }}>
-                            <CardContent>
-                              <Typography
-                                sx={{ fontSize: 12 }}
-                                color="text.secondary"
-                                gutterBottom
-                              >
-                                Training Accuracy
-                              </Typography>
-                              <Typography
-                                variant="h5"
-                                component="div"
-                                color="#33eb91"
-                              >
-                                Max: {trainingAccuracy[1]}%
-                              </Typography>
-                              <Typography
-                                variant="h6"
-                                component="div"
-                                color="#f73378"
-                              >
-                                Min: {trainingAccuracy[0]}%
-                              </Typography>
-
-                              {/* <Typography variant="body2">
-                                Hyperparameter: {parameter}
-                              </Typography> */}
-                            </CardContent>
-                          </Card>
+                        <Grid item xs={12}>
+                          <DisplayAccuracyCard
+                            title="Training Accuracy"
+                            val={trainingAccuracy}
+                          />
                         </Grid>
-                        {/* <Grid xs={12}>3</Grid> */}
                       </Grid>
-                      <Grid xs={1}> </Grid>
-                      <Grid xs={10}>
-                        <Card sx={{ minWidth: 275 }}>
+
+                      <Grid item xs={12} md={9}>
+                        <Card sx={{ minWidth: 600 }}>
                           <CardContent>
                             <div id="chartId" />
                           </CardContent>

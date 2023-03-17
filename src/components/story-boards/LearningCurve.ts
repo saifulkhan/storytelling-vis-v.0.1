@@ -24,6 +24,9 @@ const YAXIS_LABEL_OFFSET = -32,
   TITLE_Y_POS = 15,
   DOT_RADIUS = 3;
 
+const FONT_SIZE = "12px",
+  TITLE_FONT_SIZE = "13px";
+
 const average = (list) =>
   list.reduce((prev, curr) => prev + curr) / list.length;
 
@@ -215,8 +218,8 @@ export class LearningCurve {
     min -= (max - min) * 0.01;
     max += (max - min) * 0.01;
 
-    this.x1.domain([min, max]).nice();
-    this.x2.domain([min, max]).nice();
+    this.x1.domain([min, max]);
+    this.x2.domain([min, max]);
     this.y2.domain([0, d3.max(this._data, (d) => d3.max(d.y))]).nice();
     this.y1.domain([0, d3.max(this._data, (d) => d3.max(d.y))]); // to be set by brushing event
 
@@ -322,6 +325,7 @@ export class LearningCurve {
       .append("g")
       .attr("transform", `translate(0, ${this.height2})`)
       .call(this.xAxis2)
+      .style("font-size", FONT_SIZE)
       // X-axis label
       .append("text")
       .attr("class", "x-label")
@@ -336,6 +340,7 @@ export class LearningCurve {
       .append("g")
       // .attr("transform", `translate(${this.margin2.left}, 0)`)
       .call(this.yAxis2)
+      .style("font-size", FONT_SIZE)
       // Y-axis label
       .append("text")
       .attr("transform", "rotate(-90)")
@@ -355,7 +360,7 @@ export class LearningCurve {
   private drawTitle() {
     this.svg
       .append("text")
-      .style("font-size", "px")
+      .style("font-size", TITLE_FONT_SIZE)
       .attr("x", this.width / 2)
       .attr("y", TITLE_Y_POS)
       .attr("text-anchor", "middle")
@@ -407,28 +412,27 @@ export class LearningCurve {
       .append("g")
       .attr("transform", `translate(0, ${height1})`)
       .call(xAxis1)
-      // X-axis label
-      .append("text")
-      .attr("class", "x-label")
-      .attr("text-anchor", "middle")
-      .attr("x", width1 / 2)
-      .attr("y", X_LABEL_OFFSET)
-      .text(xLabel)
-      .style("fill", "currentColor");
+      .style("font-size", FONT_SIZE);
+    // X-axis label
+    // .append("text")
+    // .attr("class", "x-label")
+    // .attr("text-anchor", "middle")
+    // .attr("x", width1 / 2)
+    // .attr("y", X_LABEL_OFFSET)
+    // .text(xLabel)
+    // .style("fill", "currentColor");
 
     // Y-Axis
-    selection
-      .append("g")
-      .call(yAxis1)
-      // Y-axis label
-      .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("x", -height1 / 2)
-      .attr("y", YAXIS_LABEL_OFFSET)
-      .attr("class", "y label")
-      .attr("text-anchor", "middle")
-      .text(yLabel?.toLowerCase())
-      .style("fill", "currentColor");
+    selection.append("g").call(yAxis1).style("font-size", FONT_SIZE);
+    // Y-axis label
+    // .append("text")
+    // .attr("transform", "rotate(-90)")
+    // .attr("x", -height1 / 2)
+    // .attr("y", YAXIS_LABEL_OFFSET)
+    // .attr("class", "y label")
+    // .attr("text-anchor", "middle")
+    // .text(yLabel?.toLowerCase())
+    // .style("fill", "currentColor");
   }
 
   private static drawDots(
