@@ -131,7 +131,7 @@ export function createPlot(selector: string) {
   console.log("story-7-data: createPlot: selector = ", selector, ", selectedParameter = ", selectedParameter);
   lc = new LearningCurve(selector)
     .data(filteredData)
-    .title(`Story of accuracy vs. ${selectedParameter}`)
+    .title("")
     .xLabel(selectedParameter)
     .yLabel("Test accuracy")
     .ticks(10)

@@ -7,7 +7,7 @@ import {
   PCAnnotation,
 } from "./GraphAnnotation_new";
 
-const WIDTH = 1000,
+const WIDTH = 800,
   HEIGHT = 600,
   MARGIN = { top: 50, right: 50, bottom: 30, left: 50 };
 

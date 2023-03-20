@@ -1,6 +1,6 @@
 import { readCSVFile } from "./utils-data";
 import { findDateIdx } from "./utils-feature-detection";
-import { AnimationType } from "src/models/ITimeSeriesData";
+import { AnimationType } from "src/models/AnimationType";
 import { MirroredBarChart } from "./MirroredBarChart";
 import { TimeSeries } from "./TimeSeries_new";
 import { GraphAnnotation, LinePlotAnnotation } from "./GraphAnnotation_new";
@@ -134,7 +134,7 @@ function calculateAnnotations() {
     // <Stop to allow reading>
     if (idx === maxIdx) {
       // prettier-ignore
-      const msg =  `On ${d?.date?.toLocaleDateString('en-GB')}, a newly-trained model achieved the best results so far with testing accuracy ${Math.round(d?.mean_test_accuracy * 100)}% and training accuracy ${Math.round(d?.mean_training_accuracy * 100)}%.`
+      const msg =  `A newly-trained model achieved the best testing accuracy ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%].`
       lpAnnotations.push(
         writeText(msg, d.date, selectedData, HIGHLIGHT_BEST_COLOR, true),
       );
@@ -148,7 +148,7 @@ function calculateAnnotations() {
     // <Stop to allow reading>
     else if (idx === 0) {
       // prettier-ignore
-      const msg =  `On ${d?.date?.toLocaleDateString('en-GB')}, a newly-trained model resulted in testing accuracy of ${Math.round(d?.mean_test_accuracy * 100)}% and training accuracy of ${Math.round(d?.mean_training_accuracy * 100)}%, denoted as ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%].`
+      const msg =  `On A newly-trained model achieved testing accuracy of ${Math.round(d?.mean_test_accuracy * 100)}% and training accuracy of ${Math.round(d?.mean_training_accuracy * 100)}%, denoted as ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%].`
       lpAnnotations.push(
         writeText(msg, d.date, selectedData, HIGHLIGHT_DEFAULT_COLOR, true),
       );
@@ -205,7 +205,7 @@ function writeText(
     .backgroundColor(BACKGROUND_COLOR)
     .titleColor(TITLE_COLOR)
     .labelColor(labelColor)
-    .fontSize("14px")
+    .fontSize("13px")
     .wrap(500);
 
   if (showRedCircle) {
@@ -235,7 +235,7 @@ export function createPlot(selector1: string, selector2: string) {
   console.log("utils-story-5: createPlot: selector1 = ", selector1, ", selector2 = ", selector2);
 
   ts = new TimeSeries()
-    .selector(selector1, 200, 800, {
+    .selector(selector1, 200, 850, {
       top: 10,
       right: 20,
       bottom: 20,
@@ -244,7 +244,7 @@ export function createPlot(selector1: string, selector2: string) {
     .data1(selectedData)
     .color1(LINE1_COLOR)
     .strokeWidth1(LINE1_STROKE_WIDTH)
-    .title(`Basic story of ${selectedParameter}`)
+    .title("")
     .yLabel(`${selectedParameter}`)
     .ticks(10)
     .showPoints1()
@@ -255,7 +255,7 @@ export function createPlot(selector1: string, selector2: string) {
     .showEventLines();
 
   bc = new MirroredBarChart()
-    .selector(selector2, 250, 800, {
+    .selector(selector2, 200, 850, {
       top: 10,
       right: 20,
       bottom: 20,
@@ -264,7 +264,7 @@ export function createPlot(selector1: string, selector2: string) {
     .data1(selectedData)
     .color1(ACCURACY_BAR_COLOR)
     .color2(PARAMETER_BAR_COLOR)
-    .title(`Basic story of ${selectedParameter}`)
+    .title("")
     .yLabel1(`accuracy`)
     .yLabel2(`${selectedParameter}`)
     .ticks(10)

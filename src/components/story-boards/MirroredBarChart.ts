@@ -1,8 +1,3 @@
-/**
- * MirroredBarChart is a class that creates a time series graph
- * It is used in the following stories: 1, 3 (with scrolling timeline), potentially in 5, 5a
- */
-
 import * as d3 from "d3";
 import { AnimationType } from "src/models/AnimationType";
 import { LinePlotAnnotation } from "./GraphAnnotation_new";
@@ -17,9 +12,11 @@ export type MirroredBarChartData = {
 const WIDTH = 1200,
   HEIGHT = 400,
   MARGIN = { top: 50, right: 50, bottom: 50, left: 50 };
-const BAR_WIDTH = 3;
-const BAR_XAXIS_GAP = 2;
-const YAXIS_LABEL_OFFSET = 10;
+const BAR_WIDTH = 3,
+  BAR_XAXIS_GAP = 2,
+  YAXIS_LABEL_OFFSET = 10,
+  FONT_SIZE = "12px",
+  YAXIS_LABEL_FONT_SIZE = "14px";
 
 const xScale = (data: MirroredBarChartData[], w = WIDTH, m = MARGIN) => {
   const xScale = d3
@@ -392,6 +389,7 @@ export class MirroredBarChart {
       .append("g")
       .attr("id", "id-axes-labels");
 
+    // Create the X-axis in middle
     const xAxis = d3.axisBottom(this._xScale);
     this._ticks && xAxis.ticks(this._ticks);
     selection
@@ -403,7 +401,8 @@ export class MirroredBarChart {
         })`,
       )
       .call(xAxis)
-      // X-axis label
+      .style("font-size", FONT_SIZE)
+      // label
       .append("text")
       .attr("class", "x-label")
       .attr("text-anchor", "middle")
@@ -411,33 +410,47 @@ export class MirroredBarChart {
       .attr("y", this._height - 5)
       .text(this._xLabel);
 
+    // Create the top Y-axis
     const yAxisTop = d3.axisLeft(this._yScale1);
+    yAxisTop.ticks(5);
     selection
       .append("g")
       .attr("transform", `translate(${this._margin.left}, 0)`)
       .call(yAxisTop)
-      // Y-axis label
+      .style("font-size", FONT_SIZE)
+      // label
       .append("text")
       .attr("transform", "rotate(-90)")
-      .attr("x", -this._height / 3)
-      .attr("y", YAXIS_LABEL_OFFSET)
+      .attr("x", -this._height / 4)
+      .attr("y", -this._margin.left + YAXIS_LABEL_OFFSET)
       .attr("class", "y label")
       .attr("text-anchor", "middle")
-      .text(this._yLabel1);
+      .text(this._yLabel1)
+      .style("font-size", YAXIS_LABEL_FONT_SIZE)
+      .style("fill", "black");
 
+    // Create the bottom y-axis
     const yAxisBottom = d3.axisLeft(this._yScale2);
+    yAxisBottom.ticks(5).tickFormat((d) => {
+      let prefix = d3.formatPrefix(".0", d);
+      return prefix(d);
+    });
+
     selection
       .append("g")
       .attr("transform", `translate(${this._margin.left}, 0)`)
       .call(yAxisBottom)
-      // Y-axis label
+      .style("font-size", FONT_SIZE)
+      // label
       .append("text")
       .attr("transform", "rotate(-90)")
       .attr("x", -this._height / 1.5)
-      .attr("y", YAXIS_LABEL_OFFSET)
+      .attr("y", -this._margin.left + YAXIS_LABEL_OFFSET)
       .attr("class", "y label")
       .attr("text-anchor", "middle")
-      .text(this._yLabel2);
+      .text(this._yLabel2)
+      .style("font-size", YAXIS_LABEL_FONT_SIZE)
+      .style("fill", "black");
 
     return this;
   }

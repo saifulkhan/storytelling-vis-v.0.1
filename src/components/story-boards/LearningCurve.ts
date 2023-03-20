@@ -9,10 +9,10 @@ export type LearningCurveData = {
   x: number; // parameter
 };
 
-const WIDTH = 800;
+const WIDTH = 700;
 let HEIGHT = 0;
-const MARGIN1 = { top: 20, right: 20, bottom: 0, left: 40, height: 200 },
-  MARGIN2 = { top: 0, right: 20, bottom: 30, left: 40, height: 200 },
+const MARGIN1 = { top: 20, right: 20, bottom: 0, left: 40, height: 150 },
+  MARGIN2 = { top: 0, right: 20, bottom: 30, left: 40, height: 100 },
   GAP = 80;
 
 MARGIN1.bottom = MARGIN2.height - MARGIN1.top + GAP;
