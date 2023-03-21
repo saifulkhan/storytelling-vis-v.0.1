@@ -446,6 +446,7 @@ export class LearningCurve {
       yScale = this.y2Scale;
     }
 
+    // Black small dots
     selection
       .append("g")
       .selectAll("circle")
@@ -459,10 +460,11 @@ export class LearningCurve {
       .attr("cx", (d) => xScale(d.x))
       .attr("cy", (d) => yScale(d.y))
       .style("fill", (d) =>
-        this._maxPoint.index === d.index ? this._highlightMax : this._dotColor,
+        this._maxPoint.index === d.index ? "none" : this._dotColor,
       )
-      .style("opacity", (d) => (this._maxPoint.index === d.index ? 1 : 0.4));
+      .style("opacity", (d) => (this._maxPoint.index === d.index ? 0 : 0.4));
 
+    // Max & current point
     selection
       .append("g")
       .selectAll("circle")
@@ -470,19 +472,63 @@ export class LearningCurve {
       .enter()
       .append("circle")
       // .attr("id", (d) => `id-${type}-dots-${d?.index}`) // used with animation
-      .attr("r", (d) =>
-        this._currentPoint.index === d.index ? DOT_RADIUS * 3 : 0,
-      )
+      .attr("r", (d) => {
+        if (
+          this._maxPoint.index === d.index ||
+          this._currentPoint.index === d.index
+        ) {
+          return DOT_RADIUS * 2;
+        } else {
+          return 0;
+        }
+      })
       .attr("cx", (d) => xScale(d.x))
       .attr("cy", (d) => yScale(d.y))
-      .style("stroke", (d) =>
-        this._currentPoint.index === d.index ? this._highlightCurrent : "none",
-      )
-      .style("fill", "none")
-      .style("stroke-width", (d) =>
-        this._currentPoint.index === d.index ? "1.5px" : "none",
-      );
+      .style("fill", (d) => {
+        if (this._maxPoint.index === d.index) {
+          return this._highlightMax;
+        } else if (this._currentPoint.index === d.index) {
+          return this._highlightCurrent;
+        } else {
+          return "none";
+        }
+      })
+      .style("opacity", (d) => {
+        if (
+          this._maxPoint.index === d.index ||
+          this._currentPoint.index === d.index
+        ) {
+          return 1;
+        } else {
+          return 0;
+        }
+      });
+
+    // TODO:
+    // When the current and max occludes each other, the max dot is not visible
+    // Then show the current one as halo circle around the max dot
+    //
+    // selection
+    //   .append("g")
+    //   .selectAll("circle")
+    //   .data(data)
+    //   .enter()
+    //   .append("circle")
+    //   // .attr("id", (d) => `id-${type}-dots-${d?.index}`) // used with animation
+    //   .attr("r", (d) =>
+    //     this._currentPoint.index === d.index ? DOT_RADIUS * 3 : 0,
+    //   )
+    //   .attr("cx", (d) => xScale(d.x))
+    //   .attr("cy", (d) => yScale(d.y))
+    //   .style("stroke", (d) =>
+    //     this._currentPoint.index === d.index ? this._highlightCurrent : "none",
+    //   )
+    //   .style("fill", "none")
+    //   .style("stroke-width", (d) =>
+    //     this._currentPoint.index === d.index ? "1.5px" : "none",
+    //   );
   }
+
   //
   // TODO: This has to be fixed if used later.
   //
