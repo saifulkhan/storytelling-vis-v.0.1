@@ -9,15 +9,6 @@ import { LearningCurve, LearningCurveData } from "./LearningCurve";
 
 let data;
 
-const parameters = [
-  "date",
-  "mean_test_accuracy",
-  "mean_training_accuracy",
-  "channels",
-  "kernel_size",
-  "layers",
-  "samples_per_class",
-];
 const selectableParameters = [
   "channels",
   "kernel_size",
@@ -63,12 +54,9 @@ export function getParameters() {
  *********************************************************************************************************/
 
 let selectedParameter;
-let min1 = +Infinity,
-  max1 = -Infinity,
-  min2 = +Infinity,
-  max2 = -Infinity;
 
 let filteredData: LearningCurveData[] = [];
+let current, maxTesting;
 
 export function filterData(_parameter: string) {
   selectedParameter = _parameter;
@@ -77,46 +65,34 @@ export function filterData(_parameter: string) {
   filteredData = [];
 
   data.forEach((d, idx) => {
-    let obj = filteredData.find((el) => el.x === d[selectedParameter]);
-
-    if (obj) {
-      obj.y.push(d["mean_test_accuracy"]);
-    } else {
-      obj = {
-        index: 0,
-        date: d["date"],
-        y: [d["mean_test_accuracy"]],
-        x: d[selectedParameter],
-      } as LearningCurveData;
-
-      filteredData.push(obj);
-    }
-
-    if (min1 > d["mean_test_accuracy"]) min1 = d["mean_test_accuracy"];
-    if (max1 < d["mean_test_accuracy"]) max1 = d["mean_test_accuracy"];
-    if (min2 > d["mean_training_accuracy"]) min2 = d["mean_training_accuracy"];
-    if (max2 < d["mean_training_accuracy"]) max2 = d["mean_training_accuracy"];
+    filteredData.push({
+      index: 0,
+      date: d.date,
+      y: d.mean_test_accuracy,
+      x: d[selectedParameter],
+    } as LearningCurveData);
   });
 
   // Sort data by selected keyz, e.g, "kernel_size"
   let idx = 0;
   filteredData = filteredData
     .slice()
+    .sort((a, b) => d3.ascending(a.date, b.date))
     .sort((a, b) => d3.ascending(a.x, b.x))
     .map((d) => ({ ...d, index: idx++ })); // update index of the reordered data 0, 1, 2,...
 
   // prettier-ignore
   console.log("story-7-data: filterData: filteredData = ", filteredData);
-  // prettier-ignore
-  console.log("story-7-data: filterData: min1 = ", min1, ", max1 = ", max1, ", min2 = ", min2, ", max2 = ", max2);
 }
 
-export function getTestingAccuracy() {
-  return [Math.round(min1 * 100), Math.round(max1 * 100)];
+export function getMaxTestingAcc() {
+  return data.reduce((a, b) =>
+    a.mean_test_accuracy > b.mean_test_accuracy ? a : b,
+  );
 }
 
-export function getTrainingAccuracy() {
-  return [Math.round(min2 * 100), Math.round(max2 * 100)];
+export function getCurrent() {
+  return data.reduce((a, b) => (a.date > b.date ? a : b));
 }
 
 /*********************************************************************************************************
@@ -129,6 +105,14 @@ let lc;
 export function createPlot(selector: string) {
   // prettier-ignore
   console.log("story-7-data: createPlot: selector = ", selector, ", selectedParameter = ", selectedParameter);
+
+  const _current: LearningCurveData = filteredData.reduce((a, b) =>
+    a.date > b.date ? a : b,
+  );
+  const _maxTesting = filteredData.reduce((a, b) => (a.y > b.y ? a : b));
+  // prettier-ignore
+  console.log("story-7-data: createPlot: _current = ", _current, "_maxTesting = ", _maxTesting);
+
   lc = new LearningCurve(selector)
     .data(filteredData)
     .title("")
@@ -139,6 +123,8 @@ export function createPlot(selector: string) {
     .lineStroke(1.5)
     .dotColor("#404040")
     .dotHighlightColor("#E84A5F")
+    .currentPoint(_current, "#FFA500")
+    .maxPoint(_maxTesting, "#20B2AA")
     .plot();
 }
 

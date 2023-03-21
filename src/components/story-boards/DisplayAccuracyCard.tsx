@@ -1,6 +1,6 @@
 import { Card, CardContent, Typography } from "@mui/material";
 
-export default function DisplayAccuracyCard({ title, val }) {
+export default function DisplayAccuracyCard({ title, obj, color }) {
   return (
     <div>
       <Card elevation={1} sx={{ minWidth: 180 }}>
@@ -8,11 +8,20 @@ export default function DisplayAccuracyCard({ title, val }) {
           <Typography sx={{ fontSize: 12 }} color="text.secondary" gutterBottom>
             {title}
           </Typography>
-          <Typography variant="h5" component="div" color="#33eb91">
-            Max: {val[1]}%
+          <Typography variant="h5" component="div" color={color}>
+            {obj && `${Math.round(obj?.mean_test_accuracy * 100)}%`}
           </Typography>
-          <Typography variant="h6" component="div" color="#ffac33">
-            Min: {val[0]}%
+          <Typography variant="body2" component="div">
+            {obj && `Channels: ${obj?.channels}`}
+          </Typography>
+          <Typography variant="body2" component="div">
+            {obj && `Kernel size: ${obj?.kernel_size}`}
+          </Typography>
+          <Typography variant="body2" component="div">
+            {obj && `Layers: ${obj?.layers}`}
+          </Typography>
+          <Typography variant="body2" component="div">
+            {obj && `Samples/class: ${obj?.samples_per_class}`}
           </Typography>
         </CardContent>
       </Card>

@@ -5,21 +5,21 @@ import { AnimationType } from "src/models/AnimationType";
 export type LearningCurveData = {
   index: number;
   date: Date;
-  y: number[]; // accuracy
-  x: number; // parameter
+  y: number; // accuracy
+  x: number; // selected parameter
 };
 
 const WIDTH = 700;
 let HEIGHT = 0;
-const MARGIN1 = { top: 20, right: 20, bottom: 0, left: 40, height: 150 },
-  MARGIN2 = { top: 0, right: 20, bottom: 30, left: 40, height: 100 },
+const MARGIN1 = { top: 20, right: 20, bottom: 0, left: 50, height: 150 },
+  MARGIN2 = { top: 0, right: 20, bottom: 30, left: 50, height: 100 },
   GAP = 80;
 
 MARGIN1.bottom = MARGIN2.height - MARGIN1.top + GAP;
 MARGIN2.top = MARGIN1.height - MARGIN2.bottom + GAP;
 HEIGHT = MARGIN1.top + MARGIN1.bottom + MARGIN2.top + MARGIN2.bottom - GAP;
 
-const YAXIS_LABEL_OFFSET = -32,
+const YAXIS_LABEL_OFFSET = -35,
   X_LABEL_OFFSET = 25,
   TITLE_Y_POS = 15,
   DOT_RADIUS = 3;
@@ -27,8 +27,29 @@ const YAXIS_LABEL_OFFSET = -32,
 const FONT_SIZE = "12px",
   TITLE_FONT_SIZE = "13px";
 
-const average = (list) =>
-  list.reduce((prev, curr) => prev + curr) / list.length;
+// Filter data that is within the brush selection
+const filterByYValue = (
+  data: LearningCurveData[],
+  minY: number,
+  maxY: number,
+) => data.filter((d) => d.y >= minY && d.y <= maxY);
+
+// Return  [[x1, y1], [x2, y2], ... ],
+// where x1, x2, ... are unique and y1, y2, ... are max
+const toXYPoints = (data: LearningCurveData[]) => {
+  // For all unique values of x, keep the data point with the maximum y value
+  const result = [];
+  data.forEach((d, idx) => {
+    const existing = result.find((el) => el.x === d.x);
+    if (existing) {
+      existing.y = Math.max(existing.y, d.y);
+    } else {
+      result.push(d);
+    }
+  });
+
+  return result.map((d) => [d.x, d.y]);
+};
 
 export class LearningCurve {
   selector: string;
@@ -46,6 +67,9 @@ export class LearningCurve {
   margin2: { top: number; right: number; bottom: number; left: number };
 
   _data: LearningCurveData[];
+  _currentPoint: LearningCurveData; // latest data point
+  _maxPoint: LearningCurveData; // max data point
+  _focusedData: LearningCurveData[]; // filtered data to show in focus chart
 
   _title = "[title]";
   _xLabel = "[x label]";
@@ -57,11 +81,13 @@ export class LearningCurve {
   _lineStroke = 1.5;
   _dotColor = "#404040";
   _dotHighlightColor = "#E84A5F";
+  _highlightCurrent: string;
+  _highlightMax: string;
 
-  x1: ScaleLinear<number, number>;
-  y1: ScaleLinear<number, number>;
-  y2: ScaleLinear<number, number>;
-  x2: ScaleLinear<number, number>;
+  x1Scale: ScaleLinear<number, number>;
+  y1Scale: ScaleLinear<number, number>;
+  y2Scale: ScaleLinear<number, number>;
+  x2Scale: ScaleLinear<number, number>;
   xAxis1: any;
   xAxis2: any;
   yAxis1: any;
@@ -104,15 +130,15 @@ export class LearningCurve {
     // prettier-ignore
     console.log("LearningCurveData: constructor: ", this.height, this.width, this.margin1, this.margin2);
 
-    this.x1 = d3.scaleLinear().nice().range([0, this.width1]);
-    this.y1 = d3.scaleLinear().nice().range([this.height1, 0]);
-    this.x2 = d3.scaleLinear().nice().range([0, this.width2]);
-    this.y2 = d3.scaleLinear().nice().range([this.height2, 0]);
+    this.x1Scale = d3.scaleLinear().nice().range([0, this.width1]);
+    this.y1Scale = d3.scaleLinear().nice().range([this.height1, 0]);
+    this.x2Scale = d3.scaleLinear().nice().range([0, this.width2]);
+    this.y2Scale = d3.scaleLinear().nice().range([this.height2, 0]);
 
-    this.xAxis1 = d3.axisBottom(this.x1);
-    this.yAxis1 = d3.axisLeft(this.y1);
-    this.xAxis2 = d3.axisBottom(this.x2);
-    this.yAxis2 = d3.axisLeft(this.y2);
+    this.xAxis1 = d3.axisBottom(this.x1Scale);
+    this.yAxis1 = d3.axisLeft(this.y1Scale);
+    this.xAxis2 = d3.axisBottom(this.x2Scale);
+    this.yAxis2 = d3.axisLeft(this.y2Scale);
 
     this.focus = this.svg
       .append("g")
@@ -132,9 +158,12 @@ export class LearningCurve {
         `translate(${this.margin2.left}, ${this.margin2.top})`,
       );
 
+    //
+    // Initialize brush
+    //
     this.brush = d3
       .brushY()
-      // start at [0, 0] and finishes at [width, height]
+      // start at [0, 0] and finishes at [width, height] of context/y2
       .extent([
         [0, 0],
         [this.width2, this.height2],
@@ -143,55 +172,26 @@ export class LearningCurve {
       .on("brush end", brushed); // Generate events while brushing. Looks good while using.
 
     //
-    // Initialize brush
+    // Brush event handler
     //
     const that = this;
     function brushed() {
+      console.log("LearningCurve: brushed: ...");
       const s =
-        d3.event.selection || d3.brushSelection(this) || that.y2.range();
-      const domain = s.map((d) => that.y2.invert(d));
+        d3.event.selection || d3.brushSelection(this) || that.y2Scale.range();
+      const domain = s.map((d) => that.y2Scale.invert(d));
       // Change domain of focus Y-axis
       const minY: number = d3.min(domain);
       const maxY: number = d3.max(domain);
-      that.y1.domain([minY, maxY]);
+      that.y1Scale.domain([minY, maxY]);
+      // Filter data that is within the brush selection
+      that._focusedData = filterByYValue(that._data, minY, maxY);
+      // Draw axis, line, dots
+      that.drawFocusAxes();
+      that.drawLine("focus");
+      that.drawDots("focus");
 
-      // filter data that is within the brush selection
-      const filteredData: LearningCurveData[] = [];
-      that._data.forEach((d) => {
-        const arr = d.y.filter((x) => x >= minY && x <= maxY);
-        if (arr.length > 0) {
-          filteredData.push({ ...d, y: arr });
-        }
-      });
-
-      LearningCurve.drawFocusAxes(
-        that.focus,
-        that.height1,
-        that.xAxis1,
-        that.yAxis1,
-        that.width1,
-        that._xLabel,
-        that._yLabel,
-      );
-
-      LearningCurve.drawLine(
-        that.focus,
-        filteredData,
-        that.x1,
-        that.y1,
-        that._lineColor,
-        that.lineStroke,
-      );
-
-      LearningCurve.drawDots(
-        that.focus,
-        filteredData,
-        that.x1,
-        that.y1,
-        that._dotColor,
-        "focus",
-      );
-
+      // TODO: fix animation
       if (that.animationCounter > 0) {
         LearningCurve.animateDotColor(
           that.svg,
@@ -218,10 +218,15 @@ export class LearningCurve {
     min -= (max - min) * 0.01;
     max += (max - min) * 0.01;
 
-    this.x1.domain([min, max]);
-    this.x2.domain([min, max]);
-    this.y2.domain([0, d3.max(this._data, (d) => d3.max(d.y))]).nice();
-    this.y1.domain([0, d3.max(this._data, (d) => d3.max(d.y))]); // to be set by brushing event
+    this.x1Scale.domain([min, max]);
+    this.x2Scale.domain([min, max]);
+    // Set context y between 0 and 1
+    this.y2Scale.domain([0, 1]).nice();
+    // Set focus y between min and max now. Later it will be set by brushing event.
+    this.y1Scale.domain([
+      d3.min(this._data, (d) => d.y),
+      d3.max(this._data, (d) => d.y),
+    ]);
 
     return this;
   }
@@ -269,54 +274,65 @@ export class LearningCurve {
     return this;
   }
 
+  currentPoint(current: LearningCurveData, highlightCurrent: string) {
+    this._currentPoint = current;
+    this._highlightCurrent = highlightCurrent;
+    return this;
+  }
+
+  maxPoint(maxPoint: LearningCurveData, highlightMax: string) {
+    this._maxPoint = maxPoint;
+    this._highlightMax = highlightMax;
+    return this;
+  }
+
   /**************************************************************************************************************
-   * Drawing context part of the visualization
+   * Drawing methods
+   * Draw the context part of the visualization.
+   * Focus part is drawn in the brush event handler.
    **************************************************************************************************************/
 
   plot() {
     console.log("LearningCurve: plot:");
     this.drawContextAxes();
-
-    LearningCurve.drawFocusAxes(
-      this.focus,
-      this.height1,
-      this.xAxis1,
-      this.yAxis1,
-      this.width1,
-      this._xLabel,
-      this._yLabel,
-    );
-
-    LearningCurve.drawLine(
-      this.context,
-      this._data,
-      this.x2,
-      this.y2,
-      this._lineColor,
-      this.lineStroke,
-    );
-    LearningCurve.drawDots(
-      this.context,
-      this._data,
-      this.x2,
-      this.y2,
-      this._dotColor,
-      "context",
-    );
-
+    this.drawLine("context");
+    this.drawDots("context");
     this.drawTitle();
-
-    this.drawMinMaxBand();
+    // We are not drawing area band now.
+    // this.drawMinMaxBand();
 
     return this;
   }
 
-  /**
-   * Create axes and add labels
-   */
-  private drawContextAxes() {
-    console.log(`LearningCurve: _drawContextAxis():`);
+  private drawFocusAxes() {
+    console.log(`LearningCurve: drawFocusAxis:`);
+    this.focus.selectAll("g").remove();
 
+    // Draw the x-axis of the focus chart
+    this.focus
+      .append("g")
+      .attr("transform", `translate(0, ${this.height1})`)
+      .call(this.xAxis1)
+      .style("font-size", FONT_SIZE);
+
+    // Draw the y-axis / y1-axis of the focus chart
+    this.focus
+      .append("g")
+      .call(this.yAxis1)
+      .style("font-size", FONT_SIZE)
+      // Y-axis label
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -this.height1 / 2)
+      .attr("y", YAXIS_LABEL_OFFSET)
+      .attr("class", "y label")
+      .attr("text-anchor", "middle")
+      .text(this._yLabel?.toLowerCase())
+      .style("fill", "currentColor");
+  }
+
+  private drawContextAxes() {
+    console.log(`LearningCurve: drawContextAxis:`);
     // clear
     this.context.selectAll("g").remove();
 
@@ -338,7 +354,6 @@ export class LearningCurve {
     // Y-axis
     this.context
       .append("g")
-      // .attr("transform", `translate(${this.margin2.left}, 0)`)
       .call(this.yAxis2)
       .style("font-size", FONT_SIZE)
       // Y-axis label
@@ -352,7 +367,20 @@ export class LearningCurve {
       .style("fill", "currentColor");
 
     // Add brush
-    this.context.append("g").attr("class", "brush").call(this.brush);
+    const brush = this.context
+      .append("g")
+      .attr("class", "brush")
+      .call(this.brush);
+
+    // Select min and max data points and draw brush around them
+    brush
+      .call(this.brush.move, () =>
+        [d3.min(this._data, (d) => d.y), d3.max(this._data, (d) => d.y)].map(
+          this.y2Scale,
+        ),
+      )
+      .style("fill", "#D3D3D3")
+      .style("opacity", 0.2);
 
     return this;
   }
@@ -369,6 +397,95 @@ export class LearningCurve {
       .style("fill", "#696969");
   }
 
+  private drawLine(type: "focus" | "context") {
+    console.log("LearningCurve: drawLine: type = ", type);
+    let selection, data, xScale, yScale;
+
+    if (type === "focus") {
+      selection = this.focus;
+      data = toXYPoints(this._focusedData);
+      xScale = this.x1Scale;
+      yScale = this.y1Scale;
+    } else if (type === "context") {
+      selection = this.context;
+      data = toXYPoints(this._data);
+      xScale = this.x2Scale;
+      yScale = this.y2Scale;
+    }
+
+    const line = d3
+      .line()
+      .x((d) => {
+        return xScale(d[0]);
+      })
+      .y((d) => {
+        return yScale(d[1]);
+      });
+
+    selection
+      .append("g")
+      .append("path")
+      .attr("stroke", this._lineColor)
+      .attr("stroke-width", this.lineStroke)
+      .attr("fill", "none")
+      .attr("d", line(data));
+  }
+
+  private drawDots(type: "focus" | "context") {
+    let selection, data, xScale, yScale;
+
+    if (type === "focus") {
+      selection = this.focus;
+      data = this._focusedData;
+      xScale = this.x1Scale;
+      yScale = this.y1Scale;
+    } else if (type === "context") {
+      selection = this.context;
+      data = this._data;
+      xScale = this.x2Scale;
+      yScale = this.y2Scale;
+    }
+
+    selection
+      .append("g")
+      .selectAll("circle")
+      .data(data)
+      .enter()
+      .append("circle")
+      // .attr("id", (d) => `id-${type}-dots-${d?.index}`) // used with animation
+      .attr("r", (d) =>
+        this._maxPoint.index === d.index ? DOT_RADIUS * 2 : DOT_RADIUS,
+      )
+      .attr("cx", (d) => xScale(d.x))
+      .attr("cy", (d) => yScale(d.y))
+      .style("fill", (d) =>
+        this._maxPoint.index === d.index ? this._highlightMax : this._dotColor,
+      )
+      .style("opacity", (d) => (this._maxPoint.index === d.index ? 1 : 0.4));
+
+    selection
+      .append("g")
+      .selectAll("circle")
+      .data(data)
+      .enter()
+      .append("circle")
+      // .attr("id", (d) => `id-${type}-dots-${d?.index}`) // used with animation
+      .attr("r", (d) =>
+        this._currentPoint.index === d.index ? DOT_RADIUS * 3 : 0,
+      )
+      .attr("cx", (d) => xScale(d.x))
+      .attr("cy", (d) => yScale(d.y))
+      .style("stroke", (d) =>
+        this._currentPoint.index === d.index ? this._highlightCurrent : "none",
+      )
+      .style("fill", "none")
+      .style("stroke-width", (d) =>
+        this._currentPoint.index === d.index ? "1.5px" : "none",
+      );
+  }
+  //
+  // TODO: This has to be fixed if used later.
+  //
   private drawMinMaxBand() {
     const area = d3
       .area()
@@ -386,110 +503,16 @@ export class LearningCurve {
   }
 
   /**
-   * Select all elements below svg with the selector "svg > *" and remove.
+   * Clear all elements inside svg.
    */
   private clear() {
     d3.select(this.svg).selectAll("svg > *").remove();
   }
 
   /**************************************************************************************************************
-   * Static methods - Mainly because of the brush "this" issue
-   **************************************************************************************************************/
-
-  private static drawFocusAxes(
-    selection,
-    height1,
-    xAxis1,
-    yAxis1,
-    width1,
-    xLabel,
-    yLabel,
-  ) {
-    selection.selectAll("g").remove();
-
-    // X-axis
-    selection
-      .append("g")
-      .attr("transform", `translate(0, ${height1})`)
-      .call(xAxis1)
-      .style("font-size", FONT_SIZE);
-    // X-axis label
-    // .append("text")
-    // .attr("class", "x-label")
-    // .attr("text-anchor", "middle")
-    // .attr("x", width1 / 2)
-    // .attr("y", X_LABEL_OFFSET)
-    // .text(xLabel)
-    // .style("fill", "currentColor");
-
-    // Y-Axis
-    selection.append("g").call(yAxis1).style("font-size", FONT_SIZE);
-    // Y-axis label
-    // .append("text")
-    // .attr("transform", "rotate(-90)")
-    // .attr("x", -height1 / 2)
-    // .attr("y", YAXIS_LABEL_OFFSET)
-    // .attr("class", "y label")
-    // .attr("text-anchor", "middle")
-    // .text(yLabel?.toLowerCase())
-    // .style("fill", "currentColor");
-  }
-
-  private static drawDots(
-    selection,
-    data,
-    xScale,
-    yScale,
-    color,
-    type: "focus" | "context",
-  ) {
-    selection
-      .append("g")
-      .attr("id", (d) => `id-${type}-dots`)
-      .selectAll("g")
-      .data(data)
-      .enter()
-      .append("g")
-      .attr("id", (d) => `id-${type}-dots-${d?.index}`)
-      .selectAll("circle")
-      .data((d) => d?.y)
-      .enter()
-      .append("circle")
-      .attr("r", DOT_RADIUS)
-      .attr("cx", function (d) {
-        const parent = d3.select(this.parentNode).datum();
-        return xScale(parent?.x);
-      })
-      .attr("cy", (d) => yScale(d))
-      .style("fill", color)
-      .style("opacity", function (d) {
-        const parent = d3.select(this.parentNode).datum();
-        return parent?.y.length > 1 ? 0.5 : 1;
-      });
-  }
-
-  private static drawLine(selection, data, xScale, yScale, color, stroke) {
-    const line = d3
-      .line()
-      .x((d) => {
-        return xScale(d.x);
-      })
-      .y((d) => {
-        return yScale(average(d.y));
-      });
-
-    selection
-      .append("g")
-      .append("path")
-      .attr("stroke", color)
-      .attr("stroke-width", stroke)
-      .attr("fill", "none")
-      .attr("d", line(data));
-  }
-
-  /**************************************************************************************************************
    * Animations
    **************************************************************************************************************/
+  // TODO: fix animation
 
   animate(animationType: AnimationType) {
     console.log("TimeSeries: animate: animationType = ", animationType);

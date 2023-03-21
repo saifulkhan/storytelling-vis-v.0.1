@@ -30,8 +30,9 @@ import {
   filterData,
   createPlot,
   animatePlot,
-  getTestingAccuracy,
-  getTrainingAccuracy,
+  getMaxTestingAcc,
+  getMaxTrainingAcc,
+  getCurrent,
 } from "src/components/story-boards/story-7-data";
 import DisplayAccuracyCard from "src/components/story-boards/DisplayAccuracyCard";
 
@@ -46,12 +47,8 @@ const Story7 = () => {
   const [loading, setLoading] = useState(true);
   const [parameters, setParameters] = useState<string[]>([]);
   const [parameter, setParameter] = useState<string>("");
-  const [testingAccuracy, setTestingAccuracy] = useState<[number, number]>([
-    0, 0,
-  ]);
-  const [trainingAccuracy, setTrainingAccuracy] = useState<[number, number]>([
-    0, 0,
-  ]);
+  const [maxTestingAcc, setMaxTestingAcc] = useState<any>(undefined);
+  const [current, setCurrent] = useState<any>(undefined);
 
   const handleParameterSelect = (e) => {
     const newParameter = e.target.value;
@@ -61,11 +58,9 @@ const Story7 = () => {
 
     if (newParameter) {
       filterData(newParameter);
-      setTestingAccuracy((d) => getTestingAccuracy());
-      setTrainingAccuracy((d) => getTrainingAccuracy());
+      setMaxTestingAcc((d) => getMaxTestingAcc());
+      setCurrent((d) => getCurrent());
 
-      // prettier-ignore
-      // console.log(`Story7: handleParameterSelect: min: ${min}, max: ${max} | ${minTestingAccuracy()}, ${maxTestingAccuracy()}`);
       createPlot("#chartId");
     }
   };
@@ -218,14 +213,16 @@ const Story7 = () => {
                       <Grid item xs={12} md={2}>
                         <Grid item xs={12} sx={{ paddingBottom: 2 }}>
                           <DisplayAccuracyCard
-                            title="Testing Accuracy"
-                            val={testingAccuracy}
+                            title="Current Accuracy"
+                            obj={current}
+                            color={"#FFA500"}
                           />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid item xs={12} sx={{ paddingBottom: 2 }}>
                           <DisplayAccuracyCard
-                            title="Training Accuracy"
-                            val={trainingAccuracy}
+                            title="Max Testing Accuracy"
+                            obj={maxTestingAcc}
+                            color={"#20B2AA"}
                           />
                         </Grid>
                       </Grid>

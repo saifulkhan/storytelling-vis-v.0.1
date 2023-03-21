@@ -238,7 +238,6 @@ export class GraphAnnotation {
     // Draw each word onto svg and save its width before removing
     let wordElem;
     words = words.map((word) => {
-      // wordElem = textElem.appendChild(svg`<tspan>${word}</tspan>`);
       wordElem = textElem.appendChild(
         d3.create("svg").append("tspan").text(word).node(),
       );
