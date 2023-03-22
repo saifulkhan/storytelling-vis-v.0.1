@@ -227,7 +227,7 @@ function writeText(
 let ts;
 let bc;
 
-const LINE1_STROKE_WIDTH = 1.5;
+const LINE1_STROKE_WIDTH = 1;
 
 export function createPlot(selector1: string, selector2: string) {
   // prettier-ignore
