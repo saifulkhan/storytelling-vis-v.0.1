@@ -86,7 +86,7 @@ const Story6 = () => {
   return (
     <>
       <Head>
-        <title>Story-6</title>
+        <title>Multivariate Story</title>
       </Head>
       <DashboardLayout>
         <Box
@@ -104,7 +104,7 @@ const Story6 = () => {
                     <AutoStoriesIcon />
                   </Avatar>
                 }
-                title="Story-6"
+                title="Multivariate Story"
                 subheader="Choose a hyperparameter, and click play to animate the story."
               />
               <CardContent sx={{ pt: "8px" }}>

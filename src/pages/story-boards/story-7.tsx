@@ -31,10 +31,13 @@ import {
   createPlot,
   animatePlot,
   getMaxTestingAcc,
-  getMaxTrainingAcc,
   getCurrent,
 } from "src/components/story-boards/story-7-data";
 import DisplayAccuracyCard from "src/components/story-boards/DisplayAccuracyCard";
+import {
+  TextColor,
+  TimeSeriesFeatureType,
+} from "src/components/story-boards/FeatureAndColorMap";
 
 const styling = {
   container: {
@@ -105,7 +108,7 @@ const Story7 = () => {
   return (
     <>
       <Head>
-        <title>Story-7</title>
+        <title>Dashboard & Story</title>
       </Head>
       <DashboardLayout>
         <Box
@@ -123,7 +126,7 @@ const Story7 = () => {
                     <AutoStoriesIcon />
                   </Avatar>
                 }
-                title="Story-7"
+                title="Dashboard & Story"
                 subheader="Choose a hyperparameter, and click play to animate the story."
               />
               <CardContent sx={{ pt: "8px" }}>
@@ -215,14 +218,14 @@ const Story7 = () => {
                           <DisplayAccuracyCard
                             title="Current Accuracy"
                             obj={current}
-                            color={"#FFA500"}
+                            color={TextColor[TimeSeriesFeatureType.CURRENT]}
                           />
                         </Grid>
                         <Grid item xs={12} sx={{ paddingBottom: 2 }}>
                           <DisplayAccuracyCard
                             title="Max Testing Accuracy"
                             obj={maxTestingAcc}
-                            color={"#20B2AA"}
+                            color={TextColor[TimeSeriesFeatureType.MAX]}
                           />
                         </Grid>
                       </Grid>

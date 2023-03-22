@@ -2,6 +2,8 @@ import * as d3 from "d3";
 import { readCSVFile } from "./utils-data";
 import { AnimationType } from "src/models/AnimationType";
 import { LearningCurve, LearningCurveData } from "./LearningCurve";
+import { Color } from "./Colors";
+import { DotColor, TimeSeriesFeatureType } from "./FeatureAndColorMap";
 
 /*********************************************************************************************************
  * Prepare data
@@ -56,7 +58,6 @@ export function getParameters() {
 let selectedParameter;
 
 let filteredData: LearningCurveData[] = [];
-let current, maxTesting;
 
 export function filterData(_parameter: string) {
   selectedParameter = _parameter;
@@ -119,12 +120,12 @@ export function createPlot(selector: string) {
     .xLabel(selectedParameter)
     .yLabel("Test accuracy")
     .ticks(10)
-    .lineColor("#909090")
+    .lineColor(Color.LightGrey1)
     .lineStroke(1.5)
-    .dotColor("#404040")
-    .dotHighlightColor("#E84A5F")
-    .currentPoint(_current, "#FFA500")
-    .maxPoint(_maxTesting, "#20B2AA")
+    .dotColor(Color.DarkGrey)
+    // .dotHighlightColor(Color.Red) // TODO: fix animation
+    .currentPoint(_current, DotColor[TimeSeriesFeatureType.CURRENT])
+    .maxPoint(_maxTesting, DotColor[TimeSeriesFeatureType.MAX])
     .plot();
 }
 

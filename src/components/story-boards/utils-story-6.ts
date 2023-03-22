@@ -1,13 +1,15 @@
 import * as d3 from "d3";
 import { readCSVFile } from "./utils-data";
 import { ParallelCoordinate } from "./ParallelCoordinate";
-import { AnimationType } from "src/models/ITimeSeriesData";
+import { AnimationType } from "src/models/AnimationType";
+import { GraphAnnotation, PCAnnotation } from "./GraphAnnotation_new";
+import { Color } from "./Colors";
 import {
-  GraphAnnotation,
-  PCAnnotation,
-  HIGHLIGHT_TYPE,
-} from "./GraphAnnotation_new";
-import { Oranges } from "./colormap";
+  DotColor,
+  LineColor,
+  TextColor,
+  TimeSeriesFeatureType,
+} from "./FeatureAndColorMap";
 
 /*********************************************************************************************************
  * Prepare data
@@ -137,15 +139,29 @@ function findLocalMinMax1(input: any[], keyz: string, window = 2): any {
   return [outputMin, outputMax];
 }
 
+function findGlobalMinMax(input: any[], keyz: string, window = 2): any {
+  const outputMin = input.reduce((min, curr) =>
+    min[keyz] < curr[keyz] ? min : curr,
+  );
+  const outputMax = input.reduce((max, curr) =>
+    max[keyz] > curr[keyz] ? max : curr,
+  );
+
+  return [outputMin, outputMax];
+}
+
 /*********************************************************************************************************
  * Filter/select parameter
  *********************************************************************************************************/
 
 let selectedParameter;
-let min, max;
+let localMin, localMax;
+let globalMin, globalMax;
 
 export function filterData(_parameter: string) {
   selectedParameter = _parameter;
+  // prettier-ignore
+  console.log("utils-story-6: filterData: selectedParameter = ", selectedParameter);
 
   // Sort data by selected keyz, e.g, "kernel_size"
   let idx = 0;
@@ -155,14 +171,14 @@ export function filterData(_parameter: string) {
     .sort((a, b) => d3.ascending(a["date"], b["date"]))
     .map((d) => ({ ...d, index: idx++ })); // update index of the reordered data 0, 1, 2,...
 
-  [min, max] = findLocalMinMax1(data, "mean_test_accuracy");
+  [localMin, localMax] = findLocalMinMax1(data, "mean_test_accuracy");
+  [globalMin, globalMax] = findGlobalMinMax(data, "mean_test_accuracy");
 
   console.log("utils-story-6: filterData: data (after sorting) = ", data);
+  // prettier-ignore
+  console.log("utils-story-6: filterData: globalMin = ", globalMin, ", globalMax = ", globalMax);
 
   calculateAnnotations();
-
-  // prettier-ignore
-  console.log("utils-story-6: filterData: selectedParameter = ", selectedParameter);
 }
 
 let pcAnnotations: PCAnnotation[];
@@ -171,78 +187,100 @@ function calculateAnnotations() {
   pcAnnotations = [];
 
   data.forEach((d, idx) => {
-    // min annotation
-    if (min.find((el) => el.index === idx)) {
+    //
+    // Feature - for local min & max (ignored)
+    //
+    /*
+    if (localMin.find((el) => el.index === idx)) {
       // prettier-ignore
-      const msg = `Worst testing accuracy so far: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
-      pcAnnotations.push(writeText(msg, d, HIGHLIGHT_TYPE.WORST, false));
+      const msg = `The worst so far: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
+      pcAnnotations.push(
+        writeText(msg, d, TimeSeriesFeatureType.VALLEY, false),
+      );
     }
-    // max annotation
-    else if (max.find((el) => el.index === idx)) {
+    else if (localMax.find((el) => el.index === idx)) {
       // prettier-ignore
-      const msg = `Best testing accuracy so far: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
-      pcAnnotations.push(writeText(msg, d, HIGHLIGHT_TYPE.BEST, false));
+      const msg = `The best so far: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
+      pcAnnotations.push(writeText(msg, d, TimeSeriesFeatureType.PEAK, false));
     }
-    // no annotation
+    */
+
+    //
+    // Feature - for global min & max
+    //
+    if (globalMin.index === idx) {
+      // prettier-ignore
+      const msg = `The worst accuracy: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
+      pcAnnotations.push(writeText(msg, d, TimeSeriesFeatureType.MIN, false));
+    } else if (globalMax.index === idx) {
+      // prettier-ignore
+      const msg = `The best accuracy: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
+      pcAnnotations.push(writeText(msg, d, TimeSeriesFeatureType.MAX, false));
+    }
+
+    //
+    // Feature - last data point
+    //
+    else if (idx === data.length - 1) {
+      // prettier-ignore
+      const msg = `The current/last testing accuracy: ${Math.round(d?.mean_test_accuracy * 100,)}% [training ${Math.round(d?.mean_training_accuracy * 100)}%]`;
+      pcAnnotations.push(writeText(msg, d, TimeSeriesFeatureType.LAST, false));
+    }
+
+    //
+    // Current - for global min & max
+    //
     else {
-      pcAnnotations.push(writeText(null, d, HIGHLIGHT_TYPE.DEFAULT, false));
+      // prettier-ignore
+      const msg = `The current testing accuracy: ${Math.round(d?.mean_test_accuracy * 100)}% [training ${Math.round(d?.mean_training_accuracy * 100)}%]`;
+      pcAnnotations.push(
+        writeText(msg, d, TimeSeriesFeatureType.CURRENT, false),
+      );
     }
   });
 }
 
-const TITLE_COLOR = "#696969",
-  COLOR_BACKGROUND = "#F5F5F5",
-  HIGHLIGHT_BEST_COLOR = "#00bfa0",
-  HIGHLIGHT_WORST_COLOR = "#E84A5F",
-  HIGHLIGHT_DEFAULT_COLOR = Oranges[0];
-
 function writeText(
-  text: string | null,
+  message: string | null,
   data: any,
-  highlightType: HIGHLIGHT_TYPE,
-  showRedCircle: boolean,
+  featureType: TimeSeriesFeatureType,
+  highlightCircle: boolean = false,
 ): PCAnnotation {
-  // color of the line and annotation text
-  let highlightColor = HIGHLIGHT_DEFAULT_COLOR;
-  if (highlightType == HIGHLIGHT_TYPE.BEST) {
-    highlightColor = HIGHLIGHT_BEST_COLOR;
-  } else if (highlightType == HIGHLIGHT_TYPE.WORST) {
-    highlightColor = HIGHLIGHT_WORST_COLOR;
-  }
+  let annotation: PCAnnotation = null;
 
-  // No annotation; just set color of the line and data
-  if (text === null) {
-    return {
+  if (message === null) {
+    // No annotation; just set color of the line and data
+    annotation = {
       graphAnnotation: null,
       fadeout: true,
       originAxis: "mean_test_accuracy",
       data: data,
-      highlightColor: highlightColor,
-      highlightType: highlightType,
-    } as PCAnnotation;
+      lineColor: LineColor[featureType],
+      dotColor: DotColor[featureType],
+      featureType: featureType,
+    };
   } else {
     const graphAnnotation = new GraphAnnotation()
-      .title(data["date"].toLocaleDateString("en-GB"))
-      .label(text)
-      .backgroundColor(COLOR_BACKGROUND)
-      .titleColor(TITLE_COLOR)
-      .labelColor(highlightColor)
+      .label(message)
+      .labelColor(TextColor[featureType])
       .fontSize("14px")
-      .wrap(500);
+      .wrap(500)
+      .title(data["date"].toLocaleDateString("en-GB"))
+      .titleColor(TextColor[featureType])
+      .backgroundColor(Color.VeryLightGrey);
 
-    if (showRedCircle) {
-      graphAnnotation.circleHighlight(highlightColor, 10);
-    }
-
-    return {
+    annotation = {
       graphAnnotation: graphAnnotation,
       fadeout: false,
       originAxis: "mean_test_accuracy",
       data: data,
-      highlightColor: highlightColor,
-      highlightType: highlightType,
-    } as PCAnnotation;
+      lineColor: LineColor[featureType],
+      dotColor: DotColor[featureType],
+      featureType: featureType,
+    };
   }
+
+  return annotation;
 }
 
 /*********************************************************************************************************

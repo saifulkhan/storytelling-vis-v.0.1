@@ -1,13 +1,11 @@
 import * as d3 from "d3";
+import { string } from "yup/lib/locale";
+import { Color } from "./Colors";
+import { TimeSeriesFeatureType } from "./FeatureAndColorMap";
 
 //
 // Annotations used in parallel coordinate
 //
-export enum HIGHLIGHT_TYPE {
-  DEFAULT = "default",
-  BEST = "best",
-  WORST = "worst",
-}
 
 export interface PCAnnotation {
   graphAnnotation?: GraphAnnotation | null;
@@ -16,8 +14,9 @@ export interface PCAnnotation {
   fadeout?: boolean;
   data?: number; //store data
   originAxis?: string; // the selected axis
-  highlightColor?: string; // line, dot, and the circle
-  highlightType?: HIGHLIGHT_TYPE;
+  featureType?: TimeSeriesFeatureType;
+  lineColor?: string; // line highlight
+  dotColor?: string; // dot highlight circle color
 }
 
 //
@@ -34,16 +33,13 @@ export interface LinePlotAnnotation {
 
 export class GraphAnnotation {
   _id;
-  _wrap;
-  _align;
+  _wrap = 150;
+  _align = "start";
   _x;
   _y;
-  _tx;
-  _ty;
-  _showConnector;
-  _connectorOptions: any;
-  _color;
-  _backgroundColor;
+  _tx = 0;
+  _ty = 0;
+
   _title;
   _titleText;
   _rect;
@@ -53,8 +49,14 @@ export class GraphAnnotation {
   _label;
   _labelText;
   _labelColor;
+  _titleColor = "Black";
+  _backgroundColor = Color.VeryLightGrey;
 
   _connector;
+  _showConnector = false;
+  _connectorOptions: any;
+  _connectorColor = Color.LightGrey1;
+
   _textNode;
 
   node;
@@ -65,15 +67,7 @@ export class GraphAnnotation {
 
   constructor(id = "") {
     this._id = id;
-    this._wrap = 150;
-    this._align = "start";
-    this._x;
-    this._y;
-    this._tx = 0;
-    this._ty = 0;
-    this._showConnector = false;
-    this._color = "black";
-    this._backgroundColor = "none";
+
     this._rectPadding = 10;
 
     this._title = d3
@@ -86,7 +80,7 @@ export class GraphAnnotation {
       .create("svg")
       .append("g")
       .attr("class", "graph-annotation-text")
-      .attr("fill", this._color)
+      .attr("fill", this._titleColor)
       .node();
     this._textNode.append(this._title);
     this._textNode.append(this._label);
@@ -105,7 +99,7 @@ export class GraphAnnotation {
       .create("svg")
       .append("line")
       .attr("class", "graph-annotation-connector")
-      .attr("stroke", this._color)
+      .attr("stroke", this._connectorColor)
       .node();
 
     this.node = d3
@@ -195,8 +189,8 @@ export class GraphAnnotation {
   }
 
   titleColor(color) {
-    this._color = color;
-    this._textNode.style.fill = this._color;
+    this._titleColor = color;
+    this._textNode.style.fill = this._titleColor;
 
     return this;
   }
@@ -204,6 +198,11 @@ export class GraphAnnotation {
   backgroundColor(backgroundColor) {
     this._backgroundColor = backgroundColor;
     this._rect.style.fill = this._backgroundColor;
+    return this;
+  }
+
+  connectorColor(color) {
+    this._connector.style.stroke = color;
     return this;
   }
 
@@ -389,7 +388,7 @@ export class GraphAnnotation {
     this._connector.setAttribute("y1", iy);
     this._connector.setAttribute("y2", this._ty);
 
-    this._connector.setAttribute("stroke", this._color);
+    this._connector.setAttribute("stroke", this._connectorColor);
   }
 
   addTo(svg) {

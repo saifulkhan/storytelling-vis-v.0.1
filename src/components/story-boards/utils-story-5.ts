@@ -4,6 +4,12 @@ import { AnimationType } from "src/models/AnimationType";
 import { MirroredBarChart } from "./MirroredBarChart";
 import { TimeSeries } from "./TimeSeries_new";
 import { GraphAnnotation, LinePlotAnnotation } from "./GraphAnnotation_new";
+import { Color } from "./Colors";
+import {
+  DotColor,
+  TextColor,
+  TimeSeriesFeatureType,
+} from "./FeatureAndColorMap";
 
 /*********************************************************************************************************
  * - Prepare data
@@ -102,18 +108,6 @@ export function filterData(_parameter: string) {
  * Create annotation objects
  *********************************************************************************************************/
 
-const HIGHLIGHT_BEST_COLOR = "#2196F3",
-  HIGHLIGHT_DEFAULT_COLOR = "#474440",
-  TITLE_COLOR = "#696969",
-  BACKGROUND_COLOR = "#F5F5F5";
-
-const ACCURACY_BAR_COLOR = "#F96F4C",
-  PARAMETER_BAR_COLOR = "#d3d3d3",
-  CIRCLE_HIGHLIGHT_COLOR = "#F96F4C",
-  LINE1_STROKE_WIDTH = 1.5,
-  LINE1_COLOR = "#d3d3d3",
-  POINT_COLOR = "#696969";
-
 function calculateAnnotations() {
   lpAnnotations = [];
 
@@ -123,48 +117,49 @@ function calculateAnnotations() {
     return arr.findIndex((d) => d[attr] === max);
   };
   const maxIdx = indexOfMax(selectedData, "mean_test_accuracy");
-
   console.log("utils-story-5: calculateAnnotations: maxIdx = ", maxIdx);
 
   selectedData.forEach((d, idx) => {
-    // feature 3:
-    // highest testing accuracy (except the first run) -->
-    // action 3:
-    // message box, "On <time date>, a newly-trained model attended the best results so far with testing accuracy: y% and training accuracy is x%."
-    // <Stop to allow reading>
+    //
+    // Feature - maximum accuracy
+    //
     if (idx === maxIdx) {
       // prettier-ignore
       const msg =  `A newly-trained model achieved the best testing accuracy ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%].`
       lpAnnotations.push(
-        writeText(msg, d.date, selectedData, HIGHLIGHT_BEST_COLOR, true),
+        writeText(msg, d.date, selectedData, TimeSeriesFeatureType.MAX, true),
       );
     }
-
-    // feature 2:
-    // first test run -->
-    // action 2:
-    // possible implementation: display more detailed sentence in a  message box, e.g., "On <time-date>, a newly-trained model
-    // resulted in testing accuracy of y% and training accuracy of x%,  denoted as y% [x%]."
-    // <Stop to allow reading>
+    //
+    // Feature - first test run
+    //
     else if (idx === 0) {
       // prettier-ignore
-      const msg =  `On A newly-trained model achieved testing accuracy of ${Math.round(d?.mean_test_accuracy * 100)}% and training accuracy of ${Math.round(d?.mean_training_accuracy * 100)}%, denoted as ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%].`
+      const msg =  `A newly-trained model achieved testing accuracy of ${Math.round(d?.mean_test_accuracy * 100)}% and training accuracy of ${Math.round(d?.mean_training_accuracy * 100)}%, denoted as ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%].`
       lpAnnotations.push(
-        writeText(msg, d.date, selectedData, HIGHLIGHT_DEFAULT_COLOR, true),
+        writeText(
+          msg,
+          d.date,
+          selectedData,
+          TimeSeriesFeatureType.CURRENT,
+          true,
+        ),
       );
-    } else {
-      //
-      // feature 1:
-      // a test run -->
-
-      // action 1a:
-      // display accuracy in number: possible implementation: display "y% [x%]" in a colour text (e.g.,
-      // cyan), where y% is the testing accuracy, and x% is the training accuracy.
-      //
+    }
+    //
+    // Feature - current
+    //
+    else {
       // prettier-ignore
       const msg = `Accuracy: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
       lpAnnotations.push(
-        writeText(msg, d.date, selectedData, HIGHLIGHT_DEFAULT_COLOR, false),
+        writeText(
+          msg,
+          d.date,
+          selectedData,
+          TimeSeriesFeatureType.CURRENT,
+          false,
+        ),
       );
 
       // action 1b:
@@ -193,7 +188,8 @@ function writeText(
   text,
   date,
   data,
-  labelColor = HIGHLIGHT_DEFAULT_COLOR,
+  // labelColor = HIGHLIGHT_DEFAULT_COLOR,
+  featureType: TimeSeriesFeatureType,
   showRedCircle = false,
 ): LinePlotAnnotation {
   // Find idx of event in data and set location of the annotation in opposite half of graph
@@ -202,14 +198,15 @@ function writeText(
   const graphAnnotation = new GraphAnnotation()
     .title(date.toLocaleDateString("en-GB"))
     .label(text)
-    .backgroundColor(BACKGROUND_COLOR)
-    .titleColor(TITLE_COLOR)
-    .labelColor(labelColor)
+    .backgroundColor(Color.VeryLightGrey)
+    .titleColor(TextColor[featureType])
+    .labelColor(TextColor[featureType])
+    .connectorColor(Color.LightGrey2)
     .fontSize("13px")
     .wrap(500);
 
   if (showRedCircle) {
-    graphAnnotation.circleHighlight(CIRCLE_HIGHLIGHT_COLOR, 10);
+    graphAnnotation.circleHighlight(DotColor[featureType], 10);
   }
 
   const target = data[idx];
@@ -230,6 +227,8 @@ function writeText(
 let ts;
 let bc;
 
+const LINE1_STROKE_WIDTH = 1.5;
+
 export function createPlot(selector1: string, selector2: string) {
   // prettier-ignore
   console.log("utils-story-5: createPlot: selector1 = ", selector1, ", selector2 = ", selector2);
@@ -242,13 +241,13 @@ export function createPlot(selector1: string, selector2: string) {
       left: 50,
     })
     .data1(selectedData)
-    .color1(LINE1_COLOR)
+    .color1(Color.LightGrey1)
     .strokeWidth1(LINE1_STROKE_WIDTH)
     .title("")
     .yLabel(`${selectedParameter}`)
     .ticks(10)
     .showPoints1()
-    .pointsColor1(POINT_COLOR)
+    .pointsColor1(Color.DarkGrey)
     // .plot(); // static plot // debug
     .annotations(lpAnnotations)
     .annoTop()
@@ -262,8 +261,8 @@ export function createPlot(selector1: string, selector2: string) {
       left: 50,
     })
     .data1(selectedData)
-    .color1(ACCURACY_BAR_COLOR)
-    .color2(PARAMETER_BAR_COLOR)
+    .color1(Color.CornflowerBlue)
+    .color2(Color.DarkGrey)
     .title("")
     .yLabel1(`accuracy`)
     .yLabel2(`${selectedParameter}`)

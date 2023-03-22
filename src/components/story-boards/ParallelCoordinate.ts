@@ -1,32 +1,26 @@
 import * as d3 from "d3";
-import { AnimationType } from "src/models/ITimeSeriesData";
-import { Oranges } from "./colormap";
-import {
-  GraphAnnotation,
-  HIGHLIGHT_TYPE,
-  PCAnnotation,
-} from "./GraphAnnotation_new";
+import { AnimationType } from "src/models/AnimationType";
+import { Color } from "./Colors";
+import { GraphAnnotation, PCAnnotation } from "./GraphAnnotation_new";
+import { TimeSeriesFeatureType } from "./FeatureAndColorMap";
 
 const WIDTH = 800,
   HEIGHT = 600,
-  MARGIN = { top: 50, right: 50, bottom: 30, left: 50 };
+  MARGIN = { top: 70, right: 50, bottom: 30, left: 50 };
 
 const STATIC_LINE_COLORMAP = d3.interpolateBrBG,
   STATIC_LINE_OPACITY = 0.4,
   STATIC_DOT_OPACITY = 0.4;
 
-const ANIMATE_COLORMAP = Oranges,
-  LINE_WIDTH = 1.5;
-const DOT_RADIUS = 5;
-const AXIS_HIGHLIGHT_COLOR = "#DE4E6B";
-const DELAY = 500,
+const LINE_WIDTH = 1.5,
+  DOT_RADIUS = 5,
+  SELECTED_AXIS_COLOR = Color.Red,
+  DELAY = 500,
   DURATION1 = 1000,
-  DURATION2 = 1500;
+  FONT_SIZE = "12px";
 
-const FONT_SIZE = "12px",
-  TITLE_FONT_SIZE = "13px",
-  ANNOTATION_Y_POS = 20,
-  ANNOTATION_XMID_OFFSET = 140;
+const ANNO_Y_POS = 20,
+  ANNO_X_POS = 75;
 
 const xScaleMap = (data, keys, width, margin) => {
   return new Map(
@@ -116,11 +110,12 @@ export class ParallelCoordinate {
     return this;
   }
 
-  /**
-   * Static plot of the parallel coordinate
-   */
+  /*********************************************************************************************************
+   * Static drawing - draw all lines
+   *********************************************************************************************************/
+
   plot() {
-    this._drawAxisAndLabels();
+    this.drawAxisAndLabels();
 
     const line = d3
       .line()
@@ -185,10 +180,7 @@ export class ParallelCoordinate {
     return this;
   }
 
-  /**
-   * Create axes and add labels
-   */
-  _drawAxisAndLabels() {
+  private drawAxisAndLabels() {
     // Clear existing axis and labels
     d3.select(this._svg).selectAll("svg > *").remove();
 
@@ -222,7 +214,7 @@ export class ParallelCoordinate {
         // change color of the selected axis for d = keyz
         if (d === that._selectedAxis) {
           d3.select(this)
-            .attr("color", AXIS_HIGHLIGHT_COLOR)
+            .attr("color", SELECTED_AXIS_COLOR)
             .call(d3.axisBottom(that._xScaleMap.get(d)));
         } else {
           d3.select(this).call(d3.axisBottom(that._xScaleMap.get(d)));
@@ -237,7 +229,7 @@ export class ParallelCoordinate {
           .attr("text-anchor", "start")
           .attr("fill", (d) =>
             // change color of the selected axis label for d = keyz
-            d === this._selectedAxis ? AXIS_HIGHLIGHT_COLOR : "currentColor",
+            d === this._selectedAxis ? SELECTED_AXIS_COLOR : "currentColor",
           )
           .text((d) => d),
       );
@@ -252,49 +244,43 @@ export class ParallelCoordinate {
   /**
    * Set annotations.
    */
-  annotations(pcAnnotations: PCAnnotation[]) {
+  public annotations(pcAnnotations: PCAnnotation[]) {
     this._annotations = pcAnnotations;
     // prettier-ignore
     console.log("ParallelCoordinate: annotations: _pcAnnotations = ", this._annotations);
 
     // We need to draw the axis and labels before we can compute the coordinates of the annotations
-    this._drawAxisAndLabels();
-    this._createPathsAndDots();
-
-    this._createAnnotations();
+    this.drawAxisAndLabels();
+    this.createLinesAndDots();
+    this.createAnnotations();
 
     // prettier-ignore
     console.log("ParallelCoordinate: annotations: _pcAnnotations = ", this._annotations);
-
     return this;
   }
 
   /**
    *
    */
-
-  animate(animationType: AnimationType) {
+  public animate(animationType: AnimationType) {
     console.log("TimeSeries: animate: animationType = ", animationType);
 
     if (animationType === "back" && this._animationCounter >= 0) {
       this._animateBack();
-      this._animationCounter -= 1;
     } else if (animationType === "beginning") {
       this._animateBeginning();
-      this._animationCounter = -1;
     } else if (
       animationType === "play" &&
-      this._animationCounter + 1 < this._annotations.length
+      this._animationCounter <= this._annotations.length - 1
     ) {
       this._animateForward();
-      this._animationCounter += 1;
     }
 
     // prettier-ignore
     console.log("TimeSeries: animate: _animationCounter: ", this._animationCounter)
   }
 
-  _createPathsAndDots() {
+  private createLinesAndDots() {
     const line = d3
       .line()
       .defined(([, value]) => value != null)
@@ -321,7 +307,7 @@ export class ParallelCoordinate {
       .selectAll("path")
       .data(this._annotations)
       .join("path")
-      .attr("stroke", (d) => d?.highlightColor)
+      .attr("stroke", (d) => d?.lineColor)
       .attr("d", (d: PCAnnotation) => {
         // d.data is a data point, e.g., {kernel_size: 11, layers: 13, ...}
         // cross returns an array of [key, value] pairs ['date', 1677603855000], ['mean_training_accuracy', 0.9], ['channels', 32], ['kernel_size', 3], ['layers', 13], ...
@@ -359,12 +345,12 @@ export class ParallelCoordinate {
       .style("fill", function (d) {
         // get the parent node data, i.e., pcAnnotation
         const parent = d3.select(this.parentNode).datum();
-        return parent?.highlightColor;
+        return parent?.dotColor;
       })
       .style("opacity", 0);
   }
 
-  _createAnnotations() {
+  private createAnnotations() {
     // Middle of the any x-axis
     const dateScale = this._xScaleMap.get("date");
     const xMid =
@@ -394,71 +380,71 @@ export class ParallelCoordinate {
         graphAnnotation.hide();
 
         // Save the coordinates in PCAnnotation object
-
         d.origin = [x, y];
-
-        if (d.highlightType === HIGHLIGHT_TYPE.BEST) {
-          d.destination = [xMid - ANNOTATION_XMID_OFFSET, ANNOTATION_Y_POS];
-        } else if (d.highlightType === HIGHLIGHT_TYPE.WORST) {
-          d.destination = [xMid + ANNOTATION_XMID_OFFSET, ANNOTATION_Y_POS];
+        if (d.featureType === TimeSeriesFeatureType.MIN) {
+          d.destination = [this._margin.right + ANNO_X_POS, ANNO_Y_POS];
+        } else if (
+          d.featureType === TimeSeriesFeatureType.CURRENT ||
+          d.featureType === TimeSeriesFeatureType.LAST
+        ) {
+          d.destination = [xMid, ANNO_Y_POS];
+        } else if (d.featureType === TimeSeriesFeatureType.MAX) {
+          d.destination = [
+            this._width - this._margin.left - ANNO_X_POS,
+            ANNO_Y_POS,
+          ];
         }
       }
     });
   }
 
   private _animateForward() {
-    const currAnnotation: PCAnnotation =
-      this._annotations[this._animationCounter];
+    const currIdx = this._animationCounter;
+    const prevIdx = this._animationCounter - 1;
+    const currAnn: PCAnnotation = this._annotations[currIdx];
+    const prevAnn: PCAnnotation = this._annotations[prevIdx];
 
-    const prevAnnotation: PCAnnotation =
-      this._annotations[this._animationCounter - 1];
+    // prettier-ignore
+    // console.log("ParallelCoordinate: _animateForward: currAnnotation = ", currAnn);
 
-    // Show current line
-    d3.select(this._svg)
-      .select(`#id-line-${this._animationCounter}`)
-      .style("stroke-opacity", 1);
+    // Show current line & its dots
+    this.shotLineWithId(currIdx);
+    this.shotDotsWithId(currIdx);
 
-    // show current dots
-    d3.select(this._svg)
-      .select(`#id-circles-${this._animationCounter}`) // return group
-      .selectAll("circle")
-      .style("opacity", 1); // reveal the circles
-
-    // Show the annotation and move it to the destination
-    currAnnotation?.graphAnnotation?.show();
-    currAnnotation?.graphAnnotation?.updatePosAnimate(
-      currAnnotation.destination[0],
-      currAnnotation.destination[1],
+    // Show the annotation and move it to its destination
+    currAnn?.graphAnnotation?.show();
+    currAnn?.graphAnnotation?.updatePosAnimate(
+      currAnn.destination[0],
+      currAnn.destination[1],
     );
 
-    // Hide previous default line & dots
-    if (
-      prevAnnotation?.highlightType === HIGHLIGHT_TYPE.DEFAULT &&
-      this._animationCounter - 1 >= 0
-    ) {
-      this._hideLineWithId(this._animationCounter - 1);
-      this._hideDotWithId(this._animationCounter - 1);
+    // Hide previous line & its dots
+    if (prevAnn?.featureType === TimeSeriesFeatureType.CURRENT) {
+      this.hideLineWithId(prevIdx);
+      this.hideDotsWithId(prevIdx);
     }
 
-    // Check if there is any BEST line exists
-    if (currAnnotation?.highlightType === HIGHLIGHT_TYPE.BEST) {
-      this._annotations.slice(0, this._animationCounter).forEach((d, idx) => {
-        if (d.highlightType === HIGHLIGHT_TYPE.BEST) {
-          this._hideLineWithId(idx);
-          this._hideDotWithId(idx);
+    // Check if there is any past MAX line exists
+    if (currAnn?.featureType === TimeSeriesFeatureType.MAX) {
+      this._annotations.slice(0, currIdx).forEach((d, idx) => {
+        if (d.featureType === TimeSeriesFeatureType.MAX) {
+          this.hideLineWithId(idx);
+          this.hideDotsWithId(idx);
         }
       });
     }
 
-    // Check if there is any WORST line exists
-    if (currAnnotation?.highlightType === HIGHLIGHT_TYPE.WORST) {
-      this._annotations.slice(0, this._animationCounter).forEach((d, idx) => {
-        if (d.highlightType === HIGHLIGHT_TYPE.WORST) {
-          this._hideLineWithId(idx);
-          this._hideDotWithId(idx);
+    // Check if there is any past MIN line exists
+    if (currAnn?.featureType === TimeSeriesFeatureType.MIN) {
+      this._annotations.slice(0, currIdx).forEach((d, idx) => {
+        if (d.featureType === TimeSeriesFeatureType.MIN) {
+          this.hideLineWithId(idx);
+          this.hideDotsWithId(idx);
         }
       });
     }
+
+    this._animationCounter += 1;
   }
 
   private _animateBeginning() {
@@ -468,7 +454,18 @@ export class ParallelCoordinate {
     throw new Error("Method not implemented.");
   }
 
-  private _hideLineWithId(id: number) {
+  private shotLineWithId(id: number) {
+    d3.select(this._svg).select(`#id-line-${id}`).style("stroke-opacity", 1);
+  }
+
+  private shotDotsWithId(id: number) {
+    d3.select(this._svg)
+      .select(`#id-circles-${id}`) // return group
+      .selectAll("circle")
+      .style("opacity", 1); // reveal the circles
+  }
+
+  private hideLineWithId(id: number) {
     d3.select(this._svg)
       .select(`#id-line-${id}`)
       .transition()
@@ -479,7 +476,7 @@ export class ParallelCoordinate {
       .style("stroke", "#d3d3d3");
   }
 
-  private _hideDotWithId(id: number) {
+  private hideDotsWithId(id: number) {
     d3.select(this._svg)
       .select(`#id-circles-${id}`) // returns group
       .selectAll("circle")
@@ -488,25 +485,5 @@ export class ParallelCoordinate {
       .delay(DELAY)
       .duration(DURATION1)
       .style("opacity", 0);
-
-    // using cmap
-    // delay = 0;
-    // for (const d of ANIMATE_COLORMAP) {
-    //   prevCircles
-    //     .transition()
-    //     .ease(d3.easeLinear)
-    //     .delay(delay)
-    //     .duration(duration)
-    //     .style("fill", d);
-    //   delay += duration;
-    // }
-    // // Disappear the circles and change the color back to the original
-    // prevCircles
-    //   .transition()
-    //   .ease(d3.easeLinear)
-    //   .delay(delay)
-    //   .duration(duration)
-    //   .style("opacity", 0)
-    //   .style("fill", HIGHLIGHT_COLOR);
   }
 }
