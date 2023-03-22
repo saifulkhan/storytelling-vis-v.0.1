@@ -267,7 +267,7 @@ function writeText(
       .wrap(500)
       .title(data["date"].toLocaleDateString("en-GB"))
       .titleColor(TextColor[featureType])
-      .backgroundColor(Color.VeryLightGrey);
+      .backgroundColor(Color.WhiteGrey);
 
     annotation = {
       graphAnnotation: graphAnnotation,

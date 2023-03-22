@@ -198,7 +198,7 @@ function writeText(
   const graphAnnotation = new GraphAnnotation()
     .title(date.toLocaleDateString("en-GB"))
     .label(text)
-    .backgroundColor(Color.VeryLightGrey)
+    .backgroundColor(Color.WhiteGrey)
     .titleColor(TextColor[featureType])
     .labelColor(TextColor[featureType])
     .connectorColor(Color.LightGrey2)
