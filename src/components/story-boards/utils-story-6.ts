@@ -266,7 +266,7 @@ function writeText(
       .fontSize("14px")
       .wrap(500)
       .title(data["date"].toLocaleDateString("en-GB"))
-      .titleColor(TextColor[featureType])
+      .titleColor(Color.Grey)
       .backgroundColor(Color.WhiteGrey);
 
     annotation = {

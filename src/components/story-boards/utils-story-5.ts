@@ -199,7 +199,7 @@ function writeText(
     .title(date.toLocaleDateString("en-GB"))
     .label(text)
     .backgroundColor(Color.WhiteGrey)
-    .titleColor(TextColor[featureType])
+    .titleColor(Color.Grey)
     .labelColor(TextColor[featureType])
     .connectorColor(Color.LightGrey2)
     .fontSize("13px")
