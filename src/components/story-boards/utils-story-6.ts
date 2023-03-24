@@ -3,13 +3,8 @@ import { readCSVFile } from "./utils-data";
 import { ParallelCoordinatePlot } from "./ParallelCoordinatePlot";
 import { AnimationType } from "src/models/AnimationType";
 import { GraphAnnotation, PCPAnnotation } from "./GraphAnnotation";
-import { Color } from "./Colors";
-import {
-  DotColor,
-  LineColor,
-  TextColor,
-  FeatureType,
-} from "./FeatureAndColorMap";
+import { DotColor, LineColor, TextColor, Color } from "./Colors";
+import { FeatureType } from "./FeatureType";
 
 /*********************************************************************************************************
  * Prepare data

@@ -4,8 +4,8 @@ import { AnimationType } from "src/models/AnimationType";
 import { MirroredBarChart } from "./MirroredBarChart";
 import { TimeSeriesPlot } from "./TimeSeriesPlot";
 import { GraphAnnotation, TSPAnnotation } from "./GraphAnnotation";
-import { Color } from "./Colors";
-import { DotColor, TextColor, FeatureType } from "./FeatureAndColorMap";
+import { Color, DotColor, TextColor } from "./Colors";
+import { FeatureType } from "./FeatureType";
 
 /*********************************************************************************************************
  * - Prepare data
@@ -87,7 +87,7 @@ export function getParameters() {
 
 let selectedData = []; // selected parameter data
 let selectedParameter;
-let lpAnnotations: TSPAnnotation[];
+let annotations: TSPAnnotation[];
 
 export function filterData(_parameter: string) {
   selectedParameter = _parameter;
@@ -105,7 +105,7 @@ export function filterData(_parameter: string) {
  *********************************************************************************************************/
 
 function calculateAnnotations() {
-  lpAnnotations = [];
+  annotations = [];
 
   // Find index of highest attr (e.g., highest testing accuracy)
   const indexOfMax = (arr, attr) => {
@@ -122,7 +122,7 @@ function calculateAnnotations() {
     if (idx === maxIdx) {
       // prettier-ignore
       const msg =  `A newly-trained model achieved the best testing accuracy ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%].`
-      lpAnnotations.push(
+      annotations.push(
         writeText(msg, d.date, selectedData, FeatureType.MAX, true),
       );
     }
@@ -132,7 +132,7 @@ function calculateAnnotations() {
     else if (idx === 0) {
       // prettier-ignore
       const msg =  `A newly-trained model achieved testing accuracy of ${Math.round(d?.mean_test_accuracy * 100)}% and training accuracy of ${Math.round(d?.mean_training_accuracy * 100)}%, denoted as ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%].`
-      lpAnnotations.push(
+      annotations.push(
         writeText(msg, d.date, selectedData, FeatureType.CURRENT, true),
       );
     }
@@ -142,7 +142,7 @@ function calculateAnnotations() {
     else {
       // prettier-ignore
       const msg = `Accuracy: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
-      lpAnnotations.push(
+      annotations.push(
         writeText(msg, d.date, selectedData, FeatureType.CURRENT, false),
       );
 
@@ -155,22 +155,21 @@ function calculateAnnotations() {
   });
 
   // Sort annotations
-  lpAnnotations.sort((a1, a2) => a1.current - a2.current);
-  lpAnnotations.push({ current: selectedData.length - 1 });
-  // Set annotations starts to the previous annotation's end/current
-  lpAnnotations
+  annotations.sort((a1, a2) => a1.end - a2.end);
+  annotations.push({ end: selectedData.length - 1 });
+  // Set annotations starts to the start annotation's end
+  annotations
     .slice(1)
-    .forEach((d: TSPAnnotation, i) => (d.previous = lpAnnotations[i].current));
+    .forEach((d: TSPAnnotation, i) => (d.start = annotations[i].end));
 
   // prettier-ignore
-  console.log("utils-story-5: calculateAnnotations: lpAnnotations = ", lpAnnotations);
+  console.log("utils-story-5: calculateAnnotations: lpAnnotations = ", annotations);
 }
 
 function writeText(
   text,
   date,
   data,
-  // labelColor = HIGHLIGHT_DEFAULT_COLOR,
   featureType: FeatureType,
   showCircle = false,
 ): TSPAnnotation {
@@ -196,8 +195,9 @@ function writeText(
   graphAnnotation.unscaledTarget = [target.date, target.y];
 
   return {
-    current: idx,
     graphAnnotation: graphAnnotation,
+    end: idx,
+    featureType: featureType,
     fadeout: true,
   } as TSPAnnotation;
 }
@@ -229,12 +229,12 @@ export function createPlot(selector1: string, selector2: string) {
     .title("")
     .yLabel(`${selectedParameter}`)
     .ticks(10)
-    .showPoints1()
-    .pointsColor1(Color.DarkGrey)
+    .showLine1Dots()
+    .line1DotColor(Color.DarkGrey)
     // .plot(); // static plot // debug
-    .annotations(lpAnnotations)
-    .annoTop()
-    .showEventLines();
+    .annotationOnTop()
+    .showEventLines()
+    .annotate(annotations);
 
   bc = new MirroredBarChart()
     .selector(selector2, 200, 850, {
@@ -251,7 +251,7 @@ export function createPlot(selector1: string, selector2: string) {
     .yLabel2(`${selectedParameter}`)
     .ticks(10)
     // .plot(); // static plot // debug
-    .annotations(lpAnnotations);
+    .annotations(annotations);
 }
 
 export function animatePlot(animationType: AnimationType) {

@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { Color } from "./Colors";
-import { FeatureType } from "./FeatureAndColorMap";
+import { FeatureType } from "./FeatureType";
 
 //
 // Annotations used in parallel coordinate
@@ -23,10 +23,11 @@ export interface PCPAnnotation {
 //
 export interface TSPAnnotation {
   graphAnnotation?: GraphAnnotation;
-  current?: number;
-  previous?: number;
+  end?: number;
+  start?: number;
   date?: any;
   fadeout?: boolean;
+  featureType?: FeatureType;
   useData2?: boolean;
 }
 
@@ -471,16 +472,81 @@ export class GraphAnnotation {
   }
 
   /*********************************************************************************************************
-   * Animation used in PCP
+   ** Animation used in TSP
    *********************************************************************************************************/
 
-  hide() {
-    d3.select(this.node).attr("opacity", 0);
+  /**
+   ** Show all elements
+   **/
+  public showAnnotation(delay) {
+    d3.select(this.node)
+      .transition()
+      .ease(d3.easeQuadIn)
+      .delay(delay)
+      .duration(0)
+      .style("opacity", 1);
+    return delay;
   }
 
-  show() {
-    d3.select(this.node).attr("opacity", 1);
+  /**
+   ** Hide all elements
+   **/
+  public hideAnnotation() {
+    d3.select(this.node)
+      .transition()
+      .ease(d3.easeQuadIn)
+      .delay(0)
+      .duration(0)
+      .style("opacity", 0);
+
+    return 0;
   }
+
+  /**
+   ** Hide only message, box and connector
+   */
+  public hideMessage() {
+    d3.select(this._rect)
+      .transition()
+      .ease(d3.easeQuadIn)
+      .delay(0)
+      .duration(0)
+      .style("opacity", 0);
+
+    d3.select(this._textNode)
+      .transition()
+      .ease(d3.easeQuadIn)
+      .delay(0)
+      .duration(0)
+      .style("opacity", 0);
+
+    d3.select(this._connector)
+      .transition()
+      .ease(d3.easeQuadIn)
+      .delay(0)
+      .duration(0)
+      .style("opacity", 0);
+
+    return 0;
+  }
+
+  /**
+   ** Hide only circle
+   */
+  public hideCircle() {
+    d3.select(this._circle)
+      .transition()
+      .ease(d3.easeQuadIn)
+      .delay(0)
+      .duration(0)
+      .style("opacity", 0);
+
+    return 0;
+  }
+
+  /*********************************************************************************************************
+   ** Animation used in PCP
+   *********************************************************************************************************/
 
   updatePosAnimate(x, y) {
     this._x = x;

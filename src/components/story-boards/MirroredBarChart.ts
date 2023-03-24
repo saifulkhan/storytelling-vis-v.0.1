@@ -264,7 +264,7 @@ export class MirroredBarChart {
   _createBars() {
     this._barElements = this._lpAnnotations.map((d: TSPAnnotation) => {
       console.log("MirroredBarChart: _createBars: annotation, d = ", d);
-      const point = this._data[d.current];
+      const point = this._data[d.end];
 
       // Take the first data point of the segment to draw a dot
       const barElement = d3.select(this._svg).append("g").style("opacity", 0);

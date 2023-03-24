@@ -2,8 +2,8 @@ import * as d3 from "d3";
 import { readCSVFile } from "./utils-data";
 import { AnimationType } from "src/models/AnimationType";
 import { LearningCurve, LearningCurveData } from "./LearningCurve";
-import { Color } from "./Colors";
-import { DotColor, FeatureType } from "./FeatureAndColorMap";
+import { Color, DotColor } from "./Colors";
+import { FeatureType } from "./FeatureType";
 
 /*********************************************************************************************************
  * Prepare data

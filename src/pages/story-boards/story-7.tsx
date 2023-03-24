@@ -34,10 +34,8 @@ import {
   getCurrent,
 } from "src/components/story-boards/story-7-data";
 import DisplayAccuracyCard from "src/components/story-boards/DisplayAccuracyCard";
-import {
-  TextColor,
-  FeatureType,
-} from "src/components/story-boards/FeatureAndColorMap";
+import { TextColor } from "src/components/story-boards/Colors";
+import { FeatureType } from "src/components/story-boards/FeatureType";
 
 const styling = {
   container: {

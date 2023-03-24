@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import { AnimationType } from "src/models/AnimationType";
 import { Color } from "./Colors";
 import { GraphAnnotation, PCPAnnotation } from "./GraphAnnotation";
-import { FeatureType } from "./FeatureAndColorMap";
+import { FeatureType } from "./FeatureType";
 
 const WIDTH = 800,
   HEIGHT = 600,
@@ -377,7 +377,7 @@ export class ParallelCoordinatePlot {
 
         // If add to svg and set opacity to 0 (to hide it)
         graphAnnotation.id(`id-annotation-${idx}`).addTo(this._svg);
-        graphAnnotation.hide();
+        graphAnnotation.hideAnnotation();
 
         // Save the coordinates in PCAnnotation object
         d.origin = [x, y];
@@ -412,7 +412,7 @@ export class ParallelCoordinatePlot {
     this.shotDotsWithId(currIdx);
 
     // Show the annotation and move it to its destination
-    currAnn?.graphAnnotation?.show();
+    currAnn?.graphAnnotation?.showAnnotation(0);
     currAnn?.graphAnnotation?.updatePosAnimate(
       currAnn.destination[0],
       currAnn.destination[1],
