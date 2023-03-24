@@ -9,7 +9,7 @@ import {
   maxBounds,
 } from "./utils-aggregation-segmentation";
 
-import { GraphAnnotation } from "./GraphAnnotation";
+import { GraphAnnotation } from "./GraphAnnotation_story-1-2-3";
 import { TimeSeries } from "./TimeSeries";
 import { Rise } from "./Raise";
 import { Fall } from "./Fall";

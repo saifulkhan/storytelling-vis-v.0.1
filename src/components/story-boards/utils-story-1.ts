@@ -10,7 +10,7 @@ import {
   splitDataAndEvents,
 } from "./utils-aggregation-segmentation";
 
-import { GraphAnnotation } from "./GraphAnnotation";
+import { GraphAnnotation } from "./GraphAnnotation_story-1-2-3";
 import { DataEvent } from "./DataEvent";
 import { TimeSeries } from "./TimeSeries";
 
