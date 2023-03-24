@@ -80,20 +80,6 @@ const StoryBoards = () => {
                     </Link>
                   </Grid>
                   <Grid item xs={6}>
-                    <Link href="/story-boards/story-4" passHref>
-                      <div className={styles.container}>
-                        <img
-                          src="/static/story-boards/story-4.png"
-                          className={styles.image}
-                        ></img>
-                        <div className={styles.overlay}>
-                          <div className={styles.text}>Story-4</div>
-                        </div>
-                      </div>
-                    </Link>
-                  </Grid>
-
-                  <Grid item xs={6}>
                     <Link href="/story-boards/story-5" passHref>
                       <div className={styles.container}>
                         <img
@@ -101,11 +87,12 @@ const StoryBoards = () => {
                           className={styles.image}
                         ></img>
                         <div className={styles.overlay}>
-                          <div className={styles.text}>Story-5</div>
+                          <div className={styles.text}>Provenance Story</div>
                         </div>
                       </div>
                     </Link>
                   </Grid>
+
                   <Grid item xs={6}>
                     <Link href="/story-boards/story-6" passHref>
                       <div className={styles.container}>
@@ -114,7 +101,20 @@ const StoryBoards = () => {
                           className={styles.image}
                         ></img>
                         <div className={styles.overlay}>
-                          <div className={styles.text}>Story-6</div>
+                          <div className={styles.text}>Multivariate Story</div>
+                        </div>
+                      </div>
+                    </Link>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Link href="/story-boards/story-7" passHref>
+                      <div className={styles.container}>
+                        <img
+                          src="/static/story-boards/ml-dashboard-story.png"
+                          className={styles.image}
+                        ></img>
+                        <div className={styles.overlay}>
+                          <div className={styles.text}>Dashboard & Story</div>
                         </div>
                       </div>
                     </Link>
