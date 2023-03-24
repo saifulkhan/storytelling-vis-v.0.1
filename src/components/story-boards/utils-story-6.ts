@@ -1,14 +1,14 @@
 import * as d3 from "d3";
 import { readCSVFile } from "./utils-data";
-import { ParallelCoordinate } from "./ParallelCoordinate";
+import { ParallelCoordinatePlot } from "./ParallelCoordinatePlot";
 import { AnimationType } from "src/models/AnimationType";
-import { GraphAnnotation, PCAnnotation } from "./GraphAnnotation_new";
+import { GraphAnnotation, PCPAnnotation } from "./GraphAnnotation_new";
 import { Color } from "./Colors";
 import {
   DotColor,
   LineColor,
   TextColor,
-  TimeSeriesFeatureType,
+  FeatureType,
 } from "./FeatureAndColorMap";
 
 /*********************************************************************************************************
@@ -181,7 +181,7 @@ export function filterData(_parameter: string) {
   calculateAnnotations();
 }
 
-let pcAnnotations: PCAnnotation[];
+let pcAnnotations: PCPAnnotation[];
 
 function calculateAnnotations() {
   pcAnnotations = [];
@@ -211,11 +211,11 @@ function calculateAnnotations() {
     if (globalMin.index === idx) {
       // prettier-ignore
       const msg = `The worst accuracy: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
-      pcAnnotations.push(writeText(msg, d, TimeSeriesFeatureType.MIN, false));
+      pcAnnotations.push(writeText(msg, d, FeatureType.MIN, false));
     } else if (globalMax.index === idx) {
       // prettier-ignore
       const msg = `The best accuracy: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
-      pcAnnotations.push(writeText(msg, d, TimeSeriesFeatureType.MAX, false));
+      pcAnnotations.push(writeText(msg, d, FeatureType.MAX, false));
     }
 
     //
@@ -224,7 +224,7 @@ function calculateAnnotations() {
     else if (idx === data.length - 1) {
       // prettier-ignore
       const msg = `The current/last testing accuracy: ${Math.round(d?.mean_test_accuracy * 100,)}% [training ${Math.round(d?.mean_training_accuracy * 100)}%]`;
-      pcAnnotations.push(writeText(msg, d, TimeSeriesFeatureType.LAST, false));
+      pcAnnotations.push(writeText(msg, d, FeatureType.LAST, false));
     }
 
     //
@@ -233,9 +233,7 @@ function calculateAnnotations() {
     else {
       // prettier-ignore
       const msg = `The current testing accuracy: ${Math.round(d?.mean_test_accuracy * 100)}% [training ${Math.round(d?.mean_training_accuracy * 100)}%]`;
-      pcAnnotations.push(
-        writeText(msg, d, TimeSeriesFeatureType.CURRENT, false),
-      );
+      pcAnnotations.push(writeText(msg, d, FeatureType.CURRENT, false));
     }
   });
 }
@@ -243,10 +241,10 @@ function calculateAnnotations() {
 function writeText(
   message: string | null,
   data: any,
-  featureType: TimeSeriesFeatureType,
+  featureType: FeatureType,
   highlightCircle: boolean = false,
-): PCAnnotation {
-  let annotation: PCAnnotation = null;
+): PCPAnnotation {
+  let annotation: PCPAnnotation = null;
 
   if (message === null) {
     // No annotation; just set color of the line and data
@@ -294,7 +292,7 @@ export function createPlot(selector: string) {
   // prettier-ignore
   console.log("utils-story-6: createPlot: selector = ", selector, ", selectedParameter = ", selectedParameter);
 
-  plot = new ParallelCoordinate()
+  plot = new ParallelCoordinatePlot()
     .selector(selector)
     .data(data, parameters, selectedParameter)
     // .plot(); // static plot

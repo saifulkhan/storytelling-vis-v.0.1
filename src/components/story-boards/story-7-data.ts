@@ -3,7 +3,7 @@ import { readCSVFile } from "./utils-data";
 import { AnimationType } from "src/models/AnimationType";
 import { LearningCurve, LearningCurveData } from "./LearningCurve";
 import { Color } from "./Colors";
-import { DotColor, TimeSeriesFeatureType } from "./FeatureAndColorMap";
+import { DotColor, FeatureType } from "./FeatureAndColorMap";
 
 /*********************************************************************************************************
  * Prepare data
@@ -124,8 +124,8 @@ export function createPlot(selector: string) {
     .lineStroke(1.5)
     .dotColor(Color.DarkGrey)
     // .dotHighlightColor(Color.Red) // TODO: fix animation
-    .currentPoint(_current, DotColor[TimeSeriesFeatureType.CURRENT])
-    .maxPoint(_maxTesting, DotColor[TimeSeriesFeatureType.MAX])
+    .currentPoint(_current, DotColor[FeatureType.CURRENT])
+    .maxPoint(_maxTesting, DotColor[FeatureType.MAX])
     .plot();
 }
 

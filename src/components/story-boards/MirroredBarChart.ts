@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { AnimationType } from "src/models/AnimationType";
-import { LinePlotAnnotation } from "./GraphAnnotation_new";
+import { TSPAnnotation } from "./GraphAnnotation_new";
 
 export type MirroredBarChartData = {
   date: Date;
@@ -70,7 +70,7 @@ export class MirroredBarChart {
   _yScale1: any;
   _yScale2: any;
 
-  _lpAnnotations: LinePlotAnnotation[];
+  _lpAnnotations: TSPAnnotation[];
   _annoTop = false;
   _animationCounter = 0;
 
@@ -177,7 +177,7 @@ export class MirroredBarChart {
   /**
    * x
    */
-  annotations(lpAnnotations: LinePlotAnnotation[]) {
+  annotations(lpAnnotations: TSPAnnotation[]) {
     this._drawAxisAndLabels();
 
     this._lpAnnotations = lpAnnotations;
@@ -262,7 +262,7 @@ export class MirroredBarChart {
 
   // TODO: We don't want to create excessive number of bars
   _createBars() {
-    this._barElements = this._lpAnnotations.map((d: LinePlotAnnotation) => {
+    this._barElements = this._lpAnnotations.map((d: TSPAnnotation) => {
       console.log("MirroredBarChart: _createBars: annotation, d = ", d);
       const point = this._data[d.current];
 

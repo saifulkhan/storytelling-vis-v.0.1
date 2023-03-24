@@ -1,8 +1,8 @@
 import * as d3 from "d3";
 import { AnimationType } from "src/models/AnimationType";
-import { GraphAnnotation, LinePlotAnnotation } from "./GraphAnnotation_new";
+import { GraphAnnotation, TSPAnnotation } from "./GraphAnnotation_new";
 
-export type TimeSeriesData = {
+export type TSPData = {
   date: Date;
   y: number;
 };
@@ -15,29 +15,29 @@ const MAGIC_NO = 10,
   FONT_SIZE = "12px",
   TITLE_FONT_SIZE = "13px";
 
-const xScale = (data: TimeSeriesData[], w = WIDTH, m = MARGIN) => {
+const xScale = (data: TSPData[], w = WIDTH, m = MARGIN) => {
   const xScale = d3
     .scaleTime()
-    .domain(d3.extent(data, (d: TimeSeriesData) => d.date)) // TODO: check if this is correct
+    .domain(d3.extent(data, (d: TSPData) => d.date)) // TODO: check if this is correct
     .nice()
     .range([m.left, w - m.right]);
   return xScale;
 };
 
-const yScale = (data: TimeSeriesData[], h = HEIGHT, m = MARGIN) => {
+const yScale = (data: TSPData[], h = HEIGHT, m = MARGIN) => {
   const yScale = d3
     .scaleLinear()
-    .domain([0, d3.max(data, (d: TimeSeriesData) => d.y)]) // TODO: check if this is correct
+    .domain([0, d3.max(data, (d: TSPData) => d.y)]) // TODO: check if this is correct
     .nice()
     .range([h - m.bottom, m.top]);
   return yScale;
 };
 
-export class TimeSeries {
+export class TimeSeriesPlot {
   _selector: string;
   _svg: SVGSVGElement;
-  _data1: TimeSeriesData[];
-  _data2: TimeSeriesData[][];
+  _data1: TSPData[];
+  _data2: TSPData[][];
 
   _width: number;
   _height: number;
@@ -63,7 +63,7 @@ export class TimeSeries {
   _yScale2: any;
   _isSameScale = false;
 
-  _annotations: LinePlotAnnotation[];
+  _annotations: TSPAnnotation[];
   _annoTop = false;
   _animationCounter = 0;
 
@@ -116,12 +116,12 @@ export class TimeSeries {
     return this;
   }
 
-  data1(data1: TimeSeriesData[]) {
+  data1(data1: TSPData[]) {
     this._data1 = data1;
     return this;
   }
 
-  data2(data2: TimeSeriesData[][]) {
+  data2(data2: TSPData[][]) {
     this._data2 = data2;
     return this;
   }
@@ -199,7 +199,7 @@ export class TimeSeries {
   /**
    * x
    */
-  annotations(lpAnnotations: LinePlotAnnotation[]) {
+  annotations(lpAnnotations: TSPAnnotation[]) {
     // prettier-ignore
     console.log("TimeSeries: graphAnnotations: lpAnnotations = ", lpAnnotations);
 
@@ -214,7 +214,7 @@ export class TimeSeries {
     console.log("TimeSeries: graphAnnotations: xMid = ", xMid);
 
     // Set coordinates of the annotations
-    lpAnnotations.forEach((d: LinePlotAnnotation) => {
+    lpAnnotations.forEach((d: TSPAnnotation) => {
       const graphAnnotation: GraphAnnotation = d.graphAnnotation;
 
       if (graphAnnotation) {
@@ -384,7 +384,7 @@ export class TimeSeries {
     // prettier-ignore
     console.log("TimeSeries: _createPaths: _data1: ", this._data1, "data2: ", this._data2);
 
-    this._pathElements = this._annotations.map((d: LinePlotAnnotation) => {
+    this._pathElements = this._annotations.map((d: TSPAnnotation) => {
       console.log("TimeSeries: _createPaths: annotation, d = ", d);
 
       // TODO: debug this part - case for 2 lines
@@ -437,7 +437,7 @@ export class TimeSeries {
     }
 
     // TODO: We don't want to create excessive number of bars
-    this._dotElements = this._annotations.map((d: LinePlotAnnotation) => {
+    this._dotElements = this._annotations.map((d: TSPAnnotation) => {
       console.log("TimeSeries: _createPaths: annotation, d = ", d);
       const point = this._data1[d.current];
 

@@ -36,7 +36,7 @@ import {
 import DisplayAccuracyCard from "src/components/story-boards/DisplayAccuracyCard";
 import {
   TextColor,
-  TimeSeriesFeatureType,
+  FeatureType,
 } from "src/components/story-boards/FeatureAndColorMap";
 
 const styling = {
@@ -218,14 +218,14 @@ const Story7 = () => {
                           <DisplayAccuracyCard
                             title="Current Accuracy"
                             obj={current}
-                            color={TextColor[TimeSeriesFeatureType.CURRENT]}
+                            color={TextColor[FeatureType.CURRENT]}
                           />
                         </Grid>
                         <Grid item xs={12} sx={{ paddingBottom: 2 }}>
                           <DisplayAccuracyCard
                             title="Max Testing Accuracy"
                             obj={maxTestingAcc}
-                            color={TextColor[TimeSeriesFeatureType.MAX]}
+                            color={TextColor[FeatureType.MAX]}
                           />
                         </Grid>
                       </Grid>

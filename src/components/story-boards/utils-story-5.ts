@@ -2,14 +2,10 @@ import { readCSVFile } from "./utils-data";
 import { findDateIdx } from "./utils-feature-detection";
 import { AnimationType } from "src/models/AnimationType";
 import { MirroredBarChart } from "./MirroredBarChart";
-import { TimeSeries } from "./TimeSeries_new";
-import { GraphAnnotation, LinePlotAnnotation } from "./GraphAnnotation_new";
+import { TimeSeriesPlot } from "./TimeSeries_new";
+import { GraphAnnotation, TSPAnnotation } from "./GraphAnnotation_new";
 import { Color } from "./Colors";
-import {
-  DotColor,
-  TextColor,
-  TimeSeriesFeatureType,
-} from "./FeatureAndColorMap";
+import { DotColor, TextColor, FeatureType } from "./FeatureAndColorMap";
 
 /*********************************************************************************************************
  * - Prepare data
@@ -91,7 +87,7 @@ export function getParameters() {
 
 let selectedData = []; // selected parameter data
 let selectedParameter;
-let lpAnnotations: LinePlotAnnotation[];
+let lpAnnotations: TSPAnnotation[];
 
 export function filterData(_parameter: string) {
   selectedParameter = _parameter;
@@ -127,7 +123,7 @@ function calculateAnnotations() {
       // prettier-ignore
       const msg =  `A newly-trained model achieved the best testing accuracy ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%].`
       lpAnnotations.push(
-        writeText(msg, d.date, selectedData, TimeSeriesFeatureType.MAX, true),
+        writeText(msg, d.date, selectedData, FeatureType.MAX, true),
       );
     }
     //
@@ -137,13 +133,7 @@ function calculateAnnotations() {
       // prettier-ignore
       const msg =  `A newly-trained model achieved testing accuracy of ${Math.round(d?.mean_test_accuracy * 100)}% and training accuracy of ${Math.round(d?.mean_training_accuracy * 100)}%, denoted as ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%].`
       lpAnnotations.push(
-        writeText(
-          msg,
-          d.date,
-          selectedData,
-          TimeSeriesFeatureType.CURRENT,
-          true,
-        ),
+        writeText(msg, d.date, selectedData, FeatureType.CURRENT, true),
       );
     }
     //
@@ -153,13 +143,7 @@ function calculateAnnotations() {
       // prettier-ignore
       const msg = `Accuracy: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
       lpAnnotations.push(
-        writeText(
-          msg,
-          d.date,
-          selectedData,
-          TimeSeriesFeatureType.CURRENT,
-          false,
-        ),
+        writeText(msg, d.date, selectedData, FeatureType.CURRENT, false),
       );
 
       // action 1b:
@@ -176,9 +160,7 @@ function calculateAnnotations() {
   // Set annotations starts to the previous annotation's end/current
   lpAnnotations
     .slice(1)
-    .forEach(
-      (d: LinePlotAnnotation, i) => (d.previous = lpAnnotations[i].current),
-    );
+    .forEach((d: TSPAnnotation, i) => (d.previous = lpAnnotations[i].current));
 
   // prettier-ignore
   console.log("utils-story-5: calculateAnnotations: lpAnnotations = ", lpAnnotations);
@@ -189,9 +171,9 @@ function writeText(
   date,
   data,
   // labelColor = HIGHLIGHT_DEFAULT_COLOR,
-  featureType: TimeSeriesFeatureType,
-  showRedCircle = false,
-): LinePlotAnnotation {
+  featureType: FeatureType,
+  showCircle = false,
+): TSPAnnotation {
   // Find idx of event in data and set location of the annotation in opposite half of graph
   const idx = findDateIdx(date, data);
 
@@ -205,9 +187,10 @@ function writeText(
     .fontSize("13px")
     .wrap(500);
 
-  if (showRedCircle) {
-    graphAnnotation.circleHighlight(DotColor[featureType], 10);
+  if (showCircle) {
+    graphAnnotation.circleAttr(10, DotColor[featureType], 3, 0.6);
   }
+  // graphAnnotation.dotAttr(5, Color.Red, 1);
 
   const target = data[idx];
   graphAnnotation.unscaledTarget = [target.date, target.y];
@@ -216,7 +199,7 @@ function writeText(
     current: idx,
     graphAnnotation: graphAnnotation,
     fadeout: true,
-  } as LinePlotAnnotation;
+  } as TSPAnnotation;
 }
 
 /*********************************************************************************************************
@@ -233,7 +216,7 @@ export function createPlot(selector1: string, selector2: string) {
   // prettier-ignore
   console.log("utils-story-5: createPlot: selector1 = ", selector1, ", selector2 = ", selector2);
 
-  ts = new TimeSeries()
+  ts = new TimeSeriesPlot()
     .selector(selector1, 200, 850, {
       top: 10,
       right: 20,

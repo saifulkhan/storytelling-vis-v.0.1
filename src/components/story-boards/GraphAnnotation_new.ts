@@ -1,20 +1,19 @@
 import * as d3 from "d3";
-import { string } from "yup/lib/locale";
 import { Color } from "./Colors";
-import { TimeSeriesFeatureType } from "./FeatureAndColorMap";
+import { FeatureType } from "./FeatureAndColorMap";
 
 //
 // Annotations used in parallel coordinate
 //
 
-export interface PCAnnotation {
+export interface PCPAnnotation {
   graphAnnotation?: GraphAnnotation | null;
   origin?: number[]; // x, y coordinate at key axis
   destination?: number[]; // x, y coordinate
   fadeout?: boolean;
   data?: number; //store data
   originAxis?: string; // the selected axis
-  featureType?: TimeSeriesFeatureType;
+  featureType?: FeatureType;
   lineColor?: string; // line highlight
   dotColor?: string; // dot highlight circle color
 }
@@ -22,7 +21,7 @@ export interface PCAnnotation {
 //
 // Wrapper containing additional properties for the GraphAnnotation
 //
-export interface LinePlotAnnotation {
+export interface TSPAnnotation {
   graphAnnotation?: GraphAnnotation;
   current?: number;
   previous?: number;
@@ -30,6 +29,15 @@ export interface LinePlotAnnotation {
   fadeout?: boolean;
   useData2?: boolean;
 }
+
+const CIRCLE_RADIUS = 10,
+  CIRCLE_STROKE_COLOR = Color.DarkGrey,
+  CIRCLE_OPACITY = 0.5,
+  CIRCLE_STROKE_WIDTH = 2;
+
+const DOT_RADIUS = 5,
+  DOT_FILL_COLOR = Color.DarkGrey,
+  DOT_OPACITY = 1;
 
 export class GraphAnnotation {
   _id;
@@ -40,24 +48,25 @@ export class GraphAnnotation {
   _tx = 0;
   _ty = 0;
 
+  _circle;
+  _dot;
+
   _title;
   _titleText;
   _rect;
-  _circle;
   _rectPadding;
 
   _label;
   _labelText;
   _labelColor;
   _titleColor = "Black";
-  _backgroundColor = Color.VeryLightGrey;
+  _backgroundColor = Color.WhiteGrey;
+  _textNode;
 
   _connector;
   _showConnector = false;
   _connectorOptions: any;
   _connectorColor = Color.LightGrey1;
-
-  _textNode;
 
   node;
   _annoWidth: number;
@@ -90,8 +99,20 @@ export class GraphAnnotation {
     this._circle = d3
       .create("svg")
       .append("circle")
-      .attr("r", 20)
-      .attr("stroke-width", 3)
+      .attr("r", 0)
+      .attr("stroke", "none")
+      .attr("stroke-width", 0)
+      .attr("opacity", 0)
+      .attr("fill", "none")
+      .node();
+
+    this._dot = d3
+      .create("svg")
+      .append("circle")
+      .attr("r", 0)
+      .attr("stroke", "none")
+      .attr("stroke-width", 0)
+      .attr("opacity", 0)
       .attr("fill", "none")
       .node();
 
@@ -116,11 +137,12 @@ export class GraphAnnotation {
     this.node.appendChild(this._connector);
     this.node.appendChild(this._textNode);
     this.node.appendChild(this._circle);
+    this.node.appendChild(this._dot);
   }
 
-  /*********************************************************************************
-   * Setters
-   *********************************************************************************/
+  /*****************************************************************************
+   ** Setters
+   *****************************************************************************/
 
   id(id) {
     this._id = id;
@@ -147,6 +169,61 @@ export class GraphAnnotation {
     return this;
   }
 
+  titleColor(color) {
+    this._titleColor = color;
+    this._textNode.style.fill = this._titleColor;
+
+    return this;
+  }
+
+  fontSize(fontSize) {
+    this.node.setAttribute("font-size", fontSize);
+    return this;
+  }
+
+  backgroundColor(backgroundColor) {
+    this._backgroundColor = backgroundColor;
+    this._rect.style.fill = this._backgroundColor;
+    return this;
+  }
+
+  connectorColor(color) {
+    this._connector.style.stroke = color;
+    return this;
+  }
+
+  circleAttr(
+    radius = CIRCLE_RADIUS,
+    strokeColor = CIRCLE_STROKE_COLOR,
+    strokeWidth = CIRCLE_STROKE_WIDTH,
+    opacity = CIRCLE_OPACITY,
+  ) {
+    d3.select(this._circle)
+      .attr("r", radius)
+      .attr("opacity", opacity)
+      .attr("stroke", strokeColor)
+      .attr("stroke-width", strokeWidth);
+    return this;
+  }
+
+  dotAttr(
+    radius = DOT_RADIUS,
+    fillColor = DOT_FILL_COLOR,
+    opacity = DOT_OPACITY,
+  ) {
+    d3.select(this._dot)
+      .attr("r", radius)
+      .attr("fill", fillColor)
+      .attr("opacity", opacity);
+    return this;
+  }
+
+  align(align) {
+    this._align = align;
+    this.node.setAttribute("text-anchor", align);
+    return this;
+  }
+
   wrap(wrap) {
     this._wrap = wrap;
     return this;
@@ -170,45 +247,47 @@ export class GraphAnnotation {
     return this;
   }
 
-  circleHighlight(color = "red", radius = 0) {
-    this._circle.setAttribute("stroke", color);
-    this._circle.setAttribute("opacity", 0.6);
-    radius && this._circle.setAttribute("r", radius);
-    return this;
+  /*****************************************************************************
+   ** Public methods
+   *****************************************************************************/
+
+  addTo(svg) {
+    d3.select(svg).append(() => this.node);
+    this._formatText();
+    this._repositionAnnotation();
+
+    if (this._backgroundColor) {
+      this._rect.style.fill = this._backgroundColor;
+      this._rect.setAttribute("width", this._annoWidth + this._rectPadding);
+      this._rect.setAttribute("height", this._annoHeight + this._rectPadding);
+      this._rect.setAttribute("rx", 5);
+    }
+
+    if (!(this._tx == this._x && this._ty == this._y) && this._showConnector) {
+      this._addConnector();
+    }
+
+    // Set circle & dot coordinate
+    d3.select(this._circle).attr("cx", this._tx).attr("cy", this._ty);
+    d3.select(this._dot).attr("cx", this._tx).attr("cy", this._ty);
+
+    // Reveal annotation
+    this.node.removeAttribute("display");
   }
 
-  fontSize(fontSize) {
-    this.node.setAttribute("font-size", fontSize);
-    return this;
+  updatePos(x, y) {
+    this._x = x;
+    this._y = y;
+
+    this._repositionAnnotation();
+    if (!(this._tx == this._x && this._ty == this._y) && this._showConnector) {
+      this._addConnector();
+    }
   }
 
-  align(align) {
-    this._align = align;
-    this.node.setAttribute("text-anchor", align);
-    return this;
-  }
-
-  titleColor(color) {
-    this._titleColor = color;
-    this._textNode.style.fill = this._titleColor;
-
-    return this;
-  }
-
-  backgroundColor(backgroundColor) {
-    this._backgroundColor = backgroundColor;
-    this._rect.style.fill = this._backgroundColor;
-    return this;
-  }
-
-  connectorColor(color) {
-    this._connector.style.stroke = color;
-    return this;
-  }
-
-  /*********************************************************************************
-   * Private methods
-   *********************************************************************************/
+  /*****************************************************************************
+   ** Private methods
+   *****************************************************************************/
 
   _alignToX() {
     // Uses the width and alignment of text to calculate correct x values of tspan elements
@@ -391,41 +470,8 @@ export class GraphAnnotation {
     this._connector.setAttribute("stroke", this._connectorColor);
   }
 
-  addTo(svg) {
-    d3.select(svg).append(() => this.node);
-    this._formatText();
-    this._repositionAnnotation();
-
-    if (this._backgroundColor) {
-      this._rect.style.fill = this._backgroundColor;
-      this._rect.setAttribute("width", this._annoWidth + this._rectPadding);
-      this._rect.setAttribute("height", this._annoHeight + this._rectPadding);
-      this._rect.setAttribute("rx", 5);
-    }
-
-    if (!(this._tx == this._x && this._ty == this._y) && this._showConnector) {
-      this._addConnector();
-    }
-
-    this._circle.setAttribute("cx", this._tx);
-    this._circle.setAttribute("cy", this._ty);
-
-    // Reveal annotation
-    this.node.removeAttribute("display");
-  }
-
-  updatePos(x, y) {
-    this._x = x;
-    this._y = y;
-
-    this._repositionAnnotation();
-    if (!(this._tx == this._x && this._ty == this._y) && this._showConnector) {
-      this._addConnector();
-    }
-  }
-
   /*********************************************************************************************************
-   * Animation used in story 6
+   * Animation used in PCP
    *********************************************************************************************************/
 
   hide() {

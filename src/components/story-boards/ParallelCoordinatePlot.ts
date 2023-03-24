@@ -1,8 +1,8 @@
 import * as d3 from "d3";
 import { AnimationType } from "src/models/AnimationType";
 import { Color } from "./Colors";
-import { GraphAnnotation, PCAnnotation } from "./GraphAnnotation_new";
-import { TimeSeriesFeatureType } from "./FeatureAndColorMap";
+import { GraphAnnotation, PCPAnnotation } from "./GraphAnnotation_new";
+import { FeatureType } from "./FeatureAndColorMap";
 
 const WIDTH = 800,
   HEIGHT = 600,
@@ -49,7 +49,7 @@ const yScale = (keys, height, margin) => {
   return d3.scalePoint(keys, [margin.top, height - margin.bottom]);
 };
 
-export class ParallelCoordinate {
+export class ParallelCoordinatePlot {
   _selector: string;
   _svg: SVGSVGElement;
 
@@ -65,7 +65,7 @@ export class ParallelCoordinate {
   _yScale;
   _colorScale;
 
-  _annotations: PCAnnotation[] = [];
+  _annotations: PCPAnnotation[] = [];
   _animationCounter = 0;
 
   constructor() {
@@ -244,7 +244,7 @@ export class ParallelCoordinate {
   /**
    * Set annotations.
    */
-  public annotations(pcAnnotations: PCAnnotation[]) {
+  public annotations(pcAnnotations: PCPAnnotation[]) {
     this._annotations = pcAnnotations;
     // prettier-ignore
     console.log("ParallelCoordinate: annotations: _pcAnnotations = ", this._annotations);
@@ -308,7 +308,7 @@ export class ParallelCoordinate {
       .data(this._annotations)
       .join("path")
       .attr("stroke", (d) => d?.lineColor)
-      .attr("d", (d: PCAnnotation) => {
+      .attr("d", (d: PCPAnnotation) => {
         // d.data is a data point, e.g., {kernel_size: 11, layers: 13, ...}
         // cross returns an array of [key, value] pairs ['date', 1677603855000], ['mean_training_accuracy', 0.9], ['channels', 32], ['kernel_size', 3], ['layers', 13], ...
         const a = cross(d?.data);
@@ -381,14 +381,14 @@ export class ParallelCoordinate {
 
         // Save the coordinates in PCAnnotation object
         d.origin = [x, y];
-        if (d.featureType === TimeSeriesFeatureType.MIN) {
+        if (d.featureType === FeatureType.MIN) {
           d.destination = [this._margin.right + ANNO_X_POS, ANNO_Y_POS];
         } else if (
-          d.featureType === TimeSeriesFeatureType.CURRENT ||
-          d.featureType === TimeSeriesFeatureType.LAST
+          d.featureType === FeatureType.CURRENT ||
+          d.featureType === FeatureType.LAST
         ) {
           d.destination = [xMid, ANNO_Y_POS];
-        } else if (d.featureType === TimeSeriesFeatureType.MAX) {
+        } else if (d.featureType === FeatureType.MAX) {
           d.destination = [
             this._width - this._margin.left - ANNO_X_POS,
             ANNO_Y_POS,
@@ -401,8 +401,8 @@ export class ParallelCoordinate {
   private _animateForward() {
     const currIdx = this._animationCounter;
     const prevIdx = this._animationCounter - 1;
-    const currAnn: PCAnnotation = this._annotations[currIdx];
-    const prevAnn: PCAnnotation = this._annotations[prevIdx];
+    const currAnn: PCPAnnotation = this._annotations[currIdx];
+    const prevAnn: PCPAnnotation = this._annotations[prevIdx];
 
     // prettier-ignore
     // console.log("ParallelCoordinate: _animateForward: currAnnotation = ", currAnn);
@@ -419,15 +419,15 @@ export class ParallelCoordinate {
     );
 
     // Hide previous line & its dots
-    if (prevAnn?.featureType === TimeSeriesFeatureType.CURRENT) {
+    if (prevAnn?.featureType === FeatureType.CURRENT) {
       this.hideLineWithId(prevIdx);
       this.hideDotsWithId(prevIdx);
     }
 
     // Check if there is any past MAX line exists
-    if (currAnn?.featureType === TimeSeriesFeatureType.MAX) {
+    if (currAnn?.featureType === FeatureType.MAX) {
       this._annotations.slice(0, currIdx).forEach((d, idx) => {
-        if (d.featureType === TimeSeriesFeatureType.MAX) {
+        if (d.featureType === FeatureType.MAX) {
           this.hideLineWithId(idx);
           this.hideDotsWithId(idx);
         }
@@ -435,9 +435,9 @@ export class ParallelCoordinate {
     }
 
     // Check if there is any past MIN line exists
-    if (currAnn?.featureType === TimeSeriesFeatureType.MIN) {
+    if (currAnn?.featureType === FeatureType.MIN) {
       this._annotations.slice(0, currIdx).forEach((d, idx) => {
-        if (d.featureType === TimeSeriesFeatureType.MIN) {
+        if (d.featureType === FeatureType.MIN) {
           this.hideLineWithId(idx);
           this.hideDotsWithId(idx);
         }
