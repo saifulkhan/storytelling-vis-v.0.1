@@ -200,12 +200,12 @@ export class TimeSeriesPlot {
    *****************************************************************************/
 
   /**
-   ** When we don't want to animate- simply add static path derived from the data points.
+   ** Static plot - simply add static path derived from the data points.
    **/
   plot() {
     console.log("TimeSeriesPlot: plot:");
     this.clear();
-    this._drawAxisAndLabels();
+    this.drawAxisAndLabels();
 
     console.log(this._data1, this._color1);
 
@@ -286,7 +286,7 @@ export class TimeSeriesPlot {
   /**
    ** Create axes and add labels
    **/
-  _drawAxisAndLabels() {
+  private drawAxisAndLabels() {
     console.log(`TimeSeriesPlot:_drawAxisAndLabels:`);
 
     // Combine all data before creating axis
@@ -404,12 +404,22 @@ export class TimeSeriesPlot {
    ** Set annotations and their coordinates
    **/
   annotate(annotations: TSPAnnotation[]) {
+    this.annotations = annotations;
+
     // prettier-ignore
     console.log("TimeSeriesPlot: annotations: annotations = ", annotations);
 
     // We need to draw the axis and labels before we can compute the
     // coordinates of the annotations
-    this._drawAxisAndLabels();
+    this.drawAxisAndLabels();
+
+    //
+    // create line, dots & annotations
+    //
+    this.createLines();
+    if (this._showLine1Dots) {
+      this.createDots();
+    }
 
     //
     // Set coordinates of the annotations
@@ -418,7 +428,7 @@ export class TimeSeriesPlot {
     const xMid = (this._xScale.range()[0] + this._xScale.range()[1]) / 2;
     console.log("TimeSeriesPlot: annotations: xMid = ", xMid);
 
-    annotations.forEach((d: TSPAnnotation) => {
+    this.annotations.forEach((d: TSPAnnotation) => {
       const graphAnnotation: GraphAnnotation = d.graphAnnotation;
 
       if (graphAnnotation) {
@@ -439,18 +449,10 @@ export class TimeSeriesPlot {
       console.log("TimeSeriesPlot: annotations: graphAnnotation = ", graphAnnotation);
     });
 
-    this.annotations = annotations;
     // prettier-ignore
     console.log("TimeSeriesPlot: annotations: _annotations = ", this.annotations);
 
-    //
-    // create line, dots & annotations
-    //
-    this.createLines();
     this.createAnnotations();
-    if (this._showLine1Dots) {
-      this.createDots();
-    }
 
     return this;
   }

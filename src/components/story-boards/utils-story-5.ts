@@ -123,7 +123,7 @@ function calculateAnnotations() {
       // prettier-ignore
       const msg =  `A newly-trained model achieved the best testing accuracy ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%].`
       annotations.push(
-        writeText(msg, d.date, selectedData, FeatureType.MAX, true),
+        writeText(msg, d.date, selectedData, FeatureType.MAX, true, true),
       );
     }
     //
@@ -133,7 +133,7 @@ function calculateAnnotations() {
       // prettier-ignore
       const msg =  `A newly-trained model achieved testing accuracy of ${Math.round(d?.mean_test_accuracy * 100)}% and training accuracy of ${Math.round(d?.mean_training_accuracy * 100)}%, denoted as ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%].`
       annotations.push(
-        writeText(msg, d.date, selectedData, FeatureType.CURRENT, true),
+        writeText(msg, d.date, selectedData, FeatureType.CURRENT, true, true),
       );
     }
     //
@@ -143,7 +143,7 @@ function calculateAnnotations() {
       // prettier-ignore
       const msg = `Accuracy: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
       annotations.push(
-        writeText(msg, d.date, selectedData, FeatureType.CURRENT, false),
+        writeText(msg, d.date, selectedData, FeatureType.CURRENT, true, false),
       );
 
       // action 1b:
@@ -171,6 +171,7 @@ function writeText(
   date,
   data,
   featureType: FeatureType,
+  showDot = false,
   showCircle = false,
 ): TSPAnnotation {
   // Find idx of event in data and set location of the annotation in opposite half of graph
@@ -186,10 +187,8 @@ function writeText(
     .fontSize("13px")
     .wrap(500);
 
-  if (showCircle) {
-    graphAnnotation.circleAttr(10, DotColor[featureType], 3, 0.6);
-  }
-  // graphAnnotation.dotAttr(5, Color.Red, 1);
+  showCircle && graphAnnotation.circleAttr(10, DotColor[featureType], 3, 0.6);
+  showDot && graphAnnotation.dotAttr(4, DotColor[featureType], 1);
 
   const target = data[idx];
   graphAnnotation.unscaledTarget = [target.date, target.y];
