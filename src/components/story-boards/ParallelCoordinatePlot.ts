@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { AnimationType } from "src/models/AnimationType";
 import { Color } from "./Colors";
-import { GraphAnnotation, PCPAnnotation } from "./GraphAnnotation_new";
+import { GraphAnnotation, PCPAnnotation } from "./GraphAnnotation";
 import { FeatureType } from "./FeatureAndColorMap";
 
 const WIDTH = 800,

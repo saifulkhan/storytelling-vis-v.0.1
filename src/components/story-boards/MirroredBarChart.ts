@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { AnimationType } from "src/models/AnimationType";
-import { TSPAnnotation } from "./GraphAnnotation_new";
+import { TSPAnnotation } from "./GraphAnnotation";
 
 export type MirroredBarChartData = {
   date: Date;

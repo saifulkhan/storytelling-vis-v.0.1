@@ -3,7 +3,7 @@ import { findDateIdx } from "./utils-feature-detection";
 import { AnimationType } from "src/models/AnimationType";
 import { MirroredBarChart } from "./MirroredBarChart";
 import { TimeSeriesPlot } from "./TimeSeries_new";
-import { GraphAnnotation, TSPAnnotation } from "./GraphAnnotation_new";
+import { GraphAnnotation, TSPAnnotation } from "./GraphAnnotation";
 import { Color } from "./Colors";
 import { DotColor, TextColor, FeatureType } from "./FeatureAndColorMap";
 

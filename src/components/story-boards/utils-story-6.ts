@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import { readCSVFile } from "./utils-data";
 import { ParallelCoordinatePlot } from "./ParallelCoordinatePlot";
 import { AnimationType } from "src/models/AnimationType";
-import { GraphAnnotation, PCPAnnotation } from "./GraphAnnotation_new";
+import { GraphAnnotation, PCPAnnotation } from "./GraphAnnotation";
 import { Color } from "./Colors";
 import {
   DotColor,
