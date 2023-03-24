@@ -405,82 +405,21 @@ export class TimeSeriesPlot {
    **/
   annotate(annotations: TSPAnnotation[]) {
     this.annotations = annotations;
-
     // prettier-ignore
     console.log("TimeSeriesPlot: annotations: annotations = ", annotations);
 
-    // We need to draw the axis and labels before we can compute the
-    // coordinates of the annotations
+    // We need to draw the axis and labels before we can compute the coordinates
+    // of the annotations
     this.drawAxisAndLabels();
 
-    //
-    // create line, dots & annotations
-    //
+    // Draw the lines and dots first so that annotations can be drawn on top
     this.createLines();
     if (this._showLine1Dots) {
       this.createDots();
     }
-
-    //
-    // Set coordinates of the annotations
-    //
-    // Middle of the x-axis
-    const xMid = (this._xScale.range()[0] + this._xScale.range()[1]) / 2;
-    console.log("TimeSeriesPlot: annotations: xMid = ", xMid);
-
-    this.annotations.forEach((d: TSPAnnotation) => {
-      const graphAnnotation: GraphAnnotation = d.graphAnnotation;
-
-      if (graphAnnotation) {
-        graphAnnotation.x(this._xScale(graphAnnotation.unscaledTarget[0]));
-        graphAnnotation.y(this._height / 2 + this._margin.top);
-
-        graphAnnotation.target(
-          this._xScale(graphAnnotation.unscaledTarget[0]),
-          this._yScale1(graphAnnotation.unscaledTarget[1]),
-          true,
-          {
-            left: graphAnnotation._x >= xMid, // align left
-            right: graphAnnotation._x < xMid, // align right
-          },
-        );
-      }
-      // prettier-ignore
-      console.log("TimeSeriesPlot: annotations: graphAnnotation = ", graphAnnotation);
-    });
-
-    // prettier-ignore
-    console.log("TimeSeriesPlot: annotations: _annotations = ", this.annotations);
-
     this.createAnnotations();
 
     return this;
-  }
-
-  /**
-   ** Loop through all the annotation objects, creates array of objects representing
-   ** (for each annotation) segment path, their length and animation duration
-   */
-
-  public animate(animationType: AnimationType) {
-    console.log("TimeSeriesPlot: animate: animationType = ", animationType);
-
-    if (animationType === "back" && this._animationCounter >= 0) {
-      this._animateBack();
-      this._animationCounter -= 1;
-    } else if (animationType === "beginning") {
-      this._animateBeginning();
-      this._animationCounter = -1;
-    } else if (
-      animationType === "play" &&
-      this._animationCounter + 1 < this.annotations.length
-    ) {
-      this.play();
-      this._animationCounter += 1;
-    }
-
-    // prettier-ignore
-    console.log("TimeSeriesPlot: animate: _animationCounter: ", this._animationCounter)
   }
 
   private createLines() {
@@ -559,15 +498,32 @@ export class TimeSeriesPlot {
   }
 
   /**
-   *  Returns an array of objects representing annotation type and persistence
-   */
+   ** Compute annotation position and add to the timeseries svg
+   **/
   private createAnnotations() {
-    this.annotations.forEach((d, idx) => {
-      // Try to get the graphAnnotation object if undefined set array elem to false
-      const graphAnnotation: GraphAnnotation = d?.graphAnnotation;
+    // Middle of the x-axis
+    const xMid = (this._xScale.range()[0] + this._xScale.range()[1]) / 2;
+    console.log("TimeSeriesPlot: createAnnotations: xMid = ", xMid);
+
+    this.annotations.forEach((d: TSPAnnotation, idx) => {
+      const graphAnnotation: GraphAnnotation = d.graphAnnotation;
       if (!graphAnnotation) return;
 
-      // If add to svg and set opacity to 0 (to hide it)
+      // Set the coordinates of the annotation
+      graphAnnotation.x(this._xScale(graphAnnotation.unscaledTarget[0]));
+      graphAnnotation.y(this._height / 2 + this._margin.top);
+
+      graphAnnotation.target(
+        this._xScale(graphAnnotation.unscaledTarget[0]),
+        this._yScale1(graphAnnotation.unscaledTarget[1]),
+        true,
+        {
+          left: graphAnnotation._x >= xMid, // align left
+          right: graphAnnotation._x < xMid, // align right
+        },
+      );
+
+      // Add to svg
       graphAnnotation.id(`id-annotation-${idx}`).addTo(this._svg);
 
       if (this._annotationOnTop) {
@@ -575,6 +531,7 @@ export class TimeSeriesPlot {
         graphAnnotation.updatePos(graphAnnotation._x, graphAnnotation._y);
       }
 
+      // Hide the annotation initially
       graphAnnotation.hideAnnotation();
 
       // Show the event line (dotted line) if enabled
@@ -583,6 +540,9 @@ export class TimeSeriesPlot {
         this.addEventLine(container, graphAnnotation._tx, graphAnnotation._ty);
       }
     });
+
+    // prettier-ignore
+    console.log("TimeSeriesPlot: createAnnotations: annotations = ", this.annotations);
   }
 
   private addEventLine(container, x, y) {
@@ -596,6 +556,32 @@ export class TimeSeriesPlot {
       .style("stroke-width", 1)
       .style("stroke", "#999999")
       .style("fill", "none");
+  }
+
+  /**
+   ** Loop through all the annotation objects, creates array of objects representing
+   ** (for each annotation) segment path, their length and animation duration
+   */
+
+  public animate(animationType: AnimationType) {
+    console.log("TimeSeriesPlot: animate: animationType = ", animationType);
+
+    if (animationType === "back" && this._animationCounter >= 0) {
+      this._animateBack();
+      this._animationCounter -= 1;
+    } else if (animationType === "beginning") {
+      this._animateBeginning();
+      this._animationCounter = -1;
+    } else if (
+      animationType === "play" &&
+      this._animationCounter + 1 < this.annotations.length
+    ) {
+      this.play();
+      this._animationCounter += 1;
+    }
+
+    // prettier-ignore
+    console.log("TimeSeriesPlot: animate: _animationCounter: ", this._animationCounter)
   }
 
   /**
@@ -668,11 +654,12 @@ export class TimeSeriesPlot {
   }
 
   /**
-   ** TODO: Fix this function
    ** This will remove the current path
    ** Show or hide the path elements to svg based on the animation counter value
    **/
   _animateBeginning() {
+    // TODO: Fix this function
+
     const idxTo = 0;
     const idxFrom = this._animationCounter + 1;
     console.log(`TimeSeriesPlot: _animateBeginning: ${idxTo} <- ${idxFrom}`);
@@ -704,11 +691,12 @@ export class TimeSeriesPlot {
   }
 
   /**
-   ** TODO: Fix this function
    ** This will remove the current path
    ** Show or hide the path elements to svg based on the animation counter value
    **/
   _animateBack() {
+    // TODO: Fix this function
+
     const currentIndex = this._animationCounter;
     // prettier-ignore
     console.log(`TimeSeriesPlot: _animateBack: ${currentIndex} <- ${currentIndex + 1}`);

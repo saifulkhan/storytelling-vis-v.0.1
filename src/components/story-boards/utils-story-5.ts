@@ -7,9 +7,9 @@ import { GraphAnnotation, TSPAnnotation } from "./GraphAnnotation";
 import { Color, DotColor, TextColor } from "./Colors";
 import { FeatureType } from "./FeatureType";
 
-/*********************************************************************************************************
- * - Prepare data
- *********************************************************************************************************/
+/*******************************************************************************
+ ** Prepare data
+ ******************************************************************************/
 
 let data; // all parameters data
 
@@ -81,9 +81,10 @@ export function getParameters() {
   return selectableParameters;
 }
 
-/*********************************************************************************************************
- * Filter/select parameter
- *********************************************************************************************************/
+/*******************************************************************************
+ ** Filter/select parameter
+ ** Create annotation objects
+ ******************************************************************************/
 
 let selectedData = []; // selected parameter data
 let selectedParameter;
@@ -99,10 +100,6 @@ export function filterData(_parameter: string) {
 
   calculateAnnotations();
 }
-
-/*********************************************************************************************************
- * Create annotation objects
- *********************************************************************************************************/
 
 function calculateAnnotations() {
   annotations = [];
@@ -174,7 +171,8 @@ function writeText(
   showDot = false,
   showCircle = false,
 ): TSPAnnotation {
-  // Find idx of event in data and set location of the annotation in opposite half of graph
+  // Find idx of event in data and set location of the annotation in opposite
+  // half of graph
   const idx = findDateIdx(date, data);
 
   const graphAnnotation = new GraphAnnotation()
@@ -201,10 +199,10 @@ function writeText(
   } as TSPAnnotation;
 }
 
-/*********************************************************************************************************
- * - Create or init TimeSeries.
- * - Animate when button is clicked.
- *********************************************************************************************************/
+/*******************************************************************************
+ ** Create or init TimeSeries.
+ ** Animate when button is clicked.
+ ******************************************************************************/
 
 let ts;
 let bc;
