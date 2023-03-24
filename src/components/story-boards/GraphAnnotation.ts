@@ -73,7 +73,7 @@ export class GraphAnnotation {
   _annoWidth: number;
   _annoHeight: number;
 
-  unscaledTarget;
+  unscaledTarget: [number, number | Date];
 
   constructor(id = "") {
     this._id = id;
@@ -254,8 +254,11 @@ export class GraphAnnotation {
 
   addTo(svg) {
     d3.select(svg).append(() => this.node);
-    this._formatText();
-    this._repositionAnnotation();
+
+    if (this._labelText && this._titleText) {
+      this._formatText();
+      this._repositionAnnotation();
+    }
 
     if (this._backgroundColor) {
       this._rect.style.fill = this._backgroundColor;

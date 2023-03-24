@@ -488,7 +488,6 @@ export class TimeSeriesPlot {
         .attr("cy", () => this._yScale1(point.y))
         .style("fill", this._line1DotColor)
         .style("opacity", 0);
-      this.dotElements.push(dotElement);
 
       return dotElement;
     });
