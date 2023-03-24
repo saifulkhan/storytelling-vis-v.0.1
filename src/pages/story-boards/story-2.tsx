@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import Box from "@mui/material/Box";
 import {
@@ -17,7 +17,10 @@ import {
   MenuItem,
   OutlinedInput,
   Select,
+  SelectChangeEvent,
+  Tooltip,
 } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 import { blue } from "@mui/material/colors";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
@@ -25,64 +28,30 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 import DashboardLayout from "src/components/dashboard-layout/DashboardLayout";
 import {
-  loadData,
-  getRegions,
-  filterData,
-  animateTimeSeries,
-  createTimeSeries,
+  processDataAndGetRegions,
+  onSelectRegion,
+  updateCounter,
 } from "src/components/story-boards/utils-story-2";
 
+const useStyles = makeStyles((theme) => ({
+  avatar: {
+    backgroundColor: blue[500],
+  },
+}));
+
 const Story2 = () => {
+  const classes = useStyles();
+
   const [loading, setLoading] = useState<boolean>(true);
   const [regions, setRegions] = useState<string[]>([]);
   const [region1, setRegion1] = useState<string>("");
   const [region2, setRegion2] = useState<string>("");
 
-  const handleRegion1Select = (e) => {
-    const newRegion1 = e.target.value;
-    // prettier-ignore
-    console.log(`Story2: handleRegion1Select: region1: ${region1}, newRegion1: ${newRegion1}`);
-    setRegion1(newRegion1);
-    if (newRegion1 && region2) {
-      filterData(newRegion1, region2);
-      createTimeSeries("#chartId");
-    }
-  };
-
-  const handleRegion2Select = (e) => {
-    const newRegion2 = e.target.value;
-    // prettier-ignore
-    console.log(`Story2: handleRegion2Select: region2: ${region2}, newRegion2: ${newRegion2}`);
-    setRegion2(newRegion2);
-    if (newRegion2 && region1) {
-      filterData(region1, newRegion2);
-      createTimeSeries("#chartId");
-    }
-  };
-
-  const handleBeginningClick = () => {
-    // prettier-ignore
-    console.log(`Story2: handleBeginningClick:`);
-    animateTimeSeries(0);
-  };
-
-  const handleBackClick = () => {
-    // prettier-ignore
-    console.log(`Story2: handleBackClick:`);
-    animateTimeSeries(-1);
-  };
-
-  const handlePlayClick = () => {
-    // prettier-ignore
-    console.log(`Story2: handlePlayClick: `);
-    animateTimeSeries(1);
-  };
-
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await loadData();
-      setRegions(getRegions());
+      const _regions = await processDataAndGetRegions();
+      setRegions(_regions);
       setLoading(false);
     };
 
@@ -93,6 +62,36 @@ const Story2 = () => {
       setLoading(false);
     }
   }, []);
+
+  const handleChangeSelect1 = (event: SelectChangeEvent) => {
+    const selectedRegion1 = event.target.value;
+    console.log("selectedRegion1 = ", selectedRegion1);
+    if (selectedRegion1 && region2) {
+      onSelectRegion(selectedRegion1, region2, "#chart1");
+    }
+    setRegion1(selectedRegion1);
+  };
+
+  const handleChangeSelect2 = (event: SelectChangeEvent) => {
+    const selectedRegion2 = event.target.value;
+    console.log("selectedRegion2 = ", selectedRegion2);
+    if (region1 && selectedRegion2) {
+      onSelectRegion(region1, selectedRegion2, "#chart1");
+    }
+    setRegion2(selectedRegion2);
+  };
+
+  const handleBeginningButton = () => {
+    updateCounter(0);
+  };
+
+  const handleBackButton = () => {
+    updateCounter(-1);
+  };
+
+  const handlePlayButton = () => {
+    updateCounter(1);
+  };
 
   return (
     <>
@@ -161,7 +160,7 @@ const Story2 = () => {
                         <Select
                           labelId="select-region-1-label"
                           id="select-region-1-label"
-                          onChange={handleRegion1Select}
+                          onChange={handleChangeSelect1}
                           input={<OutlinedInput label="Select region 1" />}
                           value={region1}
                         >
@@ -193,7 +192,7 @@ const Story2 = () => {
                           labelId="select-region-2-label"
                           id="select-region-2-label"
                           displayEmpty
-                          onChange={handleRegion2Select}
+                          onChange={handleChangeSelect2}
                           input={<OutlinedInput label="Select region 2" />}
                           value={region2}
                         >
@@ -209,7 +208,7 @@ const Story2 = () => {
                         <Button
                           variant="contained"
                           disabled={!region1 || !region2}
-                          onClick={handleBeginningClick}
+                          onClick={handleBeginningButton}
                           component="span"
                         >
                           Beginning
@@ -220,7 +219,7 @@ const Story2 = () => {
                         <Button
                           variant="contained"
                           disabled={!region1 || !region2}
-                          onClick={handleBackClick}
+                          onClick={handleBackButton}
                           startIcon={<ArrowBackIosIcon />}
                           component="span"
                         >
@@ -232,7 +231,7 @@ const Story2 = () => {
                         <Button
                           variant="contained"
                           disabled={!region1 || !region2}
-                          onClick={handlePlayClick}
+                          onClick={handlePlayButton}
                           endIcon={<ArrowForwardIosIcon />}
                           component="span"
                         >
@@ -240,7 +239,7 @@ const Story2 = () => {
                         </Button>
                       </FormControl>
                     </FormGroup>
-                    <div id="chartId" />
+                    <div id="chart1" />
                   </>
                 )}
               </CardContent>

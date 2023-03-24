@@ -10,41 +10,25 @@ import {
   splitDataAndEvents,
 } from "./utils-aggregation-segmentation";
 
-import { GraphAnnotation, LinePlotAnnotation } from "./GraphAnnotation_new";
+import { GraphAnnotation } from "./GraphAnnotation";
 import { DataEvent } from "./DataEvent";
-import { TimeSeries } from "./TimeSeries_new";
-import { linRegGrad } from "./utils-data-processing";
-import { AnimationType } from "src/models/ITimeSeriesData";
+import { TimeSeries } from "./TimeSeries";
 
-/*********************************************************************************************************
- * - Prepare data
- *********************************************************************************************************/
+const dailyCasesByRegion = {};
+let calendarEvents = [];
+const peaksByRegion = {};
+const gaussByRegion = {};
 
-let dailyCasesByRegion = {};
-let semanticEvents = [];
-let peaksByRegion = {};
-let gaussByRegion = {};
-
-/*
- * Load data
- */
-export async function loadData(): Promise<void> {
+export async function prepareDataAndGetRegions(): Promise<string[]> {
   await prepareDailyCasesByRegion();
-  prepareSemanticEvents();
+  prepareCalenderEvents();
   preparePeaksByRegion();
   prepareGaussByRegion();
-}
 
-/*
- * Return all area/region names sorted.
- */
-export function getRegions(): string[] {
   return Object.keys(dailyCasesByRegion).sort();
 }
 
 async function prepareDailyCasesByRegion() {
-  dailyCasesByRegion = {};
-
   const csv: any[] = await readCSVFile(
     "/static/story-boards/newCasesByPublishDateRollingSum.csv",
   );
@@ -64,19 +48,12 @@ async function prepareDailyCasesByRegion() {
   }
 
   // prettier-ignore
-  console.log("utils-story-1: prepareDailyCasesByRegion: dailyCasesByRegion = ", dailyCasesByRegion);
+  // console.log("prepareDailyCasesByRegion: dailyCasesByRegion = ", dailyCasesByRegion);
 }
 
-/**
- * Semantic or calender events
- * TODO: This is a bit of a hack. We should construct it from the data specified in a csv file.
- */
-
-function prepareSemanticEvents() {
-  semanticEvents = [];
-  // We need to construct Calendar Data
-
-  // Lock-down events
+function prepareCalenderEvents() {
+  // We need to construct Calendar Data Because
+  // Lockdown events
   const lockdownStart1 = new SemanticEvent(new Date("2020-03-24"))
     .setType(SemanticEvent.TYPES.LOCKDOWN_START)
     .setDescription("Start of First Lockdown.");
@@ -107,7 +84,7 @@ function prepareSemanticEvents() {
     .setDescription("Booster campaign in the UK starts.");
 
   // Create an array of semantic events and return
-  semanticEvents = [
+  calendarEvents = [
     lockdownStart1,
     lockdownEnd1,
     lockdownStart2,
@@ -118,19 +95,20 @@ function prepareSemanticEvents() {
     booster,
   ];
 
+  // console.log("prepareCalenderEvents: calendarEvents = ", calendarEvents);
+
   const ranking = {};
   ranking[SemanticEvent.TYPES.LOCKDOWN_START] = 5;
   ranking[SemanticEvent.TYPES.VACCINE] = 4;
   ranking[SemanticEvent.TYPES.LOCKDOWN_END] = 3;
 
-  semanticEvents.forEach((e) => e.setRank(ranking[e.type]));
+  calendarEvents.forEach((e) => e.setRank(ranking[e.type]));
 
   // prettier-ignore
-  console.log("utils-story-1: prepareSemanticEvents: ranked semanticEvents = ", semanticEvents);
+  // console.log("prepareCalenderEvents: calendarEvents (ranked) = ", calendarEvents);
 }
 
 function preparePeaksByRegion() {
-  peaksByRegion = {};
   for (const region in dailyCasesByRegion) {
     peaksByRegion[region] = detectFeatures(dailyCasesByRegion[region], {
       peaks: true,
@@ -138,8 +116,7 @@ function preparePeaksByRegion() {
     });
   }
 
-  // prettier-ignore
-  console.log("utils-story-1: preparePeaksByRegion: peaksByRegion = ", peaksByRegion);
+  // console.log("preparePeaksByRegion: peaksByRegion = ", peaksByRegion);
 
   const rankPeaks = (peaks) => {
     const sorted = [...peaks].sort((p1, p2) => p1.height - p2.height);
@@ -154,13 +131,10 @@ function preparePeaksByRegion() {
     rankPeaks(peaksByRegion[region]);
   }
 
-  //prettier-ignore
-  console.log("utils-story-1: preparePeaksByRegion: ranked peaksByRegion = ", peaksByRegion);
+  // console.log("preparePeaksByRegion: peaksByRegion (ranked) = ", peaksByRegion);
 }
 
 function prepareGaussByRegion() {
-  gaussByRegion = {};
-
   for (const region in peaksByRegion) {
     const peaks = peaksByRegion[region];
     const dailyCases = dailyCasesByRegion[region];
@@ -172,7 +146,7 @@ function prepareGaussByRegion() {
     // console.log("createGaussByRegion: peaksBounds = ", peaksBounds);
 
     // Calculate gaussian time series for calendar events
-    const calGauss = eventsToGaussian(semanticEvents, dailyCases);
+    const calGauss = eventsToGaussian(calendarEvents, dailyCases);
     const calBounds = maxBounds(calGauss);
 
     // Combine gaussian time series
@@ -181,88 +155,58 @@ function prepareGaussByRegion() {
   }
 
   // prettier-ignore
-  console.log("utils-story-1: prepareGaussByRegion: gaussByRegion = ", gaussByRegion);
+  console.log("prepareGaussByRegion: gaussByRegion = ", gaussByRegion, Object.keys(gaussByRegion));
 }
 
-/*********************************************************************************************************
- * - Filter/select region or area
- * - Segmentation value
- *********************************************************************************************************/
+//
+//
+//
+const splitsByRegion = {};
+let segNum: number;
+let region;
+let casesData;
+const annotations: { start?: number; end: number }[] = [{ start: 0, end: 0 }];
 
-let splitsByRegion = {};
-let segment: number;
-let region: string;
-let selectedRegionData;
-let annotations: LinePlotAnnotation[];
-
-export function filterData(_region: string, _segment: number) {
-  selectedRegionData = [];
-  console.log("utils-story-1: filterData: region =  ", region);
-
-  region = _region;
-  segment = _segment;
-
-  segmentData();
-
-  selectedRegionData = dailyCasesByRegion[region];
-  // prettier-ignore
-  console.log("utils-story-1: filterData: selectedRegionData", selectedRegionData);
-
-  calculateAnnotations();
-}
-
-function segmentData() {
-  splitsByRegion = {};
-
+export function segmentData(_segNum: number) {
+  segNum = _segNum;
   for (const region in peaksByRegion) {
     const dailyCases = dailyCasesByRegion[region];
     splitsByRegion[region] = peakSegment(
       gaussByRegion[region],
       dailyCases,
-    ).slice(0, segment - 1);
+    ).slice(0, segNum - 1);
   }
 
   // prettier-ignore
-  console.log("utils-story-1: segmentData: splitsByRegion = ", splitsByRegion);
+  console.log("segmentData: splitsByRegion = ", splitsByRegion);
 }
 
-/*********************************************************************************************************
- * Create annotation objects
- *********************************************************************************************************/
+export function onSelectRegion(_region: string) {
+  region = _region;
+  console.log("onSelectRegion: region =  ", region);
 
-const HIGHLIGHT_DEFAULT_COLOR = "#474440",
-  TITLE_COLOR = "#696969",
-  BACKGROUND_COLOR = "#F5F5F5";
-
-const CIRCLE_HIGHLIGHT_COLOR = "#F96F4C",
-  LINE1_STROKE_WIDTH = 2.0,
-  LINE1_COLOR = "#696969";
-
-function calculateAnnotations() {
-  annotations = [];
+  //
+  // annotations
+  //
+  casesData = dailyCasesByRegion[region];
+  console.log("onSelectRegion: dailyCasesByRegion", dailyCasesByRegion);
+  console.log("onSelectRegion: caseData", casesData);
 
   // We now combine the event arrays and segment them based on our splits
+  console.log("onSelectRegion: peaksByRegion", peaksByRegion);
   const peaks = peaksByRegion[region];
-  // prettier-ignore
-  console.log("utils-story-1: calculateAnnotations: peaksByRegion[", region, "]", peaks);
-  const events = peaks.concat(semanticEvents);
+  console.log("onSelectRegion: peaks", peaks);
+  const events = peaks.concat(calendarEvents);
   const splits = splitsByRegion[region].sort((s1, s2) => s1.date - s2.date);
 
   // Segment data and events according to the splits
-  const dataEventsBySegment = splitDataAndEvents(
-    events,
-    splits,
-    selectedRegionData,
-  );
-
-  // prettier-ignore
-  console.log("utils-story-1: calculateAnnotations: dataEventsBySegment", dataEventsBySegment);
+  const dataEventsBySegment = splitDataAndEvents(events, splits, casesData);
 
   // Loop over all segments and apply feature-action rules
   // let annotations = [{ start: 0, end: 0 }];
   let currSeg = 0;
   let currData, firstDate, lastDate;
-  for (; currSeg < segment; currSeg++) {
+  for (; currSeg < segNum; currSeg++) {
     // Get segment data based on segment number
     currData = dataEventsBySegment[currSeg];
     firstDate = currData[0].date;
@@ -270,10 +214,13 @@ function calculateAnnotations() {
 
     // Apply different rules for first, middle and last segment
     if (currSeg == 0) {
-      //
-      //   ------- First Segment Rules -------
-      // ------- Rules based on entire segment -------
-      //
+      /*
+          ------- First Segment Rules -------
+        */
+
+      /*
+          ------- Rules based on entire segment -------
+        */
 
       // Add annotation for positive line of best fit
       const slope = linRegGrad(currData.map((d) => d.y)) as number;
@@ -283,7 +230,7 @@ function calculateAnnotations() {
           writeText(
             "The number of cases continues to grow.",
             firstDate,
-            selectedRegionData,
+            casesData,
           ),
         );
 
@@ -296,18 +243,18 @@ function calculateAnnotations() {
           (posGrad
             ? "continued to climb higher."
             : "continued to come down noticeably.");
-        annotations.push(writeText(gradText, lastDate, selectedRegionData));
+        annotations.push(writeText(gradText, lastDate, casesData));
       } else if (Math.abs(slope) >= 0.05) {
         // Shallow case
         gradText =
           `By ${lastDate.toLocaleDateString()}, the number of cases continued to ` +
           (posGrad ? "increase." : "decrease.");
-        annotations.push(writeText(gradText, lastDate, selectedRegionData));
+        annotations.push(writeText(gradText, lastDate, casesData));
       }
 
-      //
-      //  ------- Rules based on datapoints in segment -------
-      //
+      /*
+          ------- Rules based on datapoints in segment -------
+        */
 
       // Set up variables for tracking highest peak and first non-zero value
       let highestPeak;
@@ -316,7 +263,7 @@ function calculateAnnotations() {
         // Add annotation for the first non-zero value
         if (!foundNonZero && d.y > 0) {
           const nonZeroText = `On ${d.date.toLocaleDateString()}, ${region} recorded its first COVID-19 case.`;
-          annotations.push(writeText(nonZeroText, d.date, selectedRegionData));
+          annotations.push(writeText(nonZeroText, d.date, casesData));
           foundNonZero = true;
         }
 
@@ -325,13 +272,7 @@ function calculateAnnotations() {
           if (e.rank > 3 && e instanceof SemanticEvent) {
             annotations.push(
               // @ts-expect-error -- fix accessing protected _date
-              writeText(
-                e.description,
-                e._date,
-                selectedRegionData,
-                HIGHLIGHT_DEFAULT_COLOR,
-                true,
-              ),
+              writeText(e.description, e._date, casesData, true),
             );
           }
 
@@ -346,51 +287,41 @@ function calculateAnnotations() {
       // Add annotation if we have a tall enough peak
       if (highestPeak) {
         const peakText = `By ${highestPeak.date}, the number of cases reached ${highestPeak.height}.`;
-        annotations.push(
-          writeText(peakText, highestPeak._date, selectedRegionData),
-        );
+        annotations.push(writeText(peakText, highestPeak._date, casesData));
       }
-    } else if (currSeg < segment - 1) {
-      //
-      //  ------- Middle Segments Rules -------
-      //  ------- Rules based on datapoints in segment -------
-      //
+    } else if (currSeg < segNum - 1) {
+      /*
+          ------- Middle Segments Rules -------
+        */
+
+      /*
+          ------- Rules based on datapoints in segment -------
+        */
       currData.forEach((d) => {
         d.events.forEach((e) => {
           // Add annotation for semantic events that are rank > 3
           if (e.rank > 3 && e instanceof SemanticEvent) {
             annotations.push(
               // @ts-expect-error -- fix accessing protected _date
-              writeText(
-                e.description,
-                e._date,
-                selectedRegionData,
-                HIGHLIGHT_DEFAULT_COLOR,
-                true,
-              ),
+              writeText(e.description, e._date, casesData, true),
             );
           }
 
           // Add annotation for peak events that are rank > 3
           if (e.rank > 3 && e.type == DataEvent.TYPES.PEAK) {
             const peakText = `By ${e.date}, the number of cases peaks at ${e.height}.`;
-            annotations.push(
-              writeText(
-                peakText,
-                e._date,
-                selectedRegionData,
-                HIGHLIGHT_DEFAULT_COLOR,
-                true,
-              ),
-            );
+            annotations.push(writeText(peakText, e._date, casesData, true));
           }
         });
       });
     } else {
-      //
-      //  ------- Last Segment Rules -------
-      // ------- Rules based entire segment -------
-      //
+      /*
+          ------- Last Segment Rules -------
+        */
+
+      /*
+          ------- Rules based entire segment -------
+        */
 
       // Add annotation based on gradient of line of best fit
       let gradText = "";
@@ -405,7 +336,7 @@ function calculateAnnotations() {
                       Let us continue to help bring the number down. Be safe, and support the NHS.`;
       } else if (slope > -0.05) {
         // Flat case
-        const cases = selectedRegionData[selectedRegionData.length - 1].y;
+        const cases = casesData[casesData.length - 1].y;
 
         // Add annotation based on final case number
         if (cases >= 200) {
@@ -424,39 +355,25 @@ function calculateAnnotations() {
         gradText = `By ${lastDate.toLocaleDateString()}, the number of cases continued to come down noticeably.
                       We should continue to be vigilant.`;
       }
-      annotations.push(writeText(gradText, lastDate, selectedRegionData));
+      annotations.push(writeText(gradText, lastDate, casesData));
 
-      //
-      //------- Rules based on datapoints in segement -------
-      //
+      /*
+          ------- Rules based on datapoints in segement -------
+        */
       currData.forEach((d) => {
         d.events.forEach((e) => {
           // Add annotation for semantic events that are rank > 3
           if (e.rank > 3 && e instanceof SemanticEvent) {
             annotations.push(
               // @ts-expect-error -- fix accessing protected _date
-              writeText(
-                e.description,
-                e._date,
-                selectedRegionData,
-                HIGHLIGHT_DEFAULT_COLOR,
-                true,
-              ),
+              writeText(e.description, e._date, casesData, true),
             );
           }
 
           // Add annotation for peak events that are rank > 3
           if (e.rank > 3 && e.type == DataEvent.TYPES.PEAK) {
             const peakText = `By ${e.date}, the number of cases peaks at ${e.height}.`;
-            annotations.push(
-              writeText(
-                peakText,
-                e._date,
-                selectedRegionData,
-                HIGHLIGHT_DEFAULT_COLOR,
-                true,
-              ),
-            );
+            annotations.push(writeText(peakText, e._date, casesData, true));
           }
         });
       });
@@ -464,77 +381,103 @@ function calculateAnnotations() {
   }
 
   // Sort annotations and set annotations starts to the end of the previous annotation
-  annotations.sort((a1, a2) => a1.current - a2.current);
-  annotations.push({ current: selectedRegionData.length - 1 });
-  annotations
-    .slice(1)
-    .forEach(
-      (anno: LinePlotAnnotation, i) => (anno.previous = annotations[i].current),
-    );
+  annotations.sort((a1, a2) => a1.end - a2.end);
+  annotations.push({ end: casesData.length - 1 });
+  annotations.slice(1).forEach((anno, i) => (anno.start = annotations[i].end));
 
-  // prettier-ignore
-  console.log("utils-story-1: calculateAnnotations: annotations = ", annotations);
+  console.log("onSelectRegion: annotations", annotations);
 }
 
-function writeText(
-  text,
-  date,
-  data,
-  labelColor = HIGHLIGHT_DEFAULT_COLOR,
-  showRedCircle = false,
-) {
+const writeText = (text, date, data, showRedCircle = false): any => {
   // Find idx of event in data and set location of the annotation in opposite half of graph
   const idx = findDateIdx(date, data);
+
+  const target = data[idx];
 
   const anno = new GraphAnnotation()
     .title(date.toLocaleDateString())
     .label(text)
-    .backgroundColor(BACKGROUND_COLOR)
-    .titleColor(TITLE_COLOR)
-    .labelColor(labelColor)
+    .backgroundColor("#EEE")
     .wrap(500);
 
-  if (showRedCircle) {
-    anno.circleHighlight(CIRCLE_HIGHLIGHT_COLOR, 10);
-  }
-
-  const target = data[idx];
+  // @ts-expect-error -- investigate
+  anno.left = idx < data.length / 2;
   anno.unscaledTarget = [target.date, target.y];
 
-  return {
-    current: idx,
-    graphAnnotation: anno,
-    fadeout: true,
-  } as LinePlotAnnotation;
+  if (showRedCircle) {
+    anno.circleHighlight();
+  }
+
+  return { end: idx, annotation: anno, fadeout: true };
+};
+
+/*
+    Linear regression function inspired by the answer found at: https://stackoverflow.com/a/31566791.
+    We remove the need for array x as we assum y data is equally spaced and we only want the gradient.
+ */
+
+function linRegGrad(y) {
+  let slope = {};
+  const n = y.length;
+  let sum_x = 0;
+  let sum_y = 0;
+  let sum_xy = 0;
+  let sum_xx = 0;
+
+  for (let i = 0; i < y.length; i++) {
+    sum_x += i;
+    sum_y += y[i];
+    sum_xy += i * y[i];
+    sum_xx += i * i;
+  }
+
+  slope = (n * sum_xy - sum_x * sum_y) / (n * sum_xx - sum_x * sum_x);
+  return slope;
 }
 
-/*********************************************************************************************************
- * - Create or init TimeSeries.
- * - Animate when button is clicked.
- *********************************************************************************************************/
-
+//
+//
+//
+let visCtx;
 let ts;
 
-export function createTimeSeries(selector: string) {
-  console.log("createTimeSeries: selector = ", selector);
-  console.log("createTimeSeries: annotations = ", annotations);
-
-  ts = new TimeSeries()
-    .selector(selector, 400, 1200, { top: 10, right: 50, bottom: 50, left: 50 })
-    .data1(selectedRegionData)
-    .color1(LINE1_COLOR)
-    .strokeWidth1(LINE1_STROKE_WIDTH)
-    .title(`Basic story of COVID-19 in ${region}`)
-    .yLabel("Cases per Day")
-    .ticks(30)
-    // .plot(); // static plot
-    .annotations(annotations)
-    .annoTop()
-    .showEventLines();
+export function createTimeSeriesSVG(selector: string) {
+  visCtx = TimeSeries.animationSVG(1200, 400, selector);
 }
 
-export function animateTimeSeries(animationType: AnimationType) {
-  // prettier-ignore
-  console.log("animateTimeSeries: animationType: ", animationType);
-  ts.animate(animationType);
+//
+//
+//
+
+export function onClickAnimate(animationCounter: number, selector: string) {
+  const ts = new TimeSeries(casesData, selector)
+    .svg(visCtx)
+    .title(`Basic story of COVID-19 in ${region}`)
+    .yLabel("Cases per Day")
+    .annoTop()
+    .ticks(30);
+
+  const xSc = ts.getXScale();
+  const ySc = ts.getYScale();
+
+  let annoObj;
+
+  console.log("annotations = ", annotations);
+
+  annotations.forEach((a: any) => {
+    annoObj = a.annotation;
+    if (annoObj) {
+      annoObj.x(xSc(annoObj.unscaledTarget[0])).y(ts._height / 2);
+
+      annoObj.target(
+        xSc(annoObj.unscaledTarget[0]),
+        ySc(annoObj.unscaledTarget[1]),
+        true,
+        { left: annoObj.left, right: !annoObj.left },
+      );
+    }
+  });
+
+  console.log("createTimeSeriesSVG: annoObj = ", annoObj);
+  ts.animate(annotations, animationCounter, visCtx).plot();
 }

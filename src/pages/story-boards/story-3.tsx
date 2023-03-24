@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import Box from "@mui/material/Box";
 import {
@@ -16,7 +16,9 @@ import {
   MenuItem,
   OutlinedInput,
   Select,
+  SelectChangeEvent,
 } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 import { blue } from "@mui/material/colors";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
@@ -24,51 +26,33 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 import DashboardLayout from "src/components/dashboard-layout/DashboardLayout";
 import {
-  loadData,
-  getNations,
-  filterData,
+  prepareData,
   createScrollingSvg,
-  animateTimeSeries,
+  updateCounter,
 } from "src/components/story-boards/utils-story-3";
 
+const useStyles = makeStyles((theme) => ({
+  avatar: {
+    backgroundColor: blue[500],
+  },
+}));
+
 const Story3 = () => {
+  const classes = useStyles();
+
   const [loading, setLoading] = useState(true);
-  const [nations, setNations] = useState<string[]>([]);
+  const [nations, setNations] = useState<string[]>([
+    "England",
+    "Wales",
+    "Northern Ireland",
+    "Scotland",
+  ]);
   const [nation, setNation] = useState<string>("");
-
-  const handleRegionSelect = (e) => {
-    const newNation = e.target.value;
-    // prettier-ignore
-    console.log(`Story3: handleRegionSelect: nation: ${nation}, newNation: ${newNation}`);
-    setNation(newNation);
-    if (newNation) {
-      filterData(newNation).then(() => createScrollingSvg("#chartId"));
-    }
-  };
-
-  const handleBeginningClick = () => {
-    // prettier-ignore
-    console.log(`Story3: handleBeginningClick:`);
-    animateTimeSeries(0);
-  };
-
-  const handleBackClick = () => {
-    // prettier-ignore
-    console.log(`Story3: handleBackClick:`);
-    animateTimeSeries(-1);
-  };
-
-  const handlePlayClick = () => {
-    // prettier-ignore
-    console.log(`Story3: handlePlayClick: `);
-    animateTimeSeries(1);
-  };
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await loadData();
-      setNations(getNations());
+      await prepareData();
       setLoading(false);
     };
 
@@ -79,6 +63,27 @@ const Story3 = () => {
       setLoading(false);
     }
   }, []);
+
+  const handleChangeSelect1 = (event: SelectChangeEvent) => {
+    const nation = event.target.value;
+    console.log("selected nation = ", nation);
+    if (nation) {
+      setNation(nation);
+      createScrollingSvg("#divId", nation);
+    }
+  };
+
+  const handleBeginningButton = () => {
+    updateCounter(0);
+  };
+
+  const handleBackButton = () => {
+    updateCounter(-1);
+  };
+
+  const handlePlayButton = () => {
+    updateCounter(1);
+  };
 
   return (
     <>
@@ -138,7 +143,7 @@ const Story3 = () => {
                         <Select
                           labelId="select-nation-label"
                           id="select-nation-label"
-                          onChange={handleRegionSelect}
+                          onChange={handleChangeSelect1}
                           input={<OutlinedInput label="Select nation" />}
                           value={nation}
                         >
@@ -154,7 +159,7 @@ const Story3 = () => {
                         <Button
                           variant="contained"
                           disabled={!nation}
-                          onClick={handleBeginningClick}
+                          onClick={handleBeginningButton}
                           component="span"
                         >
                           Beginning
@@ -165,7 +170,7 @@ const Story3 = () => {
                         <Button
                           variant="contained"
                           disabled={!nation}
-                          onClick={handleBackClick}
+                          onClick={handleBackButton}
                           startIcon={<ArrowBackIosIcon />}
                           component="span"
                         >
@@ -177,7 +182,7 @@ const Story3 = () => {
                         <Button
                           variant="contained"
                           disabled={!nation}
-                          onClick={handlePlayClick}
+                          onClick={handlePlayButton}
                           endIcon={<ArrowForwardIosIcon />}
                           component="span"
                         >
@@ -186,7 +191,7 @@ const Story3 = () => {
                       </FormControl>
                     </FormGroup>
 
-                    <div id="chartId" />
+                    <div id="divId" />
                   </>
                 )}
               </CardContent>

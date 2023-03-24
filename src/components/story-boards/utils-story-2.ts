@@ -24,22 +24,14 @@ import { createDataGroup } from "./utils-data-processing";
   So the peak must be > than three weeks (21 days) in width
 */
 
-/*********************************************************************************************************
- * Prepare data
- *********************************************************************************************************/
-
 let dailyCasesByRegion = {};
 let peaksByRegion = {};
 
-export async function loadData(): Promise<void> {
+export async function processDataAndGetRegions(): Promise<string[]> {
   await processDailyCasesByRegion();
   processPeaksByRegion();
-}
 
-/*
- * Return all area/region names sorted.
- */
-export function getRegions(): string[] {
+  // console.log("processDataAndGetRegions: regions = ", Object.keys(dailyCasesByRegion).sort());
   return Object.keys(dailyCasesByRegion).sort();
 }
 
@@ -167,31 +159,30 @@ const rankFeatures = (waveObj) => {
   fall.setRank(1);
 };
 
-/*********************************************************************************************************
- * Filter/select region1 and region2 data
- *********************************************************************************************************/
-
-let region1, region2;
+//
+// When a region1 and region2 are selected, prepare data for that
+//
 
 let gauss = [];
 let gaussMatchedWaves = [];
 let annotations = [];
-const region1Color = "orange";
-const region2Color = "steelblue";
+let visCtx;
+let ts;
+let maxCounter;
+let counter = -1;
 
-let region1CasesData, region2CasesData;
-
-export function filterData(_region1, _region2) {
-  region1 = _region1;
-  region2 = _region2;
-  console.log("filterData: region1 = ", region1, ", region2 = ", region2);
+export function onSelectRegion(_region1, _region2, selector) {
+  const region1 = _region1;
+  const region2 = _region2;
+  console.log("onSelectRegion: region1 = ", region1, ", region2 = ", region2);
 
   calculateCombGauss(region1, region2);
   calculateGaussMatchedWaves(region1, region2);
   calculateAnnotations(region1, region2);
+  createTimeSeriesSVG(region1, region2, selector);
 
-  region1CasesData = dailyCasesByRegion[region1].data;
-  region2CasesData = dailyCasesByRegion[region2].data;
+  maxCounter = annotations.length - 1;
+  counter = -1;
 }
 
 function calculateCombGauss(region1, region2) {
@@ -310,9 +301,11 @@ function calculateAnnotations(region1, region2) {
 
   const region1CasesData = dailyCasesByRegion[region1].data;
   const region1Waves = peaksByRegion[region1];
+  const region1Color = "orange";
 
   const region2CasesData = dailyCasesByRegion[region2].data;
   const region2Waves = peaksByRegion[region2];
+  const region2Color = "steelblue";
 
   console.log("calculateAnnotations: region1 waves", region1Waves);
   console.log("calculateAnnotations: region2 waves", region2Waves);
@@ -688,37 +681,57 @@ const writeText = (
   };
 };
 
-/*********************************************************************************************************
- * - Create or init TimeSeries.
- * - Animate when button is clicked.
- *********************************************************************************************************/
+export function createTimeSeriesSVG(region1, region2, selector: string) {
+  visCtx = TimeSeries.animationSVG(1200, 400, selector);
 
-let ts;
+  const region1CasesData = dailyCasesByRegion[region1].data;
+  const region2CasesData = dailyCasesByRegion[region2].data;
 
-export function createTimeSeries(selector: string) {
-  // prettier-ignore
-  console.log("utils-story-2: createTimeSeries: region1CasesData = ", region1CasesData, "\nregion2CaseData: ", region2CasesData);
-
-  ts = new TimeSeries()
-    .data1(region2CasesData)
-    .color1(region2Color)
-    .data2([region1CasesData])
-    .color2([region1Color])
-    .selector(selector)
-    .margin(60)
+  ts = new TimeSeries(region2CasesData, selector)
+    .border(60)
+    .addExtraDatasets(createDataGroup([region1CasesData]), true)
+    .svg(visCtx)
+    .annoTop()
     .title(`Comparison of waves between ${region1} and ${region2}`)
     .yLabel("Cases per Day")
-    .ticks(30)
-    //.plot() // static plot
-    .annotations(annotations)
-    .annoTop();
+    .ticks(30);
+
+  const xSc = ts.getXScale();
+  const ySc = ts.getYScale();
+  const ySc2 = ts.getYScale2();
+
+  let annObj;
+  annotations.forEach((a) => {
+    annObj = a.annotation;
+    if (annObj) {
+      annObj.x(xSc(annObj.unscaledTarget[0])).y(ts._height / 2);
+
+      annObj.target(
+        xSc(annObj.unscaledTarget[0]),
+        a.useData2
+          ? ySc2(annObj.unscaledTarget[1])
+          : ySc(annObj.unscaledTarget[1]),
+        true,
+        { left: annObj.left, right: !annObj.left },
+      );
+    }
+  });
 }
 
 //
 // When play animate button is clicked draw there
 //
 
-export function animateTimeSeries(counter: number) {
-  console.log("animateTimeSeries: updateCounter: counter = ", counter);
-  ts.animate(counter);
+export function updateCounter(inc: number) {
+  // prettier-ignore
+  console.log("utils-story-2: updateCounter: counter = ", counter, ", inc = ", inc);
+
+  if (inc === 0) {
+    counter = 0;
+  } else if (counter + inc >= 0 && counter + inc <= maxCounter) {
+    counter += inc;
+  }
+  console.log("utils-story-2: updateCounter: counter = ", counter);
+
+  ts.animate(annotations, counter, visCtx).plot();
 }
