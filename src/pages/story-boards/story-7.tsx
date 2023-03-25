@@ -88,14 +88,35 @@ const Story7 = () => {
   const handlePlayClick = () => {
     // prettier-ignore
     console.log(`Story7: handlePlayClick: `);
-    if (counter >= 0 && counter <= getData()[0].length - 1) {
-      animatePlot("play");
-      setCounter((d) => d + 1);
-      setCurrent((d) => data[0][counter]);
-      if (counter === data[1]) {
-        setMaxTestingAcc((d) => current);
-      }
+
+    /*
+    let ctr = 0;
+    const myLoop = (i) => {
+      setTimeout(() => {
+        animatePlot("play");
+        setCurrent((d) => data[0][ctr]);
+        if (ctr === data[1]) {
+          setMaxTestingAcc((d) => data[0][ctr]);
+        }
+        // prettier-ignore
+        console.log(`Story7: handlePlayClick: ctr = ${ctr}, data[0].length = ${data[0].length}`);
+        console.log(`Story7: handlePlayClick: data[1] = ${data[1]}, `);
+        setCounter((d) => d + 1);
+
+        if (++ctr <= data[0].length - 1) {
+          myLoop(ctr);
+        }
+      }, 1000);
+    };
+    myLoop(ctr);
+    */
+
+    animatePlot("play");
+    setCurrent((d) => data[0][counter]);
+    if (counter === data[1]) {
+      setMaxTestingAcc((d) => data[0][counter]);
     }
+    setCounter((d) => d + 1);
   };
 
   useEffect(() => {
@@ -105,7 +126,7 @@ const Story7 = () => {
       setParameters(getParameters());
       setLoading(false);
 
-      // filterData("kernel_size"); // debug
+      // filterData("kernel_size"); // DEBUG
       // createPlot("#chartId");
     };
 

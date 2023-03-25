@@ -60,8 +60,8 @@ export function getParameters() {
 
 let selectedParameter;
 let filteredData: LearningCurveData[] = [];
-let annotationsFocus: LCPAnnotation[];
-let annotationsContext: LCPAnnotation[];
+let focusAnnotations: LCPAnnotation[];
+let contextAnnotations: LCPAnnotation[];
 
 export function filterData(_parameter: string) {
   selectedParameter = _parameter;
@@ -102,8 +102,8 @@ export function getData(): [LearningCurveData[], number] {
 }
 
 function calculateAnnotations() {
-  annotationsFocus = [];
-  annotationsContext = [];
+  focusAnnotations = [];
+  contextAnnotations = [];
 
   const maxIdx = indexOfMax(filteredData, "y");
   // prettier-ignore
@@ -113,35 +113,45 @@ function calculateAnnotations() {
     // Feature 1: maximum accuracy
     if (idx === maxIdx) {
       const msg = null;
-      annotationsFocus.push(
+      focusAnnotations.push(
         writeText(msg, d, idx, FeatureType.MAX, true, true),
       );
-      annotationsContext.push(
+      contextAnnotations.push(
         writeText(msg, d, idx, FeatureType.MAX, true, true),
       );
     }
     // Feature 2: current
     else {
       const msg = null;
-      annotationsFocus.push(
+      focusAnnotations.push(
         writeText(msg, d, idx, FeatureType.CURRENT, true, false),
       );
-      annotationsContext.push(
+      contextAnnotations.push(
         writeText(msg, d, idx, FeatureType.CURRENT, true, false),
       );
     }
   });
 
   // Sort annotations
-  annotationsFocus.sort((a1, a2) => a1.end - a2.end);
-  annotationsFocus.push({ end: filteredData.length - 1 });
+  focusAnnotations.sort((a1, a2) => a1.end - a2.end);
+  focusAnnotations.push({ end: filteredData.length - 1 });
   // Set annotations starts to the start annotation's end
-  annotationsFocus
+  focusAnnotations
     .slice(1)
-    .forEach((d: LCPAnnotation, i) => (d.start = annotationsFocus[i].end));
+    .forEach((d: LCPAnnotation, i) => (d.start = focusAnnotations[i].end));
+
+  // Sort annotations
+  contextAnnotations.sort((a1, a2) => a1.end - a2.end);
+  contextAnnotations.push({ end: filteredData.length - 1 });
+  // Set annotations starts to the start annotation's end
+  contextAnnotations
+    .slice(1)
+    .forEach((d: LCPAnnotation, i) => (d.start = contextAnnotations[i].end));
 
   // prettier-ignore
-  console.log("utils-story-5: calculateAnnotations: lpAnnotations = ", annotationsFocus);
+  console.log("utils-story-5: calculateAnnotations: focusAnnotations = ", focusAnnotations);
+  // prettier-ignore
+  console.log("utils-story-5: calculateAnnotations: contextAnnotations = ", contextAnnotations);
 }
 
 function writeText(
@@ -205,7 +215,7 @@ export function createPlot(selector: string) {
     .currentPoint(_current, DotColor[FeatureType.CURRENT])
     .maxPoint(_maxTesting, DotColor[FeatureType.MAX])
     .annotationOnTop()
-    .annotate(annotationsFocus, annotationsContext);
+    .annotate(focusAnnotations, contextAnnotations);
 
   // .plot();
 }

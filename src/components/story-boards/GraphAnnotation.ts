@@ -493,7 +493,6 @@ export class GraphAnnotation {
   public showAnnotation(delay) {
     d3.select(this.node)
       .transition()
-      .ease(d3.easeQuadIn)
       .delay(delay)
       .duration(0)
       .style("opacity", 1);
@@ -504,12 +503,7 @@ export class GraphAnnotation {
    ** Hide all elements
    **/
   public hideAnnotation() {
-    d3.select(this.node)
-      .transition()
-      .ease(d3.easeQuadIn)
-      .delay(0)
-      .duration(0)
-      .style("opacity", 0);
+    d3.select(this.node).transition().delay(0).duration(0).style("opacity", 0);
 
     return 0;
   }
@@ -518,23 +512,16 @@ export class GraphAnnotation {
    ** Hide only message, box and connector
    */
   public hideMessage() {
-    d3.select(this._rect)
-      .transition()
-      .ease(d3.easeQuadIn)
-      .delay(0)
-      .duration(0)
-      .style("opacity", 0);
+    d3.select(this._rect).transition().delay(0).duration(0).style("opacity", 0);
 
     d3.select(this._textNode)
       .transition()
-      .ease(d3.easeQuadIn)
       .delay(0)
       .duration(0)
       .style("opacity", 0);
 
     d3.select(this._connector)
       .transition()
-      .ease(d3.easeQuadIn)
       .delay(0)
       .duration(0)
       .style("opacity", 0);
@@ -548,7 +535,6 @@ export class GraphAnnotation {
   public hideCircle() {
     d3.select(this._circle)
       .transition()
-      .ease(d3.easeQuadIn)
       .delay(0)
       .duration(0)
       .style("opacity", 0);
