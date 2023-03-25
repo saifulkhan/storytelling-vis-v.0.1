@@ -147,7 +147,7 @@ const DashboardSidebar: FC<DashboardSidebarProps> = ({
       }}
     >
       <Scrollbar options={{ suppressScrollX: true }}>
-        {/* <Box sx={{ p: 2 }}>
+        <Box sx={{ p: 2 }}>
           <Box
             sx={{
               alignItems: "center",
@@ -178,7 +178,7 @@ const DashboardSidebar: FC<DashboardSidebarProps> = ({
               </Link>
             </Box>
           </Box>
-        </Box> */}
+        </Box>
 
         <Divider />
 

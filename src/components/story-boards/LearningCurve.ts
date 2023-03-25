@@ -19,7 +19,7 @@ export type LearningCurveData = {
 const WIDTH = 700;
 let HEIGHT = undefined;
 const MARGIN1 = {
-    top: 55,
+    top: 20,
     right: 20,
     bottom: undefined,
     left: 50,
@@ -102,7 +102,7 @@ export class LearningCurve {
   _dotHighlightColor = "#E84A5F";
   _highlightCurrent: string;
   _highlightMax: string;
-  _showEventLines = true;
+  _showEventLines = false;
 
   x1Scale: ScaleLinear<number, number>;
   y1Scale: ScaleLinear<number, number>;
@@ -627,48 +627,6 @@ export class LearningCurve {
   }
 
   /**
-   ** Compute annotation position and add to the timeseries svg
-   **/
-  private createAnnotations(svg, annotations, xScale, yScale, height, margin) {
-    annotations.forEach((d: LCPAnnotation, idx) => {
-      const graphAnnotation: GraphAnnotation = d.graphAnnotation;
-      if (!graphAnnotation) return;
-
-      // Set the coordinates of the annotation
-      graphAnnotation.x(xScale(d.unscaledTarget[0]));
-      graphAnnotation.y(height / 2 + margin.top);
-
-      graphAnnotation.target(
-        xScale(d.unscaledTarget[0]),
-        yScale(d.unscaledTarget[1]),
-        false,
-        undefined,
-      );
-
-      // Add to svg
-      graphAnnotation.id(`id-annotation-${idx}`).addTo(svg.node());
-
-      if (this._annotationOnTop) {
-        graphAnnotation.y(margin + graphAnnotation._annoHeight / 2);
-        graphAnnotation.updatePos(graphAnnotation._x, graphAnnotation._y);
-      }
-
-      // Show the event line (dotted line) if enabled
-      if (this._showEventLines) {
-        const container = d3.select(`#id-annotation-${idx}`);
-        this.addEventLine(container, graphAnnotation._tx, graphAnnotation._ty);
-      }
-
-      // Hide the annotations at first
-      graphAnnotation.hideAnnotation();
-      // graphAnnotation.showAnnotation(0); // DEBUG: show all annotations
-    });
-
-    // prettier-ignore
-    console.log("LearningCurve: createAnnotations: annotations = ", annotations);
-  }
-
-  /**
    ** Loop through all the annotation objects, creates array of lines
    ** representing (for each annotation) segment path, their length and animation duration
    **/
@@ -711,22 +669,6 @@ export class LearningCurve {
     return lineElements;
   }
 
-  // TODO: Move to GraphAnnotation. Applies to TimeSeriesPlot as well
-  private addEventLine(container, x, y) {
-    // TODO: Fix this
-    return;
-    container
-      .append("line")
-      .attr("x1", x)
-      .attr("y1", y)
-      .attr("x2", x)
-      .attr("y2", this.height1 - this.margin1.bottom)
-      .attr("stroke-dasharray", 5)
-      .style("stroke-width", 1)
-      .style("stroke", "#999999")
-      .style("fill", "none");
-  }
-
   private createDots(svg, data, annotations, xScale, yScale) {
     const dotElements = annotations.map((d: LCPAnnotation) => {
       console.log("TimeSeriesPlot: createDots: annotation, d = ", d);
@@ -748,6 +690,69 @@ export class LearningCurve {
     // prettier-ignore
     console.log("TimeSeriesPlot: createDots: _dotElements: ", dotElements);
     return dotElements;
+  }
+
+  /**
+   ** Compute annotation position and add to the timeseries svg
+   **/
+  private createAnnotations(svg, annotations, xScale, yScale, height, margin) {
+    annotations.forEach((d: LCPAnnotation, idx) => {
+      const graphAnnotation: GraphAnnotation = d.graphAnnotation;
+      if (!graphAnnotation) return;
+
+      // Set the coordinates of the annotation
+      graphAnnotation.x(xScale(d.unscaledTarget[0]));
+      graphAnnotation.y(height / 2 + margin.top);
+
+      graphAnnotation.target(
+        xScale(d.unscaledTarget[0]),
+        yScale(d.unscaledTarget[1]),
+        false,
+        undefined,
+      );
+
+      // Add to svg
+      graphAnnotation.id(`id-annotation-${idx}`).addTo(svg.node());
+
+      if (this._annotationOnTop) {
+        graphAnnotation.y(margin + graphAnnotation._annoHeight / 2);
+        graphAnnotation.updatePos(graphAnnotation._x, graphAnnotation._y);
+      }
+
+      // Show the event line (dotted line) if enabled
+      if (this._showEventLines) {
+        const container = d3.select(`#id-annotation-${idx}`);
+        this.addEventLine(
+          container,
+          graphAnnotation._tx,
+          graphAnnotation._ty,
+          height,
+          margin,
+        );
+      }
+
+      // Hide the annotations at first
+      graphAnnotation.hideAnnotation();
+      // graphAnnotation.showAnnotation(0); // DEBUG: show all annotations
+    });
+
+    // prettier-ignore
+    console.log("LearningCurve: createAnnotations: annotations = ", annotations);
+  }
+
+  // TODO: Move to GraphAnnotation. Applies to TimeSeriesPlot as well
+  private addEventLine(container, x, y, height, margin) {
+    // TODO: Fix this
+    container
+      .append("line")
+      .attr("x1", x)
+      .attr("y1", y)
+      .attr("x2", x)
+      .attr("y2", height - margin.bottom)
+      .attr("stroke-dasharray", 5)
+      .style("stroke-width", 1)
+      .style("stroke", "#999999")
+      .style("fill", "none");
   }
 
   /*****************************************************************************
