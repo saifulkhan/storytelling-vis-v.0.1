@@ -30,12 +30,12 @@ import {
   filterData,
   createPlot,
   animatePlot,
-  getMaxTestingAcc,
-  getCurrent,
+  getData,
 } from "src/components/story-boards/story-7-data";
 import DisplayAccuracyCard from "src/components/story-boards/DisplayAccuracyCard";
 import { TextColor } from "src/components/story-boards/Colors";
 import { FeatureType } from "src/components/story-boards/FeatureType";
+import { LearningCurveData } from "src/components/story-boards/LearningCurve";
 
 const styling = {
   container: {
@@ -48,6 +48,9 @@ const Story7 = () => {
   const [loading, setLoading] = useState(true);
   const [parameters, setParameters] = useState<string[]>([]);
   const [parameter, setParameter] = useState<string>("");
+  const [data, setData] = useState<[LearningCurveData[], number]>(undefined);
+  const [counter, setCounter] = useState<number>(0);
+  const [maxCounter, setMaxCounter] = useState<number>(0);
   const [maxTestingAcc, setMaxTestingAcc] = useState<any>(undefined);
   const [current, setCurrent] = useState<any>(undefined);
 
@@ -59,8 +62,12 @@ const Story7 = () => {
 
     if (newParameter) {
       filterData(newParameter);
-      setMaxTestingAcc((d) => getMaxTestingAcc());
-      setCurrent((d) => getCurrent());
+
+      setData((d) => getData());
+      setMaxCounter((d) => getData()[0].length - 1);
+      setCounter((d) => 0);
+      setCurrent((d) => undefined);
+      setMaxTestingAcc((d) => undefined);
 
       createPlot("#chartId");
     }
@@ -81,7 +88,14 @@ const Story7 = () => {
   const handlePlayClick = () => {
     // prettier-ignore
     console.log(`Story7: handlePlayClick: `);
-    animatePlot("play");
+    if (counter >= 0 && counter <= getData()[0].length - 1) {
+      animatePlot("play");
+      setCounter((d) => d + 1);
+      setCurrent((d) => data[0][counter]);
+      if (counter === data[1]) {
+        setMaxTestingAcc((d) => current);
+      }
+    }
   };
 
   useEffect(() => {

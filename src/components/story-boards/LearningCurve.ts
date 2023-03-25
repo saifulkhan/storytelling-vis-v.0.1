@@ -1,12 +1,19 @@
 import * as d3 from "d3";
 import { ScaleLinear } from "d3";
 import { AnimationType } from "src/models/AnimationType";
+import { FeatureType } from "./FeatureType";
+import { GraphAnnotation, LCPAnnotation } from "./GraphAnnotation";
 
 export type LearningCurveData = {
-  index: number;
+  index?: number;
   date: Date;
-  y: number; // accuracy
+  y: number; // testing accuracy
   x: number; // selected parameter
+  channels?: number;
+  kernel_size?: number;
+  layers?: number;
+  samples_per_class?: number;
+  mean_training_accuracy?: number;
 };
 
 const WIDTH = 700;
@@ -90,6 +97,7 @@ export class LearningCurve {
   _dotHighlightColor = "#E84A5F";
   _highlightCurrent: string;
   _highlightMax: string;
+  _showEventLines = true;
 
   x1Scale: ScaleLinear<number, number>;
   y1Scale: ScaleLinear<number, number>;
@@ -102,11 +110,14 @@ export class LearningCurve {
 
   brush;
 
-  _annotations = [];
-  animationCounter = 0;
+  _annotationOnTop = true;
+  focusAnnotations = [];
+  contextAnnotations = [];
   focusLineElements = [];
   contextLineElements = [];
-  annotationElements = [];
+  focusDotElements = [];
+  contextDotElements = [];
+  animationCounter = 0;
 
   constructor(selector) {
     this.selector = selector;
@@ -121,7 +132,7 @@ export class LearningCurve {
       .append("svg")
       .attr("width", this.width)
       .attr("height", this.height);
-    // .style("background-color", "pink"); // debug
+    // .style("background-color", "pink"); // DEBUG
 
     // prettier-ignore
     console.log("LearningCurveData: constructor: ", this.height, this.width, this.margin1, this.margin2);
@@ -173,8 +184,8 @@ export class LearningCurve {
         [0, 0],
         [this.width2, this.height2],
       ])
-      // .on("end", brushed); // Generate one event at the end. This is useful while debugging
-      .on("brush end", brushed); // Generate events while brushing. Looks good while using.
+      // .on("end", brushed); // DEBUG: Generate only one event at the end.
+      .on("brush end", brushed); // Generate events while brushing- looks good.
 
     //
     // Brush event handler
@@ -288,6 +299,11 @@ export class LearningCurve {
   maxPoint(maxPoint: LearningCurveData, highlightMax: string) {
     this._maxPoint = maxPoint;
     this._highlightMax = highlightMax;
+    return this;
+  }
+
+  showEventLines() {
+    this._showEventLines = true;
     return this;
   }
 
@@ -561,18 +577,37 @@ export class LearningCurve {
    * Animations
    **************************************************************************************************************/
 
-  public annotations(annotations: LearningCurveAnnotation[]) {
-    this._annotations = annotations;
+  annotationOnTop() {
+    this._annotationOnTop = true;
+    return this;
+  }
+
+  public annotate(
+    annotationsFocus: LCPAnnotation[],
+    annotationsContext: LCPAnnotation[],
+  ) {
+    this.focusAnnotations = annotationsFocus;
+    this.contextAnnotations = annotationsContext;
+
     // prettier-ignore
-    console.log("LearningCurve: annotations: _annotations = ", this._annotations);
+    console.log("LearningCurve: annotations: annotationsContext = ", annotationsContext);
 
     // We need to draw the axis and labels before we can compute the
     // coordinates of the annotations
     this.drawContextAxes();
-    this.annotationsPosition();
+
     this.focusLineElements = this.createLineElements(
       this.focus,
       this._focusedData,
+      this.focusAnnotations,
+      this.x1Scale,
+      this.y1Scale,
+    );
+
+    this.focusDotElements = this.createDots(
+      this.focus,
+      this._focusedData,
+      this.focusAnnotations,
       this.x1Scale,
       this.y1Scale,
     );
@@ -580,65 +615,96 @@ export class LearningCurve {
     this.contextLineElements = this.createLineElements(
       this.context,
       this._data,
+      this.contextAnnotations,
       this.x2Scale,
       this.y2Scale,
     );
 
-    this.createAnnotationsElements();
+    this.contextDotElements = this.createDots(
+      this.context,
+      this._data,
+      this.focusAnnotations,
+      this.x2Scale,
+      this.y2Scale,
+    );
+
+    this.createAnnotations(
+      this.focus,
+      this.focusAnnotations,
+      this.x1Scale,
+      this.y1Scale,
+      this.height1,
+      this.margin1,
+    );
+
+    this.createAnnotations(
+      this.context,
+      this.contextAnnotations,
+      this.x2Scale,
+      this.y2Scale,
+      this.height2,
+      this.margin2,
+    );
 
     return this;
   }
 
-  private annotationsPosition() {
-    console.log("LearningCurve: annotationsPosition");
-
-    // Middle of the x-axis
-    const xMid = this.x1Scale.range()[1] / 2;
-    console.log("LearningCurve: annotationsPosition: xMid = ", xMid);
-
-    // Set coordinates of the annotations
-    this._annotations.forEach((d: LearningCurveAnnotation) => {
+  /**
+   ** Compute annotation position and add to the timeseries svg
+   **/
+  private createAnnotations(svg, annotations, xScale, yScale, height, margin) {
+    annotations.forEach((d: LCPAnnotation, idx) => {
       const graphAnnotation: GraphAnnotation = d.graphAnnotation;
+      if (!graphAnnotation) return;
 
-      if (graphAnnotation) {
-        graphAnnotation.x(this.x1Scale(graphAnnotation.unscaledTarget[0]));
-        graphAnnotation.y(-this.margin1.top / 2);
+      // Set the coordinates of the annotation
+      graphAnnotation.x(xScale(d.unscaledTarget[0]));
+      graphAnnotation.y(height / 2 + margin.top);
 
-        graphAnnotation.target(
-          this.x1Scale(graphAnnotation.unscaledTarget[0]),
-          this.y1Scale(graphAnnotation.unscaledTarget[1]),
-          true,
-          {
-            left: graphAnnotation._x >= xMid,
-            right: graphAnnotation._x < xMid,
-          },
-        );
+      graphAnnotation.target(
+        xScale(d.unscaledTarget[0]),
+        yScale(d.unscaledTarget[1]),
+        false,
+        undefined,
+      );
+
+      // Add to svg
+      graphAnnotation.id(`id-annotation-${idx}`).addTo(svg.node());
+
+      if (this._annotationOnTop) {
+        graphAnnotation.y(margin + graphAnnotation._annoHeight / 2);
+        graphAnnotation.updatePos(graphAnnotation._x, graphAnnotation._y);
       }
 
-      // prettier-ignore
-      console.log("LearningCurve: annotationsPosition: graphAnnotation = ", graphAnnotation);
+      // Show the event line (dotted line) if enabled
+      if (this._showEventLines) {
+        const container = d3.select(`#id-annotation-${idx}`);
+        this.addEventLine(container, graphAnnotation._tx, graphAnnotation._ty);
+      }
+
+      // Hide the annotations at first
+      graphAnnotation.hideAnnotation();
+      // graphAnnotation.showAnnotation(0); // DEBUG: show all annotations
     });
 
     // prettier-ignore
-    console.log("LearningCurve: annotationsPosition: _annotations = ", this._annotations);
-
-    return this;
+    console.log("TimeSeriesPlot: createAnnotations: annotations = ", annotations);
   }
 
   /**
    ** Loop through all the annotation objects, creates array of lines
    ** representing (for each annotation) segment path, their length and animation duration
    **/
-  private createLineElements(svg, data, xScale, yScale) {
+  private createLineElements(svg, data, annotations, xScale, yScale) {
     // prettier-ignore
     console.log("LearningCurve: createLineElements:");
 
-    const lineElements = this._annotations.map((d: LearningCurveAnnotation) => {
-      console.log("LearningCurve: _createPaths: annotation, d = ", d);
-
-      // Slice data points within the start and end idx of the segment
+    const lineElements = [];
+    annotations.forEach((d: LCPAnnotation, idx) => {
+      console.log("LearningCurve: createLineElements: annotation, d = ", d);
+      // prettier-ignore
+      // console.log("LearningCurve: createLineElements: unscaledTarget = ", d.unscaledTarget);
       const points = data.slice(d.start, d.end + 1);
-
       const path = svg
         .append("path")
         .attr("stroke", this._lineColor)
@@ -653,7 +719,6 @@ export class LearningCurve {
         );
 
       const length = path.node().getTotalLength();
-
       // Set the path to be hidden initially
       // DEBUG: comment three lines below to make them visible
       path
@@ -661,7 +726,7 @@ export class LearningCurve {
         .attr("stroke-dashoffset", length);
 
       const duration = length * 4;
-      return { path: path, length: length, duration: duration };
+      lineElements.push({ path: path, length: length, duration: duration });
     });
 
     // prettier-ignore
@@ -669,93 +734,11 @@ export class LearningCurve {
     return lineElements;
   }
 
-  // private createLineElements() {
-  //   // prettier-ignore
-  //   console.log("LearningCurve: createLineElements:");
-
-  //   this.lineElements = [];
-  //   this.lineElements = this._annotations.map((d: LearningCurveAnnotation) => {
-  //     console.log("LearningCurve: _createPaths: annotation, d = ", d);
-
-  //     // Slice data points within the start and end idx of the segment
-  //     const points = this._focusedData.slice(d.start, d.end + 1);
-
-  //     const path = this.focus
-  //       .append("path")
-  //       .attr("stroke", this._lineColor)
-  //       .attr("stroke-width", this._lineStroke)
-  //       .attr("fill", "none")
-  //       .attr(
-  //         "d",
-  //         d3
-  //           .line()
-  //           .x((d) => this.x1Scale(d.x))
-  //           .y((d) => this.y1Scale(d.y))(points),
-  //       );
-
-  //     const length = path.node().getTotalLength();
-
-  //     // Set the path to be hidden initially
-  //     // DEBUG: comment three lines below to make them visible
-  //     path
-  //       .attr("stroke-dasharray", length + " " + length)
-  //       .attr("stroke-dashoffset", length);
-
-  //     const duration = length * 4;
-  //     return { path: path, length: length, duration: duration };
-  //   });
-
-  //   // prettier-ignore
-  //   console.log("LearningCurve: createLineElements: lineElements: ", this.lineElements);
-  // }
-
-  /**
-   ** Returns an array of objects representing annotation type and persistence
-   **/
-  private createAnnotationsElements() {
-    // prettier-ignore
-    console.log("LearningCurve: createAnnotationsElements:");
-    this.annotationElements = [];
-
-    this._annotations.forEach((d, idx) => {
-      const graphAnnotation: GraphAnnotation = d?.graphAnnotation;
-      if (!graphAnnotation) {
-        this.annotationElements.push(null);
-        return;
-      }
-
-      // If add to svg and set opacity to 0 (to hide it)
-      graphAnnotation.id(`id-annotation-${idx}`).addTo(this.focus.node());
-
-      // TODO: if required set it in annotation object
-      // if (this._annoTop) {
-      //   graphAnnotation.y(this._margin.top + graphAnnotation._annoHeight / 2);
-      //   graphAnnotation.updatePos(graphAnnotation._x, graphAnnotation._y);
-      // }
-
-      // Show the event line (dotted line) if enabled
-      // TODO: if required set it in annotation object
-      // FIXIT: This is not working
-      if (false) {
-        const container = d3.select(`#id-annotation-${idx}`);
-        this.addEventLine(container, graphAnnotation._tx, graphAnnotation._ty);
-      }
-
-      // DEBUG: set opacity to 1 to make it visible
-      const element = d3.select(`#id-annotation-${idx}`).style("opacity", 0);
-
-      // d3 selection of annotation element and boolean indication whether to persist annotation
-      this.annotationElements.push({
-        element: element,
-        fadeout: d.fadeout || false,
-      });
-    });
-
-    // prettier-ignore
-    console.log("LearningCurve: createAnnotationsElements: annotationElements: ", this.annotationElements);
-  }
-
+  // TODO: This will go inside GraphAnnotation class
+  // TODO: Fix will apply to TimeSeriesPlot as well
   private addEventLine(container, x, y) {
+    // TODO: Fix this
+    return;
     container
       .append("line")
       .attr("x1", x)
@@ -767,33 +750,29 @@ export class LearningCurve {
       .style("stroke", "#999999")
       .style("fill", "none");
   }
-  // _createDots() {
-  //   if (!this._showPoints1) {
-  //     return;
-  //   }
 
-  //   // TODO: We don't want to create excessive number of bars
-  //   this._dotElements = this._annotations.map((d: LinePlotAnnotation) => {
-  //     console.log("LearningCurve: _createPaths: annotation, d = ", d);
-  //     const point = this._data1[d.current];
+  private createDots(svg, data, annotations, xScale, yScale) {
+    const dotElements = annotations.map((d: LCPAnnotation) => {
+      console.log("TimeSeriesPlot: createDots: annotation, d = ", d);
+      const point = data[d.end];
+      if (!point) return;
 
-  //     // Take the first data point of the segment to draw a dot
-  //     const dotElement = d3
-  //       .select(this._svg)
-  //       .append("circle")
-  //       .attr("r", 3)
-  //       .attr("cx", () => this._xScale(point.date))
-  //       .attr("cy", () => this._yScale1(point.y))
-  //       .style("fill", this._pointsColor1)
-  //       .style("opacity", 0);
-  //     this._dotElements.push(dotElement);
+      // Take the first data point of the segment to draw a dot
+      const dotElement = svg
+        .append("circle")
+        .attr("r", 3)
+        .attr("cx", () => xScale(point.x))
+        .attr("cy", () => yScale(point.y))
+        .style("fill", this._dotColor)
+        .style("opacity", 0); // DEBUG: set to 1 to show dots
 
-  //     return dotElement;
-  //   });
+      return dotElement;
+    });
 
-  //   // prettier-ignore
-  //   console.log("LearningCurve: _createDots: _dotElements: ", this._dotElements);
-  // }
+    // prettier-ignore
+    console.log("TimeSeriesPlot: createDots: _dotElements: ", dotElements);
+    return dotElements;
+  }
 
   // TODO: fix animation
 
@@ -810,139 +789,98 @@ export class LearningCurve {
       animationType === "play" &&
       this.animationCounter + 1 <= this._data.length
     ) {
-      this.play();
+      this.play(
+        this.contextAnnotations,
+        this.contextLineElements,
+        this.contextDotElements,
+      );
+      this.play(
+        this.focusAnnotations,
+        this.focusLineElements,
+        this.focusDotElements,
+      );
+
       this.animationCounter += 1;
     }
-
     // prettier-ignore
     console.log("LearningCurve: animate: animationCounter: ", this.animationCounter)
 
     return this;
   }
 
-  private play() {
-    // Number of path segments
-    const pathNum = this._annotations.length;
-    // Use modulus to repeat animation sequence once counter > number of animation segments
-    const currIdx = this.animationCounter % pathNum;
-    const prevIdx = (this.animationCounter - 1) % pathNum;
-    // prettier-ignore
-    console.log(`TimeSeries: play: prevIdx = ${prevIdx}, currIdx = ${currIdx}`);
+  /**
+   ** This will show or hide the path elements to svg based on the animation counter value
+   **/
+  private play(annotations, lineElements, dotElements) {
+    const DELAY_500MS = 500,
+      DELAY_1S = 1000,
+      DURATION_500MS = 500,
+      DURATION_1S = 1000;
 
-    // Get path and annotations for current animation and previous one
-    const focusLineElem = this.focusLineElements[currIdx];
-    const contextLineElem = this.contextLineElements[currIdx];
+    const currIdx = this.animationCounter;
+    const prevIdx = this.animationCounter - 1;
+    const currAnn: LCPAnnotation = annotations[currIdx];
+    const prevAnn: LCPAnnotation = annotations[prevIdx];
 
-    const currAnnoElem = this.annotationElements[currIdx];
-    const prevAnnoElem = this.annotationElements[prevIdx];
-    // const currDotElement = this._dotElements[currIdx];
+    const showPath = (idx: number, delay = 0) => {
+      const element = lineElements[idx];
+      if (!element) return delay;
 
-    let delay = 0;
-    let duration = 500;
-
-    // Fade out previous annotation if it exists
-    if (prevAnnoElem && prevAnnoElem.fadeout && prevIdx != pathNum - 1) {
-      prevAnnoElem.element
-        .style("opacity", 1)
+      // We need to delay the line animations (value is 1000 if true)
+      const duration = 500; // element.duration || DURATION_1S;
+      // Animate current path with duration given by user
+      element.path
         .transition()
+        .ease(d3.easeLinear)
+        .delay(delay)
         .duration(duration)
-        .style("opacity", 0);
+        .attr("stroke-dashoffset", 0);
+      return delay + duration;
+    };
 
-      delay += duration;
-    }
+    const showDot = (idx: number, delay = 0) => {
+      const element = dotElements[idx];
+      if (!element) return delay;
 
-    // We need to delay the following animations (value is 1000 if true)
-    duration = focusLineElem.duration || 500;
-    // Animate current path with duration given by user
-    focusLineElem.path
-      .transition()
-      .ease(d3.easeLinear)
-      .delay(delay)
-      .duration(duration)
-      .attr("stroke-dashoffset", 0);
-
-    // Animate current path with duration given by user
-    contextLineElem.path
-      .transition()
-      .ease(d3.easeLinear)
-      .delay(delay)
-      .duration(duration)
-      .attr("stroke-dashoffset", 0);
-
-    delay += duration;
-    duration = 500;
-
-    // if (currDotElement) {
-    //   currDotElement
-    //     .transition()
-    //     .ease(d3.easeLinear)
-    //     .delay(delay)
-    //     .duration(duration)
-    //     .style("opacity", 1);
-
-    //   delay += duration;
-    // }
-
-    // Animate the fade in of annotation after the path has fully revealed itself
-    if (currAnnoElem) {
-      currAnnoElem.element
+      const duration = DURATION_500MS;
+      element
         .transition()
+        .ease(d3.easeLinear)
         .delay(delay)
         .duration(duration)
         .style("opacity", 1);
+      return delay + duration;
+    };
+
+    // Hide previous CURRENT annotation
+    if (prevAnn?.featureType === FeatureType.CURRENT) {
+      prevAnn?.graphAnnotation.hideAnnotation();
     }
 
-    // Set the paths before current path to be visible (default to invisible at each step)
-    this.focusLineElements
-      .slice(0, currIdx)
-      .forEach((p) => p.path.attr("stroke-dashoffset", 0));
+    // Hide previous MAX annotation box
+    if (prevAnn?.featureType === FeatureType.MAX) {
+      prevAnn?.graphAnnotation.hideMessage();
+    }
 
-    this.contextLineElements
-      .slice(0, currIdx)
-      .forEach((p) => p.path.attr("stroke-dashoffset", 0));
+    // Check if there is any past MAX annotation exists
+    if (currAnn?.featureType === FeatureType.MAX) {
+      annotations.slice(0, currIdx).forEach((d, idx) => {
+        if (d.featureType === FeatureType.MAX) {
+          d?.graphAnnotation.hideAnnotation();
+        }
+      });
+    }
 
-    // Set the persisting annotations to be visible (default to invisible at each step)
-    this.annotationElements.slice(0, currIdx).forEach((d) => {
-      if (d && !d.fadeout) {
-        d.element.style("opacity", 1);
-      }
-    });
+    let delay = 0;
+    delay = showPath(currIdx, delay);
+    delay = showDot(currIdx, delay);
+    delay = currAnn.graphAnnotation.showAnnotation(delay);
   }
 
-  // private animateForward() {
-  //   // prettier-ignore
-  //   console.log("LearningCurve: animateForward: animationCounter: ", this.animationCounter)
-
-  //   // Highlight
-  //   LearningCurve.animateDotColor(
-  //     this.svg,
-  //     "focus",
-  //     this.animationCounter,
-  //     this._dotHighlightColor,
-  //     DOT_RADIUS * 2,
-  //   );
-  //   LearningCurve.animateDotColor(
-  //     this.svg,
-  //     "context",
-  //     this.animationCounter,
-  //     this._dotHighlightColor,
-  //     DOT_RADIUS * 2,
-  //   );
-
-  //   // Change back
-  //   LearningCurve.animateDotColor(
-  //     this.svg,
-  //     "focus",
-  //     this.animationCounter - 1,
-  //     this._dotColor,
-  //   );
-  //   LearningCurve.animateDotColor(
-  //     this.svg,
-  //     "context",
-  //     this.animationCounter - 1,
-  //     this._dotColor,
-  //   );
-  // }
+  /*****************************************************************************
+   **
+   **
+   *****************************************************************************/
 
   private static animateDotColor(
     selection,
@@ -963,12 +901,6 @@ export class LearningCurve {
       .attr("r", radius)
       .style("fill", color);
   }
-
-  /*****************************************************************************
-   **
-   **
-   *****************************************************************************/
-
   /**
    ** Clear all elements inside svg.
    **/

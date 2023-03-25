@@ -2,12 +2,14 @@ import * as d3 from "d3";
 import { readCSVFile } from "./utils-data";
 import { AnimationType } from "src/models/AnimationType";
 import { LearningCurve, LearningCurveData } from "./LearningCurve";
-import { Color, DotColor } from "./Colors";
+import { Color, DotColor, TextColor } from "./Colors";
 import { FeatureType } from "./FeatureType";
+import { GraphAnnotation, LCPAnnotation } from "./GraphAnnotation";
+import { findDateIdx } from "./utils-feature-detection";
 
-/*********************************************************************************************************
- * Prepare data
- *********************************************************************************************************/
+/*******************************************************************************
+ ** Prepare data
+ ******************************************************************************/
 
 let data;
 
@@ -51,55 +53,131 @@ export function getParameters() {
   return selectableParameters;
 }
 
-/*********************************************************************************************************
- * Filter/select parameter
- *********************************************************************************************************/
+/*******************************************************************************
+ ** Filter/select parameter
+ ** Create annotation objects
+ ******************************************************************************/
 
 let selectedParameter;
-
 let filteredData: LearningCurveData[] = [];
+let annotationsFocus: LCPAnnotation[];
+let annotationsContext: LCPAnnotation[];
 
 export function filterData(_parameter: string) {
   selectedParameter = _parameter;
   // prettier-ignore
   console.log("story-7-data: filterData: selectedParameter = ", selectedParameter);
-  filteredData = [];
 
+  filteredData = [];
   data.forEach((d, idx) => {
     filteredData.push({
-      index: 0,
       date: d.date,
       y: d.mean_test_accuracy,
       x: d[selectedParameter],
+      channels: d.channels,
+      kernel_size: d.kernel_size,
+      layers: d.layers,
+      samples_per_class: d.samples_per_class,
     } as LearningCurveData);
   });
-
   // Sort data by selected keyz, e.g, "kernel_size"
-  let idx = 0;
   filteredData = filteredData
     .slice()
     .sort((a, b) => d3.ascending(a.date, b.date))
-    .sort((a, b) => d3.ascending(a.x, b.x))
-    .map((d) => ({ ...d, index: idx++ })); // update index of the reordered data 0, 1, 2,...
-
+    .sort((a, b) => d3.ascending(a.x, b.x));
   // prettier-ignore
   console.log("story-7-data: filterData: filteredData = ", filteredData);
+
+  calculateAnnotations();
 }
 
-export function getMaxTestingAcc() {
-  return data.reduce((a, b) =>
-    a.mean_test_accuracy > b.mean_test_accuracy ? a : b,
-  );
+// Find index of highest attr (e.g., highest testing accuracy)
+const indexOfMax = (arr, attr) => {
+  const max = Math.max(...arr.map((d) => d[attr]));
+  return arr.findIndex((d) => d[attr] === max);
+};
+
+export function getData(): [LearningCurveData[], number] {
+  return [filteredData, indexOfMax(filteredData, "y")];
 }
 
-export function getCurrent() {
-  return data.reduce((a, b) => (a.date > b.date ? a : b));
+function calculateAnnotations() {
+  annotationsFocus = [];
+  annotationsContext = [];
+
+  const maxIdx = indexOfMax(filteredData, "y");
+  // prettier-ignore
+  console.log("utils-story-5: calculateAnnotations: maxIdx = ", maxIdx);
+
+  filteredData.forEach((d, idx) => {
+    // Feature 1: maximum accuracy
+    if (idx === maxIdx) {
+      const msg = null;
+      annotationsFocus.push(
+        writeText(msg, d, idx, FeatureType.MAX, true, true),
+      );
+      annotationsContext.push(
+        writeText(msg, d, idx, FeatureType.MAX, true, true),
+      );
+    }
+    // Feature 2: current
+    else {
+      const msg = null;
+      annotationsFocus.push(
+        writeText(msg, d, idx, FeatureType.CURRENT, true, false),
+      );
+      annotationsContext.push(
+        writeText(msg, d, idx, FeatureType.CURRENT, true, false),
+      );
+    }
+  });
+
+  // Sort annotations
+  annotationsFocus.sort((a1, a2) => a1.end - a2.end);
+  annotationsFocus.push({ end: filteredData.length - 1 });
+  // Set annotations starts to the start annotation's end
+  annotationsFocus
+    .slice(1)
+    .forEach((d: LCPAnnotation, i) => (d.start = annotationsFocus[i].end));
+
+  // prettier-ignore
+  console.log("utils-story-5: calculateAnnotations: lpAnnotations = ", annotationsFocus);
 }
 
-/*********************************************************************************************************
+function writeText(
+  text,
+  data,
+  idx,
+  featureType: FeatureType,
+  showDot = false,
+  showCircle = false,
+): LCPAnnotation {
+  const graphAnnotation = new GraphAnnotation();
+  // .title(date.toLocaleDateString("en-GB"))
+  // .label(text)
+  // .backgroundColor(Color.WhiteGrey)
+  // .titleColor(Color.Grey)
+  // .labelColor(TextColor[featureType])
+  // .connectorColor(Color.LightGrey2)
+  // .fontSize("13px")
+  // .wrap(500);
+
+  showCircle && graphAnnotation.circleAttr(10, DotColor[featureType], 3, 0.6);
+  showDot && graphAnnotation.dotAttr(5, DotColor[featureType], 1);
+
+  return {
+    graphAnnotation: graphAnnotation,
+    end: idx,
+    featureType: featureType,
+    fadeout: true,
+    unscaledTarget: [data.x, data.y],
+  } as LCPAnnotation;
+}
+
+/*******************************************************************************
  * Create or init TimeSeries.
  * Animate when button is clicked.
- *********************************************************************************************************/
+ ******************************************************************************/
 
 let lc;
 
@@ -121,16 +199,19 @@ export function createPlot(selector: string) {
     .yLabel("Test accuracy")
     .ticks(10)
     .lineColor(Color.LightGrey1)
-    .lineStroke(1.5)
+    .lineStroke(1)
     .dotColor(Color.DarkGrey)
-    // .dotHighlightColor(Color.Red) // TODO: fix animation
+    // .dotHighlightColor(Color.Red) // TODO:  we use annotation now, so remove this and below 2 methods
     .currentPoint(_current, DotColor[FeatureType.CURRENT])
     .maxPoint(_maxTesting, DotColor[FeatureType.MAX])
-    .plot();
+    .annotationOnTop()
+    .annotate(annotationsFocus, annotationsContext);
+
+  // .plot();
 }
 
 export function animatePlot(animationType: AnimationType) {
   // prettier-ignore
-  console.log("utils-story-5: animatePlot: animationType = ", animationType);
+  console.log("utils-story-7: animatePlot: animationType = ", animationType);
   lc.animate(animationType);
 }

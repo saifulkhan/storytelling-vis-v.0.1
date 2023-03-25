@@ -186,7 +186,7 @@ function writeText(
     .wrap(500);
 
   showCircle && graphAnnotation.circleAttr(10, DotColor[featureType], 3, 0.6);
-  showDot && graphAnnotation.dotAttr(4, DotColor[featureType], 1);
+  showDot && graphAnnotation.dotAttr(5, DotColor[featureType], 1);
 
   const target = data[idx];
   graphAnnotation.unscaledTarget = [target.date, target.y];

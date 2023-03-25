@@ -9,7 +9,7 @@ export default function DisplayAccuracyCard({ title, obj, color }) {
             {title}
           </Typography>
           <Typography variant="h5" component="div" color={color}>
-            {obj && `${Math.round(obj?.mean_test_accuracy * 100)}%`}
+            {obj && `${Math.round(obj?.y * 100)}%`}
           </Typography>
           <Typography variant="body2" component="div">
             {obj && `Channels: ${obj?.channels}`}

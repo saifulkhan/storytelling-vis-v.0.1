@@ -6,26 +6,35 @@ import { FeatureType } from "./FeatureType";
 // Annotations used in parallel coordinate
 //
 
+// For PCP - ParallelCoordinatePlot
 export interface PCPAnnotation {
   graphAnnotation?: GraphAnnotation | null;
   origin?: number[]; // x, y coordinate at key axis
   destination?: number[]; // x, y coordinate
   fadeout?: boolean;
-  data?: number; //store data
+  data?: number; //store data // TODO: use uscaledtarget?
   originAxis?: string; // the selected axis
   featureType?: FeatureType;
   lineColor?: string; // line highlight
   dotColor?: string; // dot highlight circle color
 }
 
-//
-// Wrapper containing additional properties for the GraphAnnotation
-//
+// For LCP - LearningCurvePlot
+export interface LCPAnnotation {
+  graphAnnotation?: GraphAnnotation;
+  end?: number;
+  start?: number;
+  unscaledTarget?: [number, number];
+  fadeout?: boolean;
+  featureType?: FeatureType;
+}
+
+// For TSP - TimeSeriesPlot
 export interface TSPAnnotation {
   graphAnnotation?: GraphAnnotation;
   end?: number;
   start?: number;
-  date?: any;
+  date?: any; //TODO: Where is it used // move unscaled target here?
   fadeout?: boolean;
   featureType?: FeatureType;
   useData2?: boolean;
@@ -73,7 +82,7 @@ export class GraphAnnotation {
   _annoWidth: number;
   _annoHeight: number;
 
-  unscaledTarget: [number, number | Date];
+  unscaledTarget: [number, number | Date]; // TODO: move it out of here
 
   constructor(id = "") {
     this._id = id;
