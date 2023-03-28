@@ -80,8 +80,10 @@ const Story = () => {
     const selectedSegment = event.target.value;
     console.log("Story1: selectedSegment = ", selectedSegment);
     if (selectedSegment && selectedSegment !== segment) {
-      setSegment(selectedSegment);
-      segmentData(selectedSegment);
+      // setSegment(selectedSegment);
+      // segmentData(selectedSegment);
+      setSegment(1);
+      segmentData(1);
     }
   };
 
@@ -171,7 +173,7 @@ const Story = () => {
                         },
                       }}
                     >
-                      <InputLabel
+                      {/* <InputLabel
                         sx={{ m: 1, mt: 0 }}
                         id="segment-slider-label"
                       >
@@ -194,7 +196,7 @@ const Story = () => {
                           valueLabelDisplay="auto"
                           onChange={handleChangeSlider}
                         />
-                      </FormControl>
+                      </FormControl> */}
 
                       <FormControl
                         sx={{ m: 1, width: 300, mt: 0 }}
