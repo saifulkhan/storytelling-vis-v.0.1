@@ -19,7 +19,7 @@ export const splitDataAndEvents = (events, splits, timeSeriesData) => {
   const dataEventsBySegment = [...Array(segNum)].map((_, i) =>
     splits[i]
       ? dataEventsZip.slice(i > 0 && splits[i - 1].idx, splits[i].idx)
-      : dataEventsZip.slice(splits[i - 1].idx),
+      : dataEventsZip.slice(splits[i - 1]?.idx),
   );
 
   return dataEventsBySegment;

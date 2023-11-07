@@ -9,12 +9,11 @@ import {
   maxBounds,
 } from "./utils-aggregation-segmentation";
 
-import { GraphAnnotation } from "./GraphAnnotation";
+import { GraphAnnotation } from "./GraphAnnotation_story-1-2-3";
 import { TimeSeries } from "./TimeSeries";
 import { Rise } from "./Raise";
 import { Fall } from "./Fall";
 import { createDataGroup } from "./utils-data-processing";
-import { axisBottom } from "d3";
 
 /*What is the definition of a wave?
   src: https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/conditionsanddiseases/articles/coronaviruscovid19infectionsurveytechnicalarticle/wavesandlagsofcovid19inenglandjune2021
@@ -25,22 +24,14 @@ import { axisBottom } from "d3";
   So the peak must be > than three weeks (21 days) in width
 */
 
-/*********************************************************************************************************
- * Prepare data
- *********************************************************************************************************/
-
 let dailyCasesByRegion = {};
 let peaksByRegion = {};
 
-export async function loadData(): Promise<void> {
+export async function processDataAndGetRegions(): Promise<string[]> {
   await processDailyCasesByRegion();
   processPeaksByRegion();
-}
 
-/*
- * Return all area/region names sorted.
- */
-export function getRegions(): string[] {
+  // console.log("processDataAndGetRegions: regions = ", Object.keys(dailyCasesByRegion).sort());
   return Object.keys(dailyCasesByRegion).sort();
 }
 
@@ -168,33 +159,30 @@ const rankFeatures = (waveObj) => {
   fall.setRank(1);
 };
 
-/*********************************************************************************************************
- * Filter/select region1 and region2 data
- *********************************************************************************************************/
-
-let region1, region2;
+//
+// When a region1 and region2 are selected, prepare data for that
+//
 
 let gauss = [];
 let gaussMatchedWaves = [];
 let annotations = [];
+let visCtx;
+let ts;
 let maxCounter;
+let counter = -1;
 
-let region1CasesData, region2CasesData;
-
-export function filterData(_region1, _region2) {
-  region1 = _region1;
-  region2 = _region2;
-  console.log("filterData: region1 = ", region1, ", region2 = ", region2);
+export function onSelectRegion(_region1, _region2, selector) {
+  const region1 = _region1;
+  const region2 = _region2;
+  console.log("onSelectRegion: region1 = ", region1, ", region2 = ", region2);
 
   calculateCombGauss(region1, region2);
   calculateGaussMatchedWaves(region1, region2);
   calculateAnnotations(region1, region2);
+  createTimeSeriesSVG(region1, region2, selector);
 
   maxCounter = annotations.length - 1;
   counter = -1;
-
-  region1CasesData = dailyCasesByRegion[region1].data;
-  region2CasesData = dailyCasesByRegion[region2].data;
 }
 
 function calculateCombGauss(region1, region2) {
@@ -693,19 +681,16 @@ const writeText = (
   };
 };
 
-/*********************************************************************************************************
- * - Create or init TimeSeries.
- * - Animate when button is clicked.
- *********************************************************************************************************/
+export function createTimeSeriesSVG(region1, region2, selector: string) {
+  visCtx = TimeSeries.animationSVG(1200, 400, selector);
 
-let ts;
-let counter = -1;
+  const region1CasesData = dailyCasesByRegion[region1].data;
+  const region2CasesData = dailyCasesByRegion[region2].data;
 
-export function createTimeSeries(selector: string) {
-  ts = new TimeSeries(region2CasesData, selector, 1200, 400)
+  ts = new TimeSeries(region2CasesData, selector)
     .border(60)
     .addExtraDatasets(createDataGroup([region1CasesData]), true)
-    // .svg(visCtx)
+    .svg(visCtx)
     .annoTop()
     .title(`Comparison of waves between ${region1} and ${region2}`)
     .yLabel("Cases per Day")
@@ -737,16 +722,16 @@ export function createTimeSeries(selector: string) {
 // When play animate button is clicked draw there
 //
 
-export function animateTimeSeries(inc: number) {
+export function updateCounter(inc: number) {
   // prettier-ignore
-  console.log("animateTimeSeries: updateCounter: counter = ", counter, ", inc = ", inc, "maxCounter = ", maxCounter);
+  console.log("utils-story-2: updateCounter: counter = ", counter, ", inc = ", inc);
 
   if (inc === 0) {
     counter = 0;
   } else if (counter + inc >= 0 && counter + inc <= maxCounter) {
     counter += inc;
   }
-  console.log("animateTimeSeries: updateCounter: counter = ", counter);
+  console.log("utils-story-2: updateCounter: counter = ", counter);
 
-  ts.animate(annotations, counter).plot();
+  ts.animate(annotations, counter, visCtx).plot();
 }

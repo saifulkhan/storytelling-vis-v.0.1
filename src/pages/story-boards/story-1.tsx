@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import Box from "@mui/material/Box";
 import Slider from "@mui/material/Slider";
@@ -16,8 +16,10 @@ import {
   MenuItem,
   OutlinedInput,
   Select,
+  SelectChangeEvent,
   Fade,
 } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
@@ -25,42 +27,44 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { blue } from "@mui/material/colors";
 import DashboardLayout from "src/components/dashboard-layout/DashboardLayout";
 import {
-  loadData,
-  getRegions,
-  filterData,
-  animateTimeSeries,
-  createTimeSeries,
+  prepareDataAndGetRegions,
+  segmentData,
+  onSelectRegion,
+  onClickAnimate,
+  createTimeSeriesSVG,
 } from "src/components/story-boards/utils-story-1";
 
+const useStyles = makeStyles((theme) => ({
+  root: {
+    maxWidth: 345,
+  },
+  media: {
+    height: 0,
+    paddingTop: "56.25%", // 16:9
+  },
+  avatar: {
+    backgroundColor: blue[500],
+  },
+  icon: {
+    fill: blue[500],
+  },
+}));
+
 const Story = () => {
+  const classes = useStyles();
+
   const [loading, setLoading] = useState(true);
-
-  const [eventX, updateEventX] = useReducer(
-    (prev, next) => {
-      const newEvent = { ...prev, ...next };
-
-      if (
-        newEvent.region &&
-        newEvent.segment &&
-        (newEvent.region !== prev.region || newEvent.segment !== prev.segment)
-      ) {
-        filterData(newEvent.region, newEvent.segment);
-        createTimeSeries("#chartId");
-      }
-
-      if (newEvent.animationCounter !== prev.animationCounter)
-        animateTimeSeries(newEvent.animationCounter);
-
-      return newEvent;
-    },
-    { regions: [], region: "", segment: 3, animationCounter: 0 },
-  );
+  const [segment, setSegment] = useState<number>(3);
+  const [regions, setRegions] = useState<string[]>([]);
+  const [region, setRegion] = useState<string>("");
+  const [animationCounter, setAnimationCounter] = useState<number>(0);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await loadData();
-      updateEventX({ regions: getRegions() });
+      const _regions = await prepareDataAndGetRegions();
+      setRegions(_regions.map((d) => d));
+      segmentData(segment);
       setLoading(false);
     };
 
@@ -72,8 +76,54 @@ const Story = () => {
     }
   }, []);
 
+  const handleChangeSlider = (event) => {
+    const selectedSegment = event.target.value;
+    console.log("Story1: selectedSegment = ", selectedSegment);
+    if (selectedSegment && selectedSegment !== segment) {
+      // setSegment(selectedSegment);
+      // segmentData(selectedSegment);
+      setSegment(1);
+      segmentData(1);
+    }
+  };
+
   // slider formatted value
   const valuetext = (value) => `${value}`;
+
+  const handleChangeSelect = (event: SelectChangeEvent) => {
+    const selectedRegion = event.target.value;
+    console.log("Story1: selectedRegion = ", selectedRegion);
+    if (selectedRegion) {
+      onSelectRegion(selectedRegion);
+      createTimeSeriesSVG("#chart1");
+      setRegion(selectedRegion);
+      setAnimationCounter(0);
+    }
+  };
+
+  const handleBeginningButton = () => {
+    const count = 0;
+
+    setAnimationCounter(count);
+    console.log("Story1: animationCounter = ", count);
+    onClickAnimate(count, "#chart1");
+  };
+
+  const handleBackButton = () => {
+    const count = animationCounter - 1;
+    if (count < 0) return;
+
+    setAnimationCounter(count);
+    console.log("Story1: animationCounter = ", count);
+    onClickAnimate(count, "#chart1");
+  };
+
+  const handlePlayButton = () => {
+    const count = animationCounter + 1;
+    setAnimationCounter(count);
+    console.log("Story1: animationCounter = ", count);
+    onClickAnimate(count, "#chart1");
+  };
 
   return (
     <>
@@ -123,7 +173,7 @@ const Story = () => {
                         },
                       }}
                     >
-                      <InputLabel
+                      {/* <InputLabel
                         sx={{ m: 1, mt: 0 }}
                         id="segment-slider-label"
                       >
@@ -142,13 +192,11 @@ const Story = () => {
                           marks
                           min={0}
                           max={5}
+                          value={segment}
                           valueLabelDisplay="auto"
-                          value={eventX.segment}
-                          onChange={(e) =>
-                            updateEventX({ segment: e.target.value })
-                          }
+                          onChange={handleChangeSlider}
                         />
-                      </FormControl>
+                      </FormControl> */}
 
                       <FormControl
                         sx={{ m: 1, width: 300, mt: 0 }}
@@ -161,13 +209,11 @@ const Story = () => {
                           labelId="select-region-label"
                           id="select-region-label"
                           displayEmpty
+                          onChange={handleChangeSelect}
+                          value={region}
                           input={<OutlinedInput label="Select region" />}
-                          value={eventX.region}
-                          onChange={(e) =>
-                            updateEventX({ region: e.target.value })
-                          }
                         >
-                          {eventX.regions.map((d) => (
+                          {regions.map((d) => (
                             <MenuItem key={d} value={d}>
                               {d}
                             </MenuItem>
@@ -178,8 +224,8 @@ const Story = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!eventX.region}
-                          onClick={() => updateEventX({ animationCounter: 0 })}
+                          disabled={!region}
+                          onClick={handleBeginningButton}
                           component="span"
                         >
                           Beginning
@@ -189,13 +235,8 @@ const Story = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!eventX.region}
-                          onClick={() => {
-                            eventX.animationCounter &&
-                              updateEventX({
-                                animationCounter: eventX.animationCounter - 1,
-                              });
-                          }}
+                          disabled={!region}
+                          onClick={handleBackButton}
                           startIcon={<ArrowBackIosIcon />}
                           component="span"
                         >
@@ -206,12 +247,8 @@ const Story = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!eventX.region}
-                          onClick={() =>
-                            updateEventX({
-                              animationCounter: eventX.animationCounter + 1,
-                            })
-                          }
+                          disabled={!region}
+                          onClick={handlePlayButton}
                           endIcon={<ArrowForwardIosIcon />}
                           component="span"
                         >
@@ -220,7 +257,7 @@ const Story = () => {
                       </FormControl>
                     </FormGroup>
 
-                    <div id="chartId" />
+                    <div id="chart1" />
                   </>
                 )}
               </CardContent>

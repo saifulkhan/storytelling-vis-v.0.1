@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import Box from "@mui/material/Box";
 import {
@@ -17,7 +17,10 @@ import {
   MenuItem,
   OutlinedInput,
   Select,
+  SelectChangeEvent,
+  Tooltip,
 } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 import { blue } from "@mui/material/colors";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
@@ -25,47 +28,30 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 import DashboardLayout from "src/components/dashboard-layout/DashboardLayout";
 import {
-  loadData,
-  getRegions,
-  filterData,
-  animateTimeSeries,
-  createTimeSeries,
+  processDataAndGetRegions,
+  onSelectRegion,
+  updateCounter,
 } from "src/components/story-boards/utils-story-2";
 
+const useStyles = makeStyles((theme) => ({
+  avatar: {
+    backgroundColor: blue[500],
+  },
+}));
+
 const Story2 = () => {
+  const classes = useStyles();
+
   const [loading, setLoading] = useState<boolean>(true);
-
-  const [eventX, updateEventX] = useReducer(
-    (prev, next) => {
-      const newEvent = { ...prev, ...next };
-
-      if (
-        newEvent.region1 &&
-        newEvent.region2 &&
-        (newEvent.region1 !== prev.region1 || newEvent.region2 !== prev.region2)
-      ) {
-        filterData(newEvent.region1, newEvent.region2);
-        createTimeSeries("#chartId");
-      }
-
-      if (newEvent.animationCounterUpdate)
-        animateTimeSeries(newEvent.animationCounterUpdate);
-
-      return newEvent;
-    },
-    {
-      regions: [],
-      region1: "",
-      region2: "",
-      animationCounterUpdate: undefined,
-    },
-  );
+  const [regions, setRegions] = useState<string[]>([]);
+  const [region1, setRegion1] = useState<string>("");
+  const [region2, setRegion2] = useState<string>("");
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await loadData();
-      updateEventX({ regions: getRegions() });
+      const _regions = await processDataAndGetRegions();
+      setRegions(_regions);
       setLoading(false);
     };
 
@@ -76,6 +62,36 @@ const Story2 = () => {
       setLoading(false);
     }
   }, []);
+
+  const handleChangeSelect1 = (event: SelectChangeEvent) => {
+    const selectedRegion1 = event.target.value;
+    console.log("selectedRegion1 = ", selectedRegion1);
+    if (selectedRegion1 && region2) {
+      onSelectRegion(selectedRegion1, region2, "#chart1");
+    }
+    setRegion1(selectedRegion1);
+  };
+
+  const handleChangeSelect2 = (event: SelectChangeEvent) => {
+    const selectedRegion2 = event.target.value;
+    console.log("selectedRegion2 = ", selectedRegion2);
+    if (region1 && selectedRegion2) {
+      onSelectRegion(region1, selectedRegion2, "#chart1");
+    }
+    setRegion2(selectedRegion2);
+  };
+
+  const handleBeginningButton = () => {
+    updateCounter(0);
+  };
+
+  const handleBackButton = () => {
+    updateCounter(-1);
+  };
+
+  const handlePlayButton = () => {
+    updateCounter(1);
+  };
 
   return (
     <>
@@ -144,13 +160,11 @@ const Story2 = () => {
                         <Select
                           labelId="select-region-1-label"
                           id="select-region-1-label"
-                          onChange={(e) =>
-                            updateEventX({ region1: e.target.value })
-                          }
+                          onChange={handleChangeSelect1}
                           input={<OutlinedInput label="Select region 1" />}
-                          value={eventX.region1}
+                          value={region1}
                         >
-                          {eventX.regions.map((d) => (
+                          {regions.map((d) => (
                             <MenuItem key={d} value={d}>
                               {d}
                             </MenuItem>
@@ -178,13 +192,11 @@ const Story2 = () => {
                           labelId="select-region-2-label"
                           id="select-region-2-label"
                           displayEmpty
-                          onChange={(e) =>
-                            updateEventX({ region2: e.target.value })
-                          }
+                          onChange={handleChangeSelect2}
                           input={<OutlinedInput label="Select region 2" />}
-                          value={eventX.region2}
+                          value={region2}
                         >
-                          {eventX.regions.map((d) => (
+                          {regions.map((d) => (
                             <MenuItem key={d} value={d}>
                               {d}
                             </MenuItem>
@@ -195,10 +207,8 @@ const Story2 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!eventX.region1 || !eventX.region2}
-                          onClick={() =>
-                            updateEventX({ animationCounterUpdate: 0 })
-                          }
+                          disabled={!region1 || !region2}
+                          onClick={handleBeginningButton}
                           component="span"
                         >
                           Beginning
@@ -208,10 +218,8 @@ const Story2 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!eventX.region1 || !eventX.region2}
-                          onClick={() =>
-                            updateEventX({ animationCounterUpdate: -1 })
-                          }
+                          disabled={!region1 || !region2}
+                          onClick={handleBackButton}
                           startIcon={<ArrowBackIosIcon />}
                           component="span"
                         >
@@ -222,10 +230,8 @@ const Story2 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!eventX.region1 || !eventX.region2}
-                          onClick={() =>
-                            updateEventX({ animationCounterUpdate: 1 })
-                          }
+                          disabled={!region1 || !region2}
+                          onClick={handlePlayButton}
                           endIcon={<ArrowForwardIosIcon />}
                           component="span"
                         >
@@ -233,7 +239,7 @@ const Story2 = () => {
                         </Button>
                       </FormControl>
                     </FormGroup>
-                    <div id="chartId" />
+                    <div id="chart1" />
                   </>
                 )}
               </CardContent>
