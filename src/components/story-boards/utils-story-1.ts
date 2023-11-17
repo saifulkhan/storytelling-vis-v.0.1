@@ -105,7 +105,7 @@ function prepareCalenderEvents() {
   calendarEvents.forEach((e) => e.setRank(ranking[e.type]));
 
   // prettier-ignore
-  // console.log("prepareCalenderEvents: calendarEvents (ranked) = ", calendarEvents);
+  console.log("prepareCalenderEvents: calendarEvents (ranked) = ", calendarEvents);
 }
 
 function preparePeaksByRegion() {
@@ -131,7 +131,7 @@ function preparePeaksByRegion() {
     rankPeaks(peaksByRegion[region]);
   }
 
-  // console.log("preparePeaksByRegion: peaksByRegion (ranked) = ", peaksByRegion);
+  console.log("preparePeaksByRegion: peaksByRegion (ranked) = ", peaksByRegion);
 }
 
 function prepareGaussByRegion() {
