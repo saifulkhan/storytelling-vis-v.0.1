@@ -1,5 +1,5 @@
 import { readCSVFile } from "./utils-data";
-import { CategoricalFeature } from "./SemanticEvent";
+import { CategoricalFeature } from "./CategoricalFeature";
 import { detectFeatures } from "./utils-feature-detection";
 import {
   combineBounds,
