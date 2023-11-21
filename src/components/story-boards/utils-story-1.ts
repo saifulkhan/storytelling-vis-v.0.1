@@ -1,5 +1,5 @@
 import { readCSVFile } from "./utils-data";
-import { SemanticEvent } from "./SemanticEvent";
+import { CategoricalFeature } from "./SemanticEvent";
 import { detectFeatures } from "./utils-feature-detection";
 import {
   combineBounds,
@@ -11,7 +11,7 @@ import {
 } from "./utils-aggregation-segmentation";
 
 import { GraphAnnotation } from "./GraphAnnotation_story-1-2-3";
-import { DataEvent } from "./DataEvent";
+import { NumericalFeature } from "./NumericalFeature";
 import { TimeSeries } from "./TimeSeries";
 
 const dailyCasesByRegion = {};
@@ -54,33 +54,33 @@ async function prepareDailyCasesByRegion() {
 function prepareCalenderEvents() {
   // We need to construct Calendar Data Because
   // Lockdown events
-  const lockdownStart1 = new SemanticEvent(new Date("2020-03-24"))
-    .setType(SemanticEvent.TYPES.LOCKDOWN_START)
+  const lockdownStart1 = new CategoricalFeature(new Date("2020-03-24"))
+    .setType(CategoricalFeature.TYPES.LOCKDOWN_START)
     .setDescription("Start of First Lockdown.");
-  const lockdownStart2 = new SemanticEvent(new Date("2021-01-05"))
-    .setType(SemanticEvent.TYPES.LOCKDOWN_END)
+  const lockdownStart2 = new CategoricalFeature(new Date("2021-01-05"))
+    .setType(CategoricalFeature.TYPES.LOCKDOWN_END)
     .setDescription("Start of Second Lockdown.");
-  const lockdownEnd1 = new SemanticEvent(new Date("2020-05-28"))
-    .setType(SemanticEvent.TYPES.LOCKDOWN_START)
+  const lockdownEnd1 = new CategoricalFeature(new Date("2020-05-28"))
+    .setType(CategoricalFeature.TYPES.LOCKDOWN_START)
     .setDescription("End of First Lockdown.");
-  const lockdownEnd2 = new SemanticEvent(new Date("2021-04-01"))
-    .setType(SemanticEvent.TYPES.LOCKDOWN_END)
+  const lockdownEnd2 = new CategoricalFeature(new Date("2021-04-01"))
+    .setType(CategoricalFeature.TYPES.LOCKDOWN_END)
     .setDescription("End of Second Lockdown.");
 
   // Vaccine Events
-  const pfizer1 = new SemanticEvent(new Date("2020-12-08"))
-    .setType(SemanticEvent.TYPES.VACCINE)
+  const pfizer1 = new CategoricalFeature(new Date("2020-12-08"))
+    .setType(CategoricalFeature.TYPES.VACCINE)
     .setDescription("UK begins rollout of Pfizer Vaccine.");
-  const astra1 = new SemanticEvent(new Date("2021-01-04"))
-    .setType(SemanticEvent.TYPES.VACCINE)
+  const astra1 = new CategoricalFeature(new Date("2021-01-04"))
+    .setType(CategoricalFeature.TYPES.VACCINE)
     .setDescription(
       "Astrazeneca Vaccine approved and begins being administered.",
     );
-  const moderna1 = new SemanticEvent(new Date("2021-04-13"))
-    .setType(SemanticEvent.TYPES.VACCINE)
+  const moderna1 = new CategoricalFeature(new Date("2021-04-13"))
+    .setType(CategoricalFeature.TYPES.VACCINE)
     .setDescription("Moderna Vaccine rollout begins in the UK.");
-  const booster = new SemanticEvent(new Date("2021-09-16"))
-    .setType(SemanticEvent.TYPES.VACCINE)
+  const booster = new CategoricalFeature(new Date("2021-09-16"))
+    .setType(CategoricalFeature.TYPES.VACCINE)
     .setDescription("Booster campaign in the UK starts.");
 
   // Create an array of semantic events and return
@@ -98,9 +98,9 @@ function prepareCalenderEvents() {
   // console.log("prepareCalenderEvents: calendarEvents = ", calendarEvents);
 
   const ranking = {};
-  ranking[SemanticEvent.TYPES.LOCKDOWN_START] = 5;
-  ranking[SemanticEvent.TYPES.VACCINE] = 4;
-  ranking[SemanticEvent.TYPES.LOCKDOWN_END] = 3;
+  ranking[CategoricalFeature.TYPES.LOCKDOWN_START] = 5;
+  ranking[CategoricalFeature.TYPES.VACCINE] = 4;
+  ranking[CategoricalFeature.TYPES.LOCKDOWN_END] = 3;
 
   calendarEvents.forEach((e) => e.setRank(ranking[e.type]));
 
@@ -269,7 +269,7 @@ export function onSelectRegion(_region: string) {
 
         d.events.forEach((e) => {
           // Add annotation for semantic events that are rank > 3
-          if (e.rank > 3 && e instanceof SemanticEvent) {
+          if (e.rank > 3 && e instanceof CategoricalFeature) {
             annotations.push(
               // @ts-expect-error -- fix accessing protected _date
               writeText(e.description, e._date, casesData, true),
@@ -277,7 +277,7 @@ export function onSelectRegion(_region: string) {
           }
 
           // Find tallest peak that is ranked > 3
-          if (e.rank > 3 && e.type == DataEvent.TYPES.PEAK) {
+          if (e.rank > 3 && e.type == NumericalFeature.TYPES.PEAK) {
             highestPeak =
               highestPeak && highestPeak.height > e.height ? highestPeak : e;
           }
@@ -300,7 +300,7 @@ export function onSelectRegion(_region: string) {
       currData.forEach((d) => {
         d.events.forEach((e) => {
           // Add annotation for semantic events that are rank > 3
-          if (e.rank > 3 && e instanceof SemanticEvent) {
+          if (e.rank > 3 && e instanceof CategoricalFeature) {
             annotations.push(
               // @ts-expect-error -- fix accessing protected _date
               writeText(e.description, e._date, casesData, true),
@@ -308,7 +308,7 @@ export function onSelectRegion(_region: string) {
           }
 
           // Add annotation for peak events that are rank > 3
-          if (e.rank > 3 && e.type == DataEvent.TYPES.PEAK) {
+          if (e.rank > 3 && e.type == NumericalFeature.TYPES.PEAK) {
             const peakText = `By ${e.date}, the number of cases peaks at ${e.height}.`;
             annotations.push(writeText(peakText, e._date, casesData, true));
           }
@@ -363,7 +363,7 @@ export function onSelectRegion(_region: string) {
       currData.forEach((d) => {
         d.events.forEach((e) => {
           // Add annotation for semantic events that are rank > 3
-          if (e.rank > 3 && e instanceof SemanticEvent) {
+          if (e.rank > 3 && e instanceof CategoricalFeature) {
             annotations.push(
               // @ts-expect-error -- fix accessing protected _date
               writeText(e.description, e._date, casesData, true),
@@ -371,7 +371,7 @@ export function onSelectRegion(_region: string) {
           }
 
           // Add annotation for peak events that are rank > 3
-          if (e.rank > 3 && e.type == DataEvent.TYPES.PEAK) {
+          if (e.rank > 3 && e.type == NumericalFeature.TYPES.PEAK) {
             const peakText = `By ${e.date}, the number of cases peaks at ${e.height}.`;
             annotations.push(writeText(peakText, e._date, casesData, true));
           }

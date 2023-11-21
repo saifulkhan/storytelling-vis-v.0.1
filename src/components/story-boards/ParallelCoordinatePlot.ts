@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import { AnimationType } from "src/models/AnimationType";
 import { Color } from "./Colors";
 import { GraphAnnotation, PCPAnnotation } from "./GraphAnnotation";
-import { FeatureType } from "./FeatureType";
+import { NumericalFeatureType } from "./FeatureType";
 
 const WIDTH = 800,
   HEIGHT = 600,
@@ -381,14 +381,14 @@ export class ParallelCoordinatePlot {
 
         // Save the coordinates in PCAnnotation object
         d.origin = [x, y];
-        if (d.featureType === FeatureType.MIN) {
+        if (d.featureType === NumericalFeatureType.MIN) {
           d.destination = [this._margin.right + ANNO_X_POS, ANNO_Y_POS];
         } else if (
-          d.featureType === FeatureType.CURRENT ||
-          d.featureType === FeatureType.LAST
+          d.featureType === NumericalFeatureType.CURRENT ||
+          d.featureType === NumericalFeatureType.LAST
         ) {
           d.destination = [xMid, ANNO_Y_POS];
-        } else if (d.featureType === FeatureType.MAX) {
+        } else if (d.featureType === NumericalFeatureType.MAX) {
           d.destination = [
             this._width - this._margin.left - ANNO_X_POS,
             ANNO_Y_POS,
@@ -419,15 +419,15 @@ export class ParallelCoordinatePlot {
     );
 
     // Hide previous line & its dots
-    if (prevAnn?.featureType === FeatureType.CURRENT) {
+    if (prevAnn?.featureType === NumericalFeatureType.CURRENT) {
       this.hideLineWithId(prevIdx);
       this.hideDotsWithId(prevIdx);
     }
 
     // Check if there is any past MAX line exists
-    if (currAnn?.featureType === FeatureType.MAX) {
+    if (currAnn?.featureType === NumericalFeatureType.MAX) {
       this._annotations.slice(0, currIdx).forEach((d, idx) => {
-        if (d.featureType === FeatureType.MAX) {
+        if (d.featureType === NumericalFeatureType.MAX) {
           this.hideLineWithId(idx);
           this.hideDotsWithId(idx);
         }
@@ -435,9 +435,9 @@ export class ParallelCoordinatePlot {
     }
 
     // Check if there is any past MIN line exists
-    if (currAnn?.featureType === FeatureType.MIN) {
+    if (currAnn?.featureType === NumericalFeatureType.MIN) {
       this._annotations.slice(0, currIdx).forEach((d, idx) => {
-        if (d.featureType === FeatureType.MIN) {
+        if (d.featureType === NumericalFeatureType.MIN) {
           this.hideLineWithId(idx);
           this.hideDotsWithId(idx);
         }

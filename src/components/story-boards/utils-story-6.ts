@@ -4,7 +4,7 @@ import { ParallelCoordinatePlot } from "./ParallelCoordinatePlot";
 import { AnimationType } from "src/models/AnimationType";
 import { GraphAnnotation, PCPAnnotation } from "./GraphAnnotation";
 import { DotColor, LineColor, TextColor, Color } from "./Colors";
-import { FeatureType } from "./FeatureType";
+import { NumericalFeatureType } from "./FeatureType";
 
 /*********************************************************************************************************
  * Prepare data
@@ -206,11 +206,11 @@ function calculateAnnotations() {
     if (globalMin.index === idx) {
       // prettier-ignore
       const msg = `The worst accuracy: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
-      pcAnnotations.push(writeText(msg, d, FeatureType.MIN, false));
+      pcAnnotations.push(writeText(msg, d, NumericalFeatureType.MIN, false));
     } else if (globalMax.index === idx) {
       // prettier-ignore
       const msg = `The best accuracy: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
-      pcAnnotations.push(writeText(msg, d, FeatureType.MAX, false));
+      pcAnnotations.push(writeText(msg, d, NumericalFeatureType.MAX, false));
     }
 
     //
@@ -219,7 +219,7 @@ function calculateAnnotations() {
     else if (idx === data.length - 1) {
       // prettier-ignore
       const msg = `The current/last testing accuracy: ${Math.round(d?.mean_test_accuracy * 100,)}% [training ${Math.round(d?.mean_training_accuracy * 100)}%]`;
-      pcAnnotations.push(writeText(msg, d, FeatureType.LAST, false));
+      pcAnnotations.push(writeText(msg, d, NumericalFeatureType.LAST, false));
     }
 
     //
@@ -228,7 +228,9 @@ function calculateAnnotations() {
     else {
       // prettier-ignore
       const msg = `The current testing accuracy: ${Math.round(d?.mean_test_accuracy * 100)}% [training ${Math.round(d?.mean_training_accuracy * 100)}%]`;
-      pcAnnotations.push(writeText(msg, d, FeatureType.CURRENT, false));
+      pcAnnotations.push(
+        writeText(msg, d, NumericalFeatureType.CURRENT, false),
+      );
     }
   });
 }
@@ -236,7 +238,7 @@ function calculateAnnotations() {
 function writeText(
   message: string | null,
   data: any,
-  featureType: FeatureType,
+  featureType: NumericalFeatureType,
   highlightCircle: boolean = false,
 ): PCPAnnotation {
   let annotation: PCPAnnotation = null;

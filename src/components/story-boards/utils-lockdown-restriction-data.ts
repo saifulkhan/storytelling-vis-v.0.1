@@ -2,7 +2,7 @@
 // Ported from https://observablehq.com/@scottwjones/lockdown-restriction-data
 //
 
-import { SemanticEvent } from "./SemanticEvent";
+import { CategoricalFeature } from "./SemanticEvent";
 import { readCSVFile } from "./utils-data";
 
 let countryRegions;
@@ -86,11 +86,11 @@ export async function getCalendarEvents(placeName, types) {
   let eventDates = [];
   types.forEach((type) => {
     switch (type) {
-      case SemanticEvent.TYPES.LOCKDOWN:
+      case CategoricalFeature.TYPES.LOCKDOWN:
         eventDates = findEventStartEnd("National Lockdown", localAuthorityData);
         eventDates.forEach((d) =>
           events.push(
-            new SemanticEvent(d.start)
+            new CategoricalFeature(d.start)
               .setType(type)
               .setStart(d.start)
               .setEnd(d.end)
@@ -98,34 +98,34 @@ export async function getCalendarEvents(placeName, types) {
           ),
         );
         break;
-      case SemanticEvent.TYPES.LOCKDOWN_START:
+      case CategoricalFeature.TYPES.LOCKDOWN_START:
         eventDates = findEventStartEnd("National Lockdown", localAuthorityData);
         eventDates.forEach((d) =>
           events.push(
-            new SemanticEvent(d.start)
+            new CategoricalFeature(d.start)
               .setType(type)
               .setDescription("Start of National Lockdown."),
           ),
         );
         break;
-      case SemanticEvent.TYPES.LOCKDOWN_END:
+      case CategoricalFeature.TYPES.LOCKDOWN_END:
         eventDates = findEventStartEnd("National Lockdown", localAuthorityData);
         eventDates.forEach((d) =>
           events.push(
-            new SemanticEvent(d.end)
+            new CategoricalFeature(d.end)
               .setType(type)
               .setDescription("End of National Lockdown."),
           ),
         );
         break;
-      case SemanticEvent.TYPES.VACCINE_1:
+      case CategoricalFeature.TYPES.VACCINE_1:
         eventDates = findEventStartEnd(
           "Pfizer Vaccine Rollout",
           localAuthorityData,
         );
         eventDates.forEach((d) =>
           events.push(
-            new SemanticEvent(d.start)
+            new CategoricalFeature(d.start)
               .setType(type)
               .setDescription("Pfizer vaccine rollout begins."),
           ),
@@ -136,7 +136,7 @@ export async function getCalendarEvents(placeName, types) {
         );
         eventDates.forEach((d) =>
           events.push(
-            new SemanticEvent(d.start)
+            new CategoricalFeature(d.start)
               .setType(type)
               .setDescription("Astrazeneca rollout in the UK starts."),
           ),
@@ -147,20 +147,20 @@ export async function getCalendarEvents(placeName, types) {
         );
         eventDates.forEach((d) =>
           events.push(
-            new SemanticEvent(d.start)
+            new CategoricalFeature(d.start)
               .setType(type)
               .setDescription("First Moderna vaccines administered."),
           ),
         );
         break;
-      case SemanticEvent.TYPES.VACCINE_2:
+      case CategoricalFeature.TYPES.VACCINE_2:
         eventDates = findEventStartEnd(
           "Second Dose Rollout",
           localAuthorityData,
         );
         eventDates.forEach((d) =>
           events.push(
-            new SemanticEvent(d.start)
+            new CategoricalFeature(d.start)
               .setType(type)
               .setDescription(
                 "First person in the UK given second dose of vaccine.",
@@ -168,14 +168,14 @@ export async function getCalendarEvents(placeName, types) {
           ),
         );
         break;
-      case SemanticEvent.TYPES.VACCINE_3:
+      case CategoricalFeature.TYPES.VACCINE_3:
         eventDates = findEventStartEnd(
           "Booster Vaccine Rollout",
           localAuthorityData,
         );
         eventDates.forEach((d) =>
           events.push(
-            new SemanticEvent(d.start)
+            new CategoricalFeature(d.start)
               .setType(type)
               .setDescription("Booster campaign begins in the UK."),
           ),

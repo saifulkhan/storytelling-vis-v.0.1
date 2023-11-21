@@ -1,4 +1,4 @@
-export enum FeatureType {
+export enum NumericalFeatureType {
   DEFAULT = "default",
   CURRENT = "current",
   LAST = "last",

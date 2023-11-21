@@ -3,7 +3,7 @@
 
 import * as d3 from "d3";
 import { ScrollingSvg } from "./ScrollingSvg";
-import { SemanticEvent } from "./SemanticEvent";
+import { CategoricalFeature } from "./SemanticEvent";
 import { TimeLine } from "./Timeline";
 import { TimeSeries } from "./TimeSeries";
 import { readCSVFile } from "./utils-data";
@@ -80,13 +80,13 @@ export async function prepareSemanticCSV() {
 
 export async function prepareCalendarEvents(region) {
   const lockdownEvents = await getCalendarEvents(region, [
-    SemanticEvent.TYPES.LOCKDOWN_START,
-    SemanticEvent.TYPES.LOCKDOWN_END,
+    CategoricalFeature.TYPES.LOCKDOWN_START,
+    CategoricalFeature.TYPES.LOCKDOWN_END,
   ]);
 
   // Convert csv to Event Objects
   const semanticEvents = semanticCSV.map((e) =>
-    new SemanticEvent(new Date(e.date)).setDescription(e.text),
+    new CategoricalFeature(new Date(e.date)).setDescription(e.text),
   );
 
   return lockdownEvents.concat(semanticEvents);

@@ -1,6 +1,6 @@
-import { DataEvent } from "./DataEvent";
+import { NumericalFeature } from "./NumericalFeature";
 
-export class Rise extends DataEvent {
+export class Rise extends NumericalFeature {
   _height;
   _grad;
   _normGrad;
@@ -14,7 +14,7 @@ export class Rise extends DataEvent {
     grad = undefined,
   ) {
     super(date, start, end, metric);
-    this._type = DataEvent.TYPES.RISE;
+    this._type = NumericalFeature.TYPES.RISE;
     this._height = height;
     this._grad = grad;
     this._normGrad;

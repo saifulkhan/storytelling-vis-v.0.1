@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { Color } from "./Colors";
-import { FeatureType } from "./FeatureType";
+import { NumericalFeatureType } from "./FeatureType";
 
 //
 // Annotations used in parallel coordinate
@@ -14,7 +14,7 @@ export interface PCPAnnotation {
   fadeout?: boolean;
   data?: number; //store data // TODO: use uscaledtarget?
   originAxis?: string; // the selected axis
-  featureType?: FeatureType;
+  featureType?: NumericalFeatureType;
   lineColor?: string; // line highlight
   dotColor?: string; // dot highlight circle color
 }
@@ -26,7 +26,7 @@ export interface LCPAnnotation {
   start?: number;
   unscaledTarget?: [number, number];
   fadeout?: boolean;
-  featureType?: FeatureType;
+  featureType?: NumericalFeatureType;
 }
 
 // For TSP - TimeSeriesPlot
@@ -36,7 +36,7 @@ export interface TSPAnnotation {
   start?: number;
   date?: any; //TODO: Where is it used // move unscaled target here?
   fadeout?: boolean;
-  featureType?: FeatureType;
+  featureType?: NumericalFeatureType;
   useData2?: boolean;
 }
 

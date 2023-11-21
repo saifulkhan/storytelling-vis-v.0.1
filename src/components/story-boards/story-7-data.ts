@@ -3,7 +3,7 @@ import { readCSVFile } from "./utils-data";
 import { AnimationType } from "src/models/AnimationType";
 import { LearningCurve, LearningCurveData } from "./LearningCurve";
 import { Color, DotColor, TextColor } from "./Colors";
-import { FeatureType } from "./FeatureType";
+import { NumericalFeatureType } from "./FeatureType";
 import { GraphAnnotation, LCPAnnotation } from "./GraphAnnotation";
 import { findDateIdx } from "./utils-feature-detection";
 
@@ -114,20 +114,20 @@ function calculateAnnotations() {
     if (idx === maxIdx) {
       const msg = null;
       focusAnnotations.push(
-        writeText(msg, d, idx, FeatureType.MAX, true, true),
+        writeText(msg, d, idx, NumericalFeatureType.MAX, true, true),
       );
       contextAnnotations.push(
-        writeText(msg, d, idx, FeatureType.MAX, true, true),
+        writeText(msg, d, idx, NumericalFeatureType.MAX, true, true),
       );
     }
     // Feature 2: current
     else {
       const msg = null;
       focusAnnotations.push(
-        writeText(msg, d, idx, FeatureType.CURRENT, true, false),
+        writeText(msg, d, idx, NumericalFeatureType.CURRENT, true, false),
       );
       contextAnnotations.push(
-        writeText(msg, d, idx, FeatureType.CURRENT, true, false),
+        writeText(msg, d, idx, NumericalFeatureType.CURRENT, true, false),
       );
     }
   });
@@ -158,7 +158,7 @@ function writeText(
   text,
   data,
   idx,
-  featureType: FeatureType,
+  featureType: NumericalFeatureType,
   showDot = false,
   showCircle = false,
 ): LCPAnnotation {
@@ -212,8 +212,8 @@ export function createPlot(selector: string) {
     .lineStroke(1)
     .dotColor(Color.DarkGrey)
     // .dotHighlightColor(Color.Red) // TODO:  we use annotation now, so remove this and below 2 methods
-    .currentPoint(_current, DotColor[FeatureType.CURRENT])
-    .maxPoint(_maxTesting, DotColor[FeatureType.MAX])
+    .currentPoint(_current, DotColor[NumericalFeatureType.CURRENT])
+    .maxPoint(_maxTesting, DotColor[NumericalFeatureType.MAX])
     .annotationOnTop()
     .annotate(focusAnnotations, contextAnnotations);
 
