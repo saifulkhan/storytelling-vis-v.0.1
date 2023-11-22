@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import { AnimationType } from "src/models/AnimationType";
 import { Color } from "./Colors";
 import { GraphAnnotation, PCPAnnotation } from "./GraphAnnotation";
-import { NumericalFeatureType } from "./FeatureType";
+import { NumericalFeatureType } from "../../utils/storyboards/FeatureType";
 
 const WIDTH = 800,
   HEIGHT = 600,

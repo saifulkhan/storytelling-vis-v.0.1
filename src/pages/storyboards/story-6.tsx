@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import Head from "next/head";
 import Box from "@mui/material/Box";
+import Slider from "@mui/material/Slider";
 import {
   Avatar,
   Button,
@@ -16,7 +17,6 @@ import {
   OutlinedInput,
   Select,
   Fade,
-  Grid,
 } from "@mui/material";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
@@ -30,93 +30,41 @@ import {
   filterData,
   createPlot,
   animatePlot,
-  getData,
-} from "src/components/story-boards/story-7-data";
-import DisplayAccuracyCard from "src/components/story-boards/DisplayAccuracyCard";
-import { TextColor } from "src/components/story-boards/Colors";
-import { NumericalFeatureType } from "src/components/story-boards/FeatureType";
-import { LearningCurveData } from "src/components/story-boards/LearningCurve";
+} from "src/utils/storyboards/utils-story-6";
 
-const styling = {
-  container: {
-    // paddingRight: 2,
-    // paddingBottom: 2,
-  },
-};
-
-const Story7 = () => {
+const Story6 = () => {
   const [loading, setLoading] = useState(true);
   const [parameters, setParameters] = useState<string[]>([]);
   const [parameter, setParameter] = useState<string>("");
-  const [data, setData] = useState<[LearningCurveData[], number]>(undefined);
-  const [counter, setCounter] = useState<number>(0);
-  const [maxCounter, setMaxCounter] = useState<number>(0);
-  const [maxTestingAcc, setMaxTestingAcc] = useState<any>(undefined);
-  const [current, setCurrent] = useState<any>(undefined);
 
   const handleParameterSelect = (e) => {
     const newParameter = e.target.value;
     setParameter((d) => newParameter);
     // prettier-ignore
-    console.log(`Story7: handleParameterSelect: parameter: ${parameter}, newParameter: ${newParameter}`);
+    console.log(`Story6: handleParameterSelect: parameter: ${parameter}, newParameter: ${newParameter}`);
 
     if (newParameter) {
       filterData(newParameter);
-
-      setData((d) => getData());
-      setMaxCounter((d) => getData()[0].length - 1);
-      setCounter((d) => 0);
-      setCurrent((d) => undefined);
-      setMaxTestingAcc((d) => undefined);
-
       createPlot("#chartId");
     }
   };
 
   const handleBeginningClick = () => {
     // prettier-ignore
-    console.log(`Story7: handleBeginningClick:`);
+    console.log(`Story6: handleBeginningClick:`);
     animatePlot("beginning");
   };
 
   const handleBackClick = () => {
     // prettier-ignore
-    console.log(`Story7: handleBackClick:`);
+    console.log(`Story6: handleBackClick:`);
     animatePlot("back");
   };
 
   const handlePlayClick = () => {
     // prettier-ignore
-    console.log(`Story7: handlePlayClick: `);
-
-    /*
-    let ctr = 0;
-    const myLoop = (i) => {
-      setTimeout(() => {
-        animatePlot("play");
-        setCurrent((d) => data[0][ctr]);
-        if (ctr === data[1]) {
-          setMaxTestingAcc((d) => data[0][ctr]);
-        }
-        // prettier-ignore
-        console.log(`Story7: handlePlayClick: ctr = ${ctr}, data[0].length = ${data[0].length}`);
-        console.log(`Story7: handlePlayClick: data[1] = ${data[1]}, `);
-        setCounter((d) => d + 1);
-
-        if (++ctr <= data[0].length - 1) {
-          myLoop(ctr);
-        }
-      }, 1000);
-    };
-    myLoop(ctr);
-    */
-
+    console.log(`Story6: handlePlayClick: `);
     animatePlot("play");
-    setCurrent((d) => data[0][counter]);
-    if (counter === data[1]) {
-      setMaxTestingAcc((d) => data[0][counter]);
-    }
-    setCounter((d) => d + 1);
   };
 
   useEffect(() => {
@@ -125,9 +73,6 @@ const Story7 = () => {
       await loadData();
       setParameters(getParameters());
       setLoading(false);
-
-      // filterData("kernel_size"); // DEBUG
-      // createPlot("#chartId");
     };
 
     try {
@@ -141,7 +86,7 @@ const Story7 = () => {
   return (
     <>
       <Head>
-        <title>Dashboard & Story</title>
+        <title>Multivariate Story</title>
       </Head>
       <DashboardLayout>
         <Box
@@ -159,7 +104,7 @@ const Story7 = () => {
                     <AutoStoriesIcon />
                   </Avatar>
                 }
-                title="Dashboard & Story"
+                title="Multivariate Story"
                 subheader="Choose a hyperparameter, and click play to animate the story."
               />
               <CardContent sx={{ pt: "8px" }}>
@@ -245,32 +190,7 @@ const Story7 = () => {
                       </FormControl>
                     </FormGroup>
 
-                    <Grid container sx={styling.container} spacing={2}>
-                      <Grid item xs={12} md={2}>
-                        <Grid item xs={12} sx={{ paddingBottom: 2 }}>
-                          <DisplayAccuracyCard
-                            title="Current Accuracy"
-                            obj={current}
-                            color={TextColor[NumericalFeatureType.CURRENT]}
-                          />
-                        </Grid>
-                        <Grid item xs={12} sx={{ paddingBottom: 2 }}>
-                          <DisplayAccuracyCard
-                            title="Max Testing Accuracy"
-                            obj={maxTestingAcc}
-                            color={TextColor[NumericalFeatureType.MAX]}
-                          />
-                        </Grid>
-                      </Grid>
-
-                      <Grid item xs={12} md={9}>
-                        <Card sx={{ minWidth: 600 }}>
-                          <CardContent>
-                            <div id="chartId" />
-                          </CardContent>
-                        </Card>
-                      </Grid>
-                    </Grid>
+                    <div id="chartId" />
                   </>
                 )}
               </CardContent>
@@ -282,4 +202,4 @@ const Story7 = () => {
   );
 };
 
-export default Story7;
+export default Story6;

@@ -1,9 +1,17 @@
 import * as d3 from "d3";
 import { readCSVFile } from "./utils-data";
-import { ParallelCoordinatePlot } from "./ParallelCoordinatePlot";
+import { ParallelCoordinatePlot } from "../../components/storyboards/ParallelCoordinatePlot";
 import { AnimationType } from "src/models/AnimationType";
-import { GraphAnnotation, PCPAnnotation } from "./GraphAnnotation";
-import { DotColor, LineColor, TextColor, Color } from "./Colors";
+import {
+  GraphAnnotation,
+  PCPAnnotation,
+} from "../../components/storyboards/GraphAnnotation";
+import {
+  DotColor,
+  LineColor,
+  TextColor,
+  Color,
+} from "../../components/storyboards/Colors";
 import { NumericalFeatureType } from "./FeatureType";
 
 /*********************************************************************************************************

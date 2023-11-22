@@ -1,10 +1,17 @@
 import { readCSVFile } from "./utils-data";
 import { findDateIdx } from "./utils-feature-detection";
 import { AnimationType } from "src/models/AnimationType";
-import { MirroredBarChart } from "./MirroredBarChart";
-import { TimeSeriesPlot } from "./TimeSeriesPlot";
-import { GraphAnnotation, TSPAnnotation } from "./GraphAnnotation";
-import { Color, DotColor, TextColor } from "./Colors";
+import { MirroredBarChart } from "../../components/storyboards/MirroredBarChart";
+import { TimeSeriesPlot } from "../../components/storyboards/TimeSeriesPlot";
+import {
+  GraphAnnotation,
+  TSPAnnotation,
+} from "../../components/storyboards/GraphAnnotation";
+import {
+  Color,
+  DotColor,
+  TextColor,
+} from "../../components/storyboards/Colors";
 import { NumericalFeatureType } from "./FeatureType";
 
 /*******************************************************************************

@@ -10,9 +10,9 @@ import {
   splitDataAndEvents,
 } from "./utils-aggregation-segmentation";
 
-import { GraphAnnotation } from "./GraphAnnotation_story-1-2-3";
-import { NumericalFeature } from "./NumericalFeature";
-import { TimeSeries } from "./TimeSeries";
+import { GraphAnnotation } from "../../components/storyboards/GraphAnnotation_story-1-2-3";
+import { NumericalFeature } from "../../components/storyboards/NumericalFeature";
+import { TimeSeries } from "../../components/storyboards/TimeSeries";
 
 const dailyCasesByRegion = {};
 let calendarEvents = [];

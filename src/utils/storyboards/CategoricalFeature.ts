@@ -1,4 +1,4 @@
-import { TimeSeriesFeature } from "./TimeSeriesFeature";
+import { TimeSeriesFeature } from "../../components/storyboards/TimeSeriesFeature";
 
 export class CategoricalFeature extends TimeSeriesFeature {
   _description;

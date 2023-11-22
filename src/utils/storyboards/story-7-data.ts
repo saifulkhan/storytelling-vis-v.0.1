@@ -1,10 +1,20 @@
 import * as d3 from "d3";
 import { readCSVFile } from "./utils-data";
 import { AnimationType } from "src/models/AnimationType";
-import { LearningCurve, LearningCurveData } from "./LearningCurve";
-import { Color, DotColor, TextColor } from "./Colors";
+import {
+  LearningCurve,
+  LearningCurveData,
+} from "../../components/storyboards/LearningCurve";
+import {
+  Color,
+  DotColor,
+  TextColor,
+} from "../../components/storyboards/Colors";
 import { NumericalFeatureType } from "./FeatureType";
-import { GraphAnnotation, LCPAnnotation } from "./GraphAnnotation";
+import {
+  GraphAnnotation,
+  LCPAnnotation,
+} from "../../components/storyboards/GraphAnnotation";
 import { findDateIdx } from "./utils-feature-detection";
 
 /*******************************************************************************

@@ -2,10 +2,10 @@
 // https://observablehq.com/@scottwjones/lockdown-restriction-data#getCalendarEvents
 
 import * as d3 from "d3";
-import { ScrollingSvg } from "./ScrollingSvg";
+import { ScrollingSvg } from "../../components/storyboards/ScrollingSvg";
 import { CategoricalFeature } from "./CategoricalFeature";
-import { TimeLine } from "./Timeline";
-import { TimeSeries } from "./TimeSeries";
+import { TimeLine } from "../../components/storyboards/Timeline";
+import { TimeSeries } from "../../components/storyboards/TimeSeries";
 import { readCSVFile } from "./utils-data";
 import { findDateIdx } from "./utils-feature-detection";
 import { getCalendarEvents } from "./utils-lockdown-restriction-data";

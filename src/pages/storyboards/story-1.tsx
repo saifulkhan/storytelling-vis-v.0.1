@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Head from "next/head";
 import Box from "@mui/material/Box";
+import Slider from "@mui/material/Slider";
 import {
   Avatar,
   Button,
@@ -8,7 +9,6 @@ import {
   CardContent,
   CardHeader,
   Container,
-  Fade,
   FormControl,
   FormGroup,
   InputLabel,
@@ -17,42 +17,54 @@ import {
   OutlinedInput,
   Select,
   SelectChangeEvent,
+  Fade,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
-import { blue } from "@mui/material/colors";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
+import { blue } from "@mui/material/colors";
 import DashboardLayout from "src/components/dashboard-layout/DashboardLayout";
 import {
-  prepareData,
-  createScrollingSvg,
-  updateCounter,
-} from "src/components/story-boards/utils-story-3";
+  prepareDataAndGetRegions,
+  segmentData,
+  onSelectRegion,
+  onClickAnimate,
+  createTimeSeriesSVG,
+} from "src/utils/storyboards/utils-story-1";
 
 const useStyles = makeStyles((theme) => ({
+  root: {
+    maxWidth: 345,
+  },
+  media: {
+    height: 0,
+    paddingTop: "56.25%", // 16:9
+  },
   avatar: {
     backgroundColor: blue[500],
   },
+  icon: {
+    fill: blue[500],
+  },
 }));
 
-const Story3 = () => {
+const Story = () => {
   const classes = useStyles();
 
   const [loading, setLoading] = useState(true);
-  const [nations, setNations] = useState<string[]>([
-    "England",
-    "Wales",
-    "Northern Ireland",
-    "Scotland",
-  ]);
-  const [nation, setNation] = useState<string>("");
+  const [segment, setSegment] = useState<number>(3);
+  const [regions, setRegions] = useState<string[]>([]);
+  const [region, setRegion] = useState<string>("");
+  const [animationCounter, setAnimationCounter] = useState<number>(0);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await prepareData();
+      const _regions = await prepareDataAndGetRegions();
+      setRegions(_regions.map((d) => d));
+      segmentData(segment);
       setLoading(false);
     };
 
@@ -64,31 +76,59 @@ const Story3 = () => {
     }
   }, []);
 
-  const handleChangeSelect1 = (event: SelectChangeEvent) => {
-    const nation = event.target.value;
-    console.log("selected nation = ", nation);
-    if (nation) {
-      setNation(nation);
-      createScrollingSvg("#divId", nation);
+  const handleChangeSlider = (event) => {
+    const selectedSegment = event.target.value;
+    console.log("Story1: selectedSegment = ", selectedSegment);
+    if (selectedSegment && selectedSegment !== segment) {
+      // setSegment(selectedSegment);
+      // segmentData(selectedSegment);
+      setSegment(1);
+      segmentData(1);
+    }
+  };
+
+  // slider formatted value
+  const valuetext = (value) => `${value}`;
+
+  const handleChangeSelect = (event: SelectChangeEvent) => {
+    const selectedRegion = event.target.value;
+    console.log("Story1: selectedRegion = ", selectedRegion);
+    if (selectedRegion) {
+      onSelectRegion(selectedRegion);
+      createTimeSeriesSVG("#chart1");
+      setRegion(selectedRegion);
+      setAnimationCounter(0);
     }
   };
 
   const handleBeginningButton = () => {
-    updateCounter(0);
+    const count = 0;
+
+    setAnimationCounter(count);
+    console.log("Story1: animationCounter = ", count);
+    onClickAnimate(count, "#chart1");
   };
 
   const handleBackButton = () => {
-    updateCounter(-1);
+    const count = animationCounter - 1;
+    if (count < 0) return;
+
+    setAnimationCounter(count);
+    console.log("Story1: animationCounter = ", count);
+    onClickAnimate(count, "#chart1");
   };
 
   const handlePlayButton = () => {
-    updateCounter(1);
+    const count = animationCounter + 1;
+    setAnimationCounter(count);
+    console.log("Story1: animationCounter = ", count);
+    onClickAnimate(count, "#chart1");
   };
 
   return (
     <>
       <Head>
-        <title>Story-3</title>
+        <title>Story-1</title>
       </Head>
       <DashboardLayout>
         <Box
@@ -99,15 +139,15 @@ const Story3 = () => {
           }}
         >
           <Container>
-            <Card sx={{ minWidth: 1300 }}>
+            <Card sx={{ minWidth: 1200 }}>
               <CardHeader
                 avatar={
                   <Avatar style={{ backgroundColor: blue[500] }}>
                     <AutoStoriesIcon />
                   </Avatar>
                 }
-                title="Story-3"
-                subheader="Choose a nation and scroll the timeline to animate the story"
+                title="Story-1"
+                subheader="Choose a segment value, a region, and click play to animate the story"
               />
               <CardContent sx={{ pt: "8px" }}>
                 {loading ? (
@@ -133,21 +173,47 @@ const Story3 = () => {
                         },
                       }}
                     >
+                      {/* <InputLabel
+                        sx={{ m: 1, mt: 0 }}
+                        id="segment-slider-label"
+                      >
+                        Set segment value
+                      </InputLabel>
                       <FormControl
                         sx={{ m: 1, width: 300, mt: 0 }}
                         size="small"
                       >
-                        <InputLabel id="select-nation-label">
-                          Select nation
+                        <Slider
+                          // labelId="segment-slider"
+                          aria-label="Segments"
+                          // defaultValue={3}
+                          getAriaValueText={valuetext}
+                          step={1}
+                          marks
+                          min={0}
+                          max={5}
+                          value={segment}
+                          valueLabelDisplay="auto"
+                          onChange={handleChangeSlider}
+                        />
+                      </FormControl> */}
+
+                      <FormControl
+                        sx={{ m: 1, width: 300, mt: 0 }}
+                        size="small"
+                      >
+                        <InputLabel id="select-region-label">
+                          Select region
                         </InputLabel>
                         <Select
-                          labelId="select-nation-label"
-                          id="select-nation-label"
-                          onChange={handleChangeSelect1}
-                          input={<OutlinedInput label="Select nation" />}
-                          value={nation}
+                          labelId="select-region-label"
+                          id="select-region-label"
+                          displayEmpty
+                          onChange={handleChangeSelect}
+                          value={region}
+                          input={<OutlinedInput label="Select region" />}
                         >
-                          {nations.map((d) => (
+                          {regions.map((d) => (
                             <MenuItem key={d} value={d}>
                               {d}
                             </MenuItem>
@@ -158,7 +224,7 @@ const Story3 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!nation}
+                          disabled={!region}
                           onClick={handleBeginningButton}
                           component="span"
                         >
@@ -169,7 +235,7 @@ const Story3 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!nation}
+                          disabled={!region}
                           onClick={handleBackButton}
                           startIcon={<ArrowBackIosIcon />}
                           component="span"
@@ -181,7 +247,7 @@ const Story3 = () => {
                       <FormControl sx={{ m: 1, width: 100, mt: 0 }}>
                         <Button
                           variant="contained"
-                          disabled={!nation}
+                          disabled={!region}
                           onClick={handlePlayButton}
                           endIcon={<ArrowForwardIosIcon />}
                           component="span"
@@ -191,7 +257,7 @@ const Story3 = () => {
                       </FormControl>
                     </FormGroup>
 
-                    <div id="divId" />
+                    <div id="chart1" />
                   </>
                 )}
               </CardContent>
@@ -203,4 +269,4 @@ const Story3 = () => {
   );
 };
 
-export default Story3;
+export default Story;
