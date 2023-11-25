@@ -1,19 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Head from "next/head";
-import {
-  Box,
-  Card,
-  CardContent,
-  Container,
-  Grid,
-  Paper,
-  Typography,
-} from "@mui/material";
-import DashboardLayout from "src/components/dashboard-layout/DashboardLayout";
-import { experimentalStyled as styled } from "@mui/material/styles";
+import { Box, Card, CardContent, Container, Grid } from "@mui/material";
 import Link from "next/link";
 
-import styles from "src/components/story-boards/StoryBoards.module.css";
+import DashboardLayout from "src/components/dashboard-layout/DashboardLayout";
+import styles from "src/components/storyboards/StoryBoards.module.css";
 
 // https://ssvg.io/examples
 
@@ -40,10 +31,10 @@ const StoryBoards = () => {
                   columnSpacing={{ xs: 1, sm: 2, md: 3 }}
                 >
                   <Grid item xs={6}>
-                    <Link href="/story-boards/story-1" passHref>
+                    <Link href="/storyboards/story-1" passHref>
                       <div className={styles.container}>
                         <img
-                          src="/static/story-boards/story-1.png"
+                          src="/static/storyboards/story-1.png"
                           className={styles.image}
                         ></img>
                         <div className={styles.overlay}>
@@ -53,10 +44,10 @@ const StoryBoards = () => {
                     </Link>
                   </Grid>
                   <Grid item xs={6}>
-                    <Link href="/story-boards/story-2" passHref>
+                    <Link href="/storyboards/story-2" passHref>
                       <div className={styles.container}>
                         <img
-                          src="/static/story-boards/story-2.png"
+                          src="/static/storyboards/story-2.png"
                           className={styles.image}
                         ></img>
                         <div className={styles.overlay}>
@@ -67,10 +58,10 @@ const StoryBoards = () => {
                   </Grid>
 
                   <Grid item xs={6}>
-                    <Link href="/story-boards/story-3" passHref>
+                    <Link href="/storyboards/story-3" passHref>
                       <div className={styles.container}>
                         <img
-                          src="/static/story-boards/story-3.png"
+                          src="/static/storyboards/story-3.png"
                           className={styles.image}
                         ></img>
                         <div className={styles.overlay}>
@@ -80,10 +71,10 @@ const StoryBoards = () => {
                     </Link>
                   </Grid>
                   <Grid item xs={6}>
-                    <Link href="/story-boards/story-5" passHref>
+                    <Link href="/storyboards/story-5" passHref>
                       <div className={styles.container}>
                         <img
-                          src="/static/story-boards/story-5.png"
+                          src="/static/storyboards/story-5.png"
                           className={styles.image}
                         ></img>
                         <div className={styles.overlay}>
@@ -94,10 +85,10 @@ const StoryBoards = () => {
                   </Grid>
 
                   <Grid item xs={6}>
-                    <Link href="/story-boards/story-6" passHref>
+                    <Link href="/storyboards/story-6" passHref>
                       <div className={styles.container}>
                         <img
-                          src="/static/story-boards/story-6.png"
+                          src="/static/storyboards/story-6.png"
                           className={styles.image}
                         ></img>
                         <div className={styles.overlay}>
@@ -107,10 +98,10 @@ const StoryBoards = () => {
                     </Link>
                   </Grid>
                   <Grid item xs={6}>
-                    <Link href="/story-boards/story-7" passHref>
+                    <Link href="/storyboards/story-7" passHref>
                       <div className={styles.container}>
                         <img
-                          src="/static/story-boards/ml-dashboard-story.png"
+                          src="/static/storyboards/ml-dashboard-story.png"
                           className={styles.image}
                         ></img>
                         <div className={styles.overlay}>

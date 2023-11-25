@@ -44,7 +44,7 @@ export async function loadData(): Promise<void> {
 
   const csv = await readCSVFile(
     // "/static/story-boards/ml-data/test-parallel-coordinate.csv",
-    "/static/story-boards/ml-data/storyboard_data2.csv",
+    "/static/storyboards/ml-data/storyboard_data2.csv",
   );
   // Convert to integer and date
   csv.forEach((row) => {

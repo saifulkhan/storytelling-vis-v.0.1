@@ -46,7 +46,7 @@ async function processDailyCasesByRegion() {
   };
 
   const csv: any[] = await readCSVFile(
-    "/static/story-boards/newCasesByPublishDateRollingSum.csv",
+    "/static/storyboards/newCasesByPublishDateRollingSum.csv",
   );
 
   csv.forEach((row) => {

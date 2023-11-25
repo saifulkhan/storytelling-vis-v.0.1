@@ -26,7 +26,7 @@ export async function prepareData() {
 }
 
 export async function prepareNationCases() {
-  const csv = await readCSVFile("/static/story-boards/nation_cases.csv");
+  const csv = await readCSVFile("/static/storyboards/nation_cases.csv");
 
   const casesObj = {};
   csv.forEach((d) => {
@@ -46,7 +46,7 @@ export async function prepareNationCases() {
 }
 
 export async function prepareNationDeaths() {
-  const csv = await readCSVFile("/static/story-boards/nation_deaths.csv");
+  const csv = await readCSVFile("/static/storyboards/nation_deaths.csv");
 
   const deathsObj = {};
   csv.forEach((d) => {
@@ -66,7 +66,7 @@ export async function prepareNationDeaths() {
 }
 
 export async function prepareUKCasesData() {
-  const csv = await readCSVFile("/static/story-boards/uk_daily_cases.csv");
+  const csv = await readCSVFile("/static/storyboards/uk_daily_cases.csv");
 
   return csv.map((row) => {
     return { date: new Date(row.date), y: +row.newCasesByPublishDate };
@@ -74,7 +74,7 @@ export async function prepareUKCasesData() {
 }
 
 export async function prepareSemanticCSV() {
-  const csv = await readCSVFile("/static/story-boards/semantic_events@3.csv");
+  const csv = await readCSVFile("/static/storyboards/semantic_events@3.csv");
   return csv;
 }
 
