@@ -8,8 +8,8 @@ import {
   ThemeProvider,
 } from "@mui/material";
 import { Toaster } from "react-hot-toast";
-import { LocalizationProvider } from "@mui/lab";
-import AdapterDateFns from "@mui/lab/AdapterDateFns";
+// import { LocalizationProvider } from "@mui/lab";
+// import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import { CacheProvider } from "@emotion/react";
 
 import useSettings from "src/hooks/useSettings";
@@ -76,17 +76,17 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
       <StrictMode>
         <HelmetProvider>
           <StyledEngineProvider injectFirst>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <SettingsProvider>
-                <AuthProviderJWT>
-                  <ThemeProvider theme={theme}>
-                    <CssBaseline />
-                    <Toaster position="top-center" />
-                    {getLayout(<Component {...pageProps} />)}
-                  </ThemeProvider>
-                </AuthProviderJWT>
-              </SettingsProvider>
-            </LocalizationProvider>
+            {/* <LocalizationProvider dateAdapter={AdapterDateFns}> */}
+            <SettingsProvider>
+              <AuthProviderJWT>
+                <ThemeProvider theme={theme}>
+                  <CssBaseline />
+                  <Toaster position="top-center" />
+                  {getLayout(<Component {...pageProps} />)}
+                </ThemeProvider>
+              </AuthProviderJWT>
+            </SettingsProvider>
+            {/* </LocalizationProvider> */}
           </StyledEngineProvider>
         </HelmetProvider>
       </StrictMode>
