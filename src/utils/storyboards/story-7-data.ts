@@ -5,17 +5,12 @@ import {
   LearningCurve,
   LearningCurveData,
 } from "../../components/storyboards/LearningCurve";
-import {
-  Color,
-  DotColor,
-  TextColor,
-} from "../../components/storyboards/Colors";
+import { Color, DotColor } from "../../components/storyboards/Colors";
 import { NumericalFeatureType } from "./FeatureType";
 import {
   GraphAnnotation,
   LCPAnnotation,
 } from "../../components/storyboards/GraphAnnotation";
-import { findDateIdx } from "./utils-feature-detection";
 
 /*******************************************************************************
  ** Prepare data
@@ -38,7 +33,7 @@ export async function loadData(): Promise<void> {
 
   const csv = await readCSVFile(
     // "/static/story-boards/ml-data/test-parallel-coordinate.csv",
-    "/static/story-boards/ml-data/storyboard_data2.csv",
+    "/static/storyboards/ml-data/storyboard_data2.csv",
   );
   // Convert to integer and date
   csv.forEach((row) => {
