@@ -1,10 +1,18 @@
 import * as d3 from "d3";
 import { readCSVFile } from "./utils-data";
-import { ParallelCoordinatePlot } from "./ParallelCoordinatePlot";
+import { ParallelCoordinatePlot } from "../../components/storyboards/ParallelCoordinatePlot";
 import { AnimationType } from "src/models/AnimationType";
-import { GraphAnnotation, PCPAnnotation } from "./GraphAnnotation";
-import { DotColor, LineColor, TextColor, Color } from "./Colors";
-import { FeatureType } from "./FeatureType";
+import {
+  GraphAnnotation,
+  PCPAnnotation,
+} from "../../components/storyboards/GraphAnnotation";
+import {
+  DotColor,
+  LineColor,
+  TextColor,
+  Color,
+} from "../../components/storyboards/Colors";
+import { NumericalFeatureType } from "./FeatureType";
 
 /*********************************************************************************************************
  * Prepare data
@@ -36,7 +44,7 @@ export async function loadData(): Promise<void> {
 
   const csv = await readCSVFile(
     // "/static/story-boards/ml-data/test-parallel-coordinate.csv",
-    "/static/story-boards/ml-data/storyboard_data2.csv",
+    "/static/storyboards/ml-data/storyboard_data2.csv",
   );
   // Convert to integer and date
   csv.forEach((row) => {
@@ -206,11 +214,11 @@ function calculateAnnotations() {
     if (globalMin.index === idx) {
       // prettier-ignore
       const msg = `The worst accuracy: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
-      pcAnnotations.push(writeText(msg, d, FeatureType.MIN, false));
+      pcAnnotations.push(writeText(msg, d, NumericalFeatureType.MIN, false));
     } else if (globalMax.index === idx) {
       // prettier-ignore
       const msg = `The best accuracy: ${Math.round(d?.mean_test_accuracy * 100)}% [${Math.round(d?.mean_training_accuracy * 100)}%]`;
-      pcAnnotations.push(writeText(msg, d, FeatureType.MAX, false));
+      pcAnnotations.push(writeText(msg, d, NumericalFeatureType.MAX, false));
     }
 
     //
@@ -219,7 +227,7 @@ function calculateAnnotations() {
     else if (idx === data.length - 1) {
       // prettier-ignore
       const msg = `The current/last testing accuracy: ${Math.round(d?.mean_test_accuracy * 100,)}% [training ${Math.round(d?.mean_training_accuracy * 100)}%]`;
-      pcAnnotations.push(writeText(msg, d, FeatureType.LAST, false));
+      pcAnnotations.push(writeText(msg, d, NumericalFeatureType.LAST, false));
     }
 
     //
@@ -228,7 +236,9 @@ function calculateAnnotations() {
     else {
       // prettier-ignore
       const msg = `The current testing accuracy: ${Math.round(d?.mean_test_accuracy * 100)}% [training ${Math.round(d?.mean_training_accuracy * 100)}%]`;
-      pcAnnotations.push(writeText(msg, d, FeatureType.CURRENT, false));
+      pcAnnotations.push(
+        writeText(msg, d, NumericalFeatureType.CURRENT, false),
+      );
     }
   });
 }
@@ -236,7 +246,7 @@ function calculateAnnotations() {
 function writeText(
   message: string | null,
   data: any,
-  featureType: FeatureType,
+  featureType: NumericalFeatureType,
   highlightCircle: boolean = false,
 ): PCPAnnotation {
   let annotation: PCPAnnotation = null;

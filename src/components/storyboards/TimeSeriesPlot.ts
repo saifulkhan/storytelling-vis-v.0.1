@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { AnimationType } from "src/models/AnimationType";
-import { FeatureType } from "./FeatureType";
+import { NumericalFeatureType } from "../../utils/storyboards/FeatureType";
 import { GraphAnnotation, TSPAnnotation } from "./GraphAnnotation";
 
 export type TSPData = {
@@ -628,19 +628,19 @@ export class TimeSeriesPlot {
     };
 
     // Hide previous CURRENT annotation
-    if (prevAnn?.featureType === FeatureType.CURRENT) {
+    if (prevAnn?.featureType === NumericalFeatureType.CURRENT) {
       prevAnn?.graphAnnotation.hideAnnotation();
     }
 
     // Hide previous MAX annotation box
-    if (prevAnn?.featureType === FeatureType.MAX) {
+    if (prevAnn?.featureType === NumericalFeatureType.MAX) {
       prevAnn?.graphAnnotation.hideMessage();
     }
 
     // Check if there is any past MAX annotation exists
-    if (currAnn?.featureType === FeatureType.MAX) {
+    if (currAnn?.featureType === NumericalFeatureType.MAX) {
       this.annotations.slice(0, currIdx).forEach((d, idx) => {
-        if (d.featureType === FeatureType.MAX) {
+        if (d.featureType === NumericalFeatureType.MAX) {
           d?.graphAnnotation.hideAnnotation();
         }
       });

@@ -1,5 +1,5 @@
 // Basic parent class to all Event type objects
-export class SBEvent {
+export class TimeSeriesFeature {
   protected _date;
   protected _start;
   protected _end;

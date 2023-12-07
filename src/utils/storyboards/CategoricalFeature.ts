@@ -1,6 +1,6 @@
-import { SBEvent } from "./SBEvent";
+import { TimeSeriesFeature } from "../../components/storyboards/TimeSeriesFeature";
 
-export class SemanticEvent extends SBEvent {
+export class CategoricalFeature extends TimeSeriesFeature {
   _description;
 
   static get TYPES() {
@@ -20,7 +20,7 @@ export class SemanticEvent extends SBEvent {
     date,
     rank = undefined,
     description = undefined,
-    type = SemanticEvent.TYPES.DEFAULT,
+    type = CategoricalFeature.TYPES.DEFAULT,
   ) {
     super(date);
     this._type = type;

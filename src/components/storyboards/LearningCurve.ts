@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { ScaleLinear } from "d3";
 import { AnimationType } from "src/models/AnimationType";
-import { FeatureType } from "./FeatureType";
+import { NumericalFeatureType } from "../../utils/storyboards/FeatureType";
 import { GraphAnnotation, LCPAnnotation } from "./GraphAnnotation";
 
 export type LearningCurveData = {
@@ -867,18 +867,18 @@ export class LearningCurve {
     const currAnno = annotations[idx];
 
     // Hide previous CURRENT annotation
-    if (prevAnno?.featureType === FeatureType.CURRENT) {
+    if (prevAnno?.featureType === NumericalFeatureType.CURRENT) {
       prevAnno?.graphAnnotation.hideAnnotation();
     }
     // If prev one is MAX then it was just drawn and we should not hide it
     // Just hide its message box
-    else if (prevAnno?.featureType === FeatureType.MAX) {
+    else if (prevAnno?.featureType === NumericalFeatureType.MAX) {
       prevAnno?.graphAnnotation.hideMessage();
     }
     // If the current is MAX, check if there is any past MAX exists
-    else if (currAnno?.featureType === FeatureType.MAX) {
+    else if (currAnno?.featureType === NumericalFeatureType.MAX) {
       annotations.slice(0, idx).forEach((d) => {
-        if (d.featureType === FeatureType.MAX) {
+        if (d.featureType === NumericalFeatureType.MAX) {
           d?.graphAnnotation.hideAnnotation();
         }
       });

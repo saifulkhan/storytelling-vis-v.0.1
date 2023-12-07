@@ -1,7 +1,7 @@
-import { SBEvent } from "./SBEvent";
+import { TimeSeriesFeature } from "./TimeSeriesFeature";
 
 // Parent type to data event objects
-export class DataEvent extends SBEvent {
+export class NumericalFeature extends TimeSeriesFeature {
   _metric;
 
   static get TYPES() {
@@ -17,7 +17,7 @@ export class DataEvent extends SBEvent {
   constructor(date, start, end, metric) {
     super(date, start, end);
     this._metric = metric;
-    this._type = DataEvent.TYPES.DEFAULT;
+    this._type = NumericalFeature.TYPES.DEFAULT;
   }
 
   setMetric(metric) {

@@ -2,10 +2,10 @@
 // https://observablehq.com/@scottwjones/lockdown-restriction-data#getCalendarEvents
 
 import * as d3 from "d3";
-import { ScrollingSvg } from "./ScrollingSvg";
-import { SemanticEvent } from "./SemanticEvent";
-import { TimeLine } from "./Timeline";
-import { TimeSeries } from "./TimeSeries";
+import { ScrollingSvg } from "../../components/storyboards/ScrollingSvg";
+import { CategoricalFeature } from "./CategoricalFeature";
+import { TimeLine } from "../../components/storyboards/Timeline";
+import { TimeSeries } from "../../components/storyboards/TimeSeries";
 import { readCSVFile } from "./utils-data";
 import { findDateIdx } from "./utils-feature-detection";
 import { getCalendarEvents } from "./utils-lockdown-restriction-data";
@@ -26,7 +26,7 @@ export async function prepareData() {
 }
 
 export async function prepareNationCases() {
-  const csv = await readCSVFile("/static/story-boards/nation_cases.csv");
+  const csv = await readCSVFile("/static/storyboards/nation_cases.csv");
 
   const casesObj = {};
   csv.forEach((d) => {
@@ -46,7 +46,7 @@ export async function prepareNationCases() {
 }
 
 export async function prepareNationDeaths() {
-  const csv = await readCSVFile("/static/story-boards/nation_deaths.csv");
+  const csv = await readCSVFile("/static/storyboards/nation_deaths.csv");
 
   const deathsObj = {};
   csv.forEach((d) => {
@@ -66,7 +66,7 @@ export async function prepareNationDeaths() {
 }
 
 export async function prepareUKCasesData() {
-  const csv = await readCSVFile("/static/story-boards/uk_daily_cases.csv");
+  const csv = await readCSVFile("/static/storyboards/uk_daily_cases.csv");
 
   return csv.map((row) => {
     return { date: new Date(row.date), y: +row.newCasesByPublishDate };
@@ -74,19 +74,19 @@ export async function prepareUKCasesData() {
 }
 
 export async function prepareSemanticCSV() {
-  const csv = await readCSVFile("/static/story-boards/semantic_events@3.csv");
+  const csv = await readCSVFile("/static/storyboards/semantic_events@3.csv");
   return csv;
 }
 
 export async function prepareCalendarEvents(region) {
   const lockdownEvents = await getCalendarEvents(region, [
-    SemanticEvent.TYPES.LOCKDOWN_START,
-    SemanticEvent.TYPES.LOCKDOWN_END,
+    CategoricalFeature.TYPES.LOCKDOWN_START,
+    CategoricalFeature.TYPES.LOCKDOWN_END,
   ]);
 
   // Convert csv to Event Objects
   const semanticEvents = semanticCSV.map((e) =>
-    new SemanticEvent(new Date(e.date)).setDescription(e.text),
+    new CategoricalFeature(new Date(e.date)).setDescription(e.text),
   );
 
   return lockdownEvents.concat(semanticEvents);

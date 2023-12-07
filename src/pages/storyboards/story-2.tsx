@@ -31,7 +31,7 @@ import {
   processDataAndGetRegions,
   onSelectRegion,
   updateCounter,
-} from "src/components/story-boards/utils-story-2";
+} from "src/utils/storyboards/utils-story-2";
 
 const useStyles = makeStyles((theme) => ({
   avatar: {

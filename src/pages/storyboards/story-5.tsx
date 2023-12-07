@@ -30,40 +30,39 @@ import {
   filterData,
   createPlot,
   animatePlot,
-} from "src/components/story-boards/utils-story-6";
+} from "src/utils/storyboards/utils-story-5";
 
-const Story6 = () => {
+const Story5 = () => {
   const [loading, setLoading] = useState(true);
   const [parameters, setParameters] = useState<string[]>([]);
   const [parameter, setParameter] = useState<string>("");
 
   const handleParameterSelect = (e) => {
     const newParameter = e.target.value;
-    setParameter((d) => newParameter);
     // prettier-ignore
-    console.log(`Story6: handleParameterSelect: parameter: ${parameter}, newParameter: ${newParameter}`);
-
+    console.log(`Story5: handleRegionSelect: parameter: ${parameter}, newParameter: ${newParameter}`);
+    setParameter(newParameter);
     if (newParameter) {
       filterData(newParameter);
-      createPlot("#chartId");
+      createPlot("#chartId", "#chartId1");
     }
   };
 
   const handleBeginningClick = () => {
     // prettier-ignore
-    console.log(`Story6: handleBeginningClick:`);
+    console.log(`Story5: handleBeginningClick:`);
     animatePlot("beginning");
   };
 
   const handleBackClick = () => {
     // prettier-ignore
-    console.log(`Story6: handleBackClick:`);
+    console.log(`Story5: handleBackClick:`);
     animatePlot("back");
   };
 
   const handlePlayClick = () => {
     // prettier-ignore
-    console.log(`Story6: handlePlayClick: `);
+    console.log(`Story5: handlePlayClick: `);
     animatePlot("play");
   };
 
@@ -73,6 +72,10 @@ const Story6 = () => {
       await loadData();
       setParameters(getParameters());
       setLoading(false);
+
+      // debug
+      // filterData("channels");
+      // createPlot("#chartId", "#chartId1");
     };
 
     try {
@@ -86,7 +89,7 @@ const Story6 = () => {
   return (
     <>
       <Head>
-        <title>Multivariate Story</title>
+        <title>Provenance Story</title>
       </Head>
       <DashboardLayout>
         <Box
@@ -104,7 +107,7 @@ const Story6 = () => {
                     <AutoStoriesIcon />
                   </Avatar>
                 }
-                title="Multivariate Story"
+                title="Provenance Story"
                 subheader="Choose a hyperparameter, and click play to animate the story."
               />
               <CardContent sx={{ pt: "8px" }}>
@@ -191,6 +194,7 @@ const Story6 = () => {
                     </FormGroup>
 
                     <div id="chartId" />
+                    <div id="chartId1" />
                   </>
                 )}
               </CardContent>
@@ -202,4 +206,4 @@ const Story6 = () => {
   );
 };
 
-export default Story6;
+export default Story5;

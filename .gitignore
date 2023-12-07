@@ -54,7 +54,6 @@ package-lock.json
 node_modules
 error.log
 
-.vscode
 ._.DS_Store
 
 .next

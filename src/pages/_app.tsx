@@ -8,8 +8,8 @@ import {
   ThemeProvider,
 } from "@mui/material";
 import { Toaster } from "react-hot-toast";
-import { LocalizationProvider } from "@mui/lab";
-import AdapterDateFns from "@mui/lab/AdapterDateFns";
+// import { LocalizationProvider } from "@mui/lab";
+// import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import { CacheProvider } from "@emotion/react";
 
 import useSettings from "src/hooks/useSettings";
@@ -35,7 +35,7 @@ import "src/lib/vis/css/overview-top-level-screen-a.css";
 import "src/lib/vis/css/portal.css";
 import "src/lib/vis/css/pv-legend.css";
 import "src/lib/vis/css/ensemble.css";
-import "src/components/story-boards/ScrollingSvg.css";
+import "src/components/storyboards/ScrollingSvg.css";
 
 type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -76,17 +76,17 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
       <StrictMode>
         <HelmetProvider>
           <StyledEngineProvider injectFirst>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <SettingsProvider>
-                <AuthProviderJWT>
-                  <ThemeProvider theme={theme}>
-                    <CssBaseline />
-                    <Toaster position="top-center" />
-                    {getLayout(<Component {...pageProps} />)}
-                  </ThemeProvider>
-                </AuthProviderJWT>
-              </SettingsProvider>
-            </LocalizationProvider>
+            {/* <LocalizationProvider dateAdapter={AdapterDateFns}> */}
+            <SettingsProvider>
+              <AuthProviderJWT>
+                <ThemeProvider theme={theme}>
+                  <CssBaseline />
+                  <Toaster position="top-center" />
+                  {getLayout(<Component {...pageProps} />)}
+                </ThemeProvider>
+              </AuthProviderJWT>
+            </SettingsProvider>
+            {/* </LocalizationProvider> */}
           </StyledEngineProvider>
         </HelmetProvider>
       </StrictMode>

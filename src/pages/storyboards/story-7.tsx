@@ -31,11 +31,11 @@ import {
   createPlot,
   animatePlot,
   getData,
-} from "src/components/story-boards/story-7-data";
-import DisplayAccuracyCard from "src/components/story-boards/DisplayAccuracyCard";
-import { TextColor } from "src/components/story-boards/Colors";
-import { FeatureType } from "src/components/story-boards/FeatureType";
-import { LearningCurveData } from "src/components/story-boards/LearningCurve";
+} from "src/utils/storyboards/story-7-data";
+import DisplayAccuracyCard from "src/components/storyboards/DisplayAccuracyCard";
+import { TextColor } from "src/components/storyboards/Colors";
+import { NumericalFeatureType } from "src/utils/storyboards/FeatureType";
+import { LearningCurveData } from "src/components/storyboards/LearningCurve";
 
 const styling = {
   container: {
@@ -251,14 +251,14 @@ const Story7 = () => {
                           <DisplayAccuracyCard
                             title="Current Accuracy"
                             obj={current}
-                            color={TextColor[FeatureType.CURRENT]}
+                            color={TextColor[NumericalFeatureType.CURRENT]}
                           />
                         </Grid>
                         <Grid item xs={12} sx={{ paddingBottom: 2 }}>
                           <DisplayAccuracyCard
                             title="Max Testing Accuracy"
                             obj={maxTestingAcc}
-                            color={TextColor[FeatureType.MAX]}
+                            color={TextColor[NumericalFeatureType.MAX]}
                           />
                         </Grid>
                       </Grid>

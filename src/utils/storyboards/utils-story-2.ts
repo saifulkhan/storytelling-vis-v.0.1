@@ -9,8 +9,8 @@ import {
   maxBounds,
 } from "./utils-aggregation-segmentation";
 
-import { GraphAnnotation } from "./GraphAnnotation_story-1-2-3";
-import { TimeSeries } from "./TimeSeries";
+import { GraphAnnotation } from "../../components/storyboards/GraphAnnotation_story-1-2-3";
+import { TimeSeries } from "../../components/storyboards/TimeSeries";
 import { Rise } from "./Raise";
 import { Fall } from "./Fall";
 import { createDataGroup } from "./utils-data-processing";
@@ -46,7 +46,7 @@ async function processDailyCasesByRegion() {
   };
 
   const csv: any[] = await readCSVFile(
-    "/static/story-boards/newCasesByPublishDateRollingSum.csv",
+    "/static/storyboards/newCasesByPublishDateRollingSum.csv",
   );
 
   csv.forEach((row) => {
