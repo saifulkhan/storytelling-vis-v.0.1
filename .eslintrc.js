@@ -6,6 +6,9 @@ module.exports = {
     "prettier",
     "plugin:import/errors",
     "plugin:import/typescript",
+    "next/core-web-vitals",
+    "plugin:testing-library/react",
+    "plugin:jest-dom/recommended",
   ],
   rules: {
     "@typescript-eslint/comma-dangle": "off",
