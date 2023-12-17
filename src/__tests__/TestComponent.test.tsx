@@ -1,6 +1,6 @@
 import React from "react";
 import { render } from "@testing-library/react";
-import TestComponent from "../src/components/test/TestComponent";
+import TestComponent from "../components/test/TestComponent";
 
 describe("TestComponent component", () => {
   it("should calculate the sum correctly and render", async () => {

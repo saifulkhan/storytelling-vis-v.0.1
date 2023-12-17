@@ -1,4 +1,4 @@
-import { calculateSum } from "../src/components/test/TestFunction";
+import { calculateSum } from "../components/test/TestFunction";
 
 describe("calculateSum function", () => {
   it("should calculate the sum correctly", () => {
