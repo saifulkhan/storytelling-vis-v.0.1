@@ -1,8 +1,8 @@
 import { Fall } from "./Fall";
-import minIndex from "./min-index";
-import maxIndex from "./max-index";
 import { Peak } from "./Peak";
 import { Rise } from "./Raise";
+import minIndex from "./min-index";
+import maxIndex from "./max-index";
 
 export const findDateIdx = (date, data) =>
   data.findIndex((d) => d.date.getTime() == date.getTime());

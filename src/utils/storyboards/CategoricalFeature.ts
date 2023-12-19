@@ -1,49 +1,23 @@
-import { TimeSeriesFeature } from "../../components/storyboards/TimeSeriesFeature";
+import { Feature } from "./Feature";
+import { CategoricalFeatureType } from "./CategoricalFeatureType";
 
-export class CategoricalFeature extends TimeSeriesFeature {
-  _description;
-
-  static get TYPES() {
-    return {
-      DEFAULT: "SEMANTIC EVENT",
-      LOCKDOWN: "LOCKDOWN",
-      LOCKDOWN_START: "LOCKDOWN START",
-      LOCKDOWN_END: "LOCKDOWN END",
-      VACCINE: "VACCINE",
-      VACCINE_1: "VACCINE_1",
-      VACCINE_2: "VACCINE_2",
-      VACCINE_3: "VACCINE_3",
-    };
-  }
+export class CategoricalFeature extends Feature {
+  protected _description: string;
 
   constructor(
     date,
-    rank = undefined,
     description = undefined,
-    type = CategoricalFeature.TYPES.DEFAULT,
+    type = CategoricalFeatureType.DEFAULT,
+    rank = undefined,
   ) {
     super(date);
     this._type = type;
+    this._description = description;
     this._rank = rank;
-    this._description = description;
-  }
-
-  setDescription(description) {
-    this._description = description;
-    return this;
   }
 
   get description() {
-    if (!this._description)
-      throw "Description not set for semantic event. Please use constructor or .setDescription()";
-
+    if (!this._description) throw "Description not set for categorical event.";
     return this._description;
-  }
-
-  get rank() {
-    if (!this._rank)
-      throw "Rank not set for semantic event. Please use constructor or .setRank()";
-
-    return this._rank;
   }
 }

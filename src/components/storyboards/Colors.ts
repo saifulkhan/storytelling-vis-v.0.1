@@ -1,4 +1,4 @@
-import { NumericalFeatureType } from "../../utils/storyboards/FeatureType";
+import { NumericalFeatureType } from "../../utils/storyboards/NumericalFeatureType";
 
 export enum Color {
   ForestGreen = "#228B22",

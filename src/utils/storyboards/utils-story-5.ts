@@ -1,5 +1,5 @@
 import { readCSVFile } from "./utils-data";
-import { findDateIdx } from "./utils-feature-detection";
+import { findDateIdx } from "./feature-detector_bkp";
 import { AnimationType } from "src/models/AnimationType";
 import { MirroredBarChart } from "../../components/storyboards/MirroredBarChart";
 import { TimeSeriesPlot } from "../../components/storyboards/TimeSeriesPlot";
@@ -12,7 +12,7 @@ import {
   DotColor,
   TextColor,
 } from "../../components/storyboards/Colors";
-import { NumericalFeatureType } from "./FeatureType";
+import { NumericalFeatureType } from "./NumericalFeatureType";
 
 /*******************************************************************************
  ** Prepare data

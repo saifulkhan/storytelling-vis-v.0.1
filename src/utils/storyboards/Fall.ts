@@ -1,4 +1,5 @@
-import { NumericalFeature } from "../../components/storyboards/NumericalFeature";
+import { NumericalFeature } from "./NumericalFeature";
+import { NumericalFeatureType } from "./NumericalFeatureType";
 
 export class Fall extends NumericalFeature {
   _height;
@@ -14,7 +15,7 @@ export class Fall extends NumericalFeature {
     grad = undefined,
   ) {
     super(date, start, end, metric);
-    this._type = NumericalFeature.TYPES.FALL;
+    this._type = NumericalFeatureType.FALL;
     this._height = height;
     this._grad = grad;
   }

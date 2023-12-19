@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 
 import { readCSVFile } from "./utils-data";
-import { detectFeatures } from "./utils-feature-detection";
+import { detectFeatures } from "./feature-detector_bkp";
 import {
   combineBounds,
   eventsToGaussian,

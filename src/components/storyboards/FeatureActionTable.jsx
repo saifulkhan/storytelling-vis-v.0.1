@@ -10,11 +10,11 @@ import {
   Button,
   TextField,
 } from "@mui/material";
-import FeatureActionTableDialog from "./FeatureActionTableDialog"; // Import your FeatureActionTableDialog component
 import AddIcon from "@mui/icons-material/Add";
 import IconButton from "@mui/material/IconButton";
 
-import { initialData } from "./feature-action-mock";
+import { initialData } from "../../utils/storyboards/feature-action-mock";
+import FeatureActionTableDialog from "./FeatureActionTableDialog"; // Import your FeatureActionTableDialog component
 
 const FeatureActionTable = () => {
   const [data, setData] = useState(initialData);

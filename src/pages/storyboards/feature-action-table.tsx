@@ -1,6 +1,6 @@
 import React from "react";
 
-import FeatureActionTable from "./FeatureActionTable";
+import FeatureActionTable from "../../components/storyboards/FeatureActionTable";
 
 const FeatureActionPage = () => {
   return (

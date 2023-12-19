@@ -1,4 +1,4 @@
-import { NumericalFeature } from "../../components/storyboards/NumericalFeature";
+import { NumericalFeature } from "./NumericalFeature";
 
 export class Rise extends NumericalFeature {
   _height;

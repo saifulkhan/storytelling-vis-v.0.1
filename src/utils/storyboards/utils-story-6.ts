@@ -12,7 +12,7 @@ import {
   TextColor,
   Color,
 } from "../../components/storyboards/Colors";
-import { NumericalFeatureType } from "./FeatureType";
+import { NumericalFeatureType } from "./NumericalFeatureType";
 
 /*********************************************************************************************************
  * Prepare data

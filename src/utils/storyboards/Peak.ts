@@ -1,50 +1,54 @@
-import { NumericalFeature } from "../../components/storyboards/NumericalFeature";
+import { NumericalFeature } from "./NumericalFeature";
+import { NumericalFeatureType } from "./NumericalFeatureType";
+
+const CONST = 0.2; // TODO: Why?
 
 export class Peak extends NumericalFeature {
-  _height;
-  _normHeight;
-  _normWidth;
-  _normDuration;
+  protected _height: number;
+  protected _normHeight: number;
+  protected _normWidth: number;
+  protected _normDuration: number;
 
   constructor(
-    date = undefined,
+    date,
     start = undefined,
     end = undefined,
     metric = undefined,
     height = undefined,
+    normWidth = undefined,
+    normHeight = undefined,
   ) {
     super(date, start, end, metric);
-    this._type = NumericalFeature.TYPES.PEAK;
+    this._type = NumericalFeatureType.PEAK;
     this._height = height;
-  }
-
-  setHeight(height) {
-    this._height = height;
-    return this;
-  }
-
-  setNormHeight(normHeight) {
-    this._normHeight = normHeight;
-    return this;
-  }
-
-  setNormWidth(normWidth) {
     this._normWidth = normWidth;
-    return this;
+    this._normHeight = normHeight;
+  }
+
+  set height(height) {
+    this._height = height;
+  }
+
+  get height() {
+    return this._height;
+  }
+
+  set normHeight(normHeight) {
+    this._normHeight = normHeight;
+  }
+
+  set normWidth(normWidth) {
+    this._normWidth = normWidth;
+  }
+
+  set rank(rank: number) {
+    this._rank = rank;
   }
 
   get rank() {
     if (this._rank) return this._rank;
 
-    // if (!this._normHeight)
-    // throw "You need to set both the normalised height to calculate rank. Please use the setter.";
-    return 1 + Math.floor(this._normHeight / 0.2);
-  }
-
-  get height() {
-    if (!this._height) {
-      throw "You must set Peak height. Use constructor or chain the set function: .setHeight().";
-    }
-    return this._height;
+    if (!this._normHeight) throw "Set normHeight";
+    return 1 + Math.floor(this._normHeight / CONST);
   }
 }

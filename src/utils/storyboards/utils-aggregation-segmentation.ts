@@ -2,7 +2,7 @@
 // Ported from https://observablehq.com/@scottwjones/ranked-time-series-aggregation-and-segmentation
 //
 
-import { detectPeaks } from "./utils-feature-detection";
+import { detectPeaks } from "./feature-detector_bkp";
 
 export const splitDataAndEvents = (events, splits, timeSeriesData) => {
   const segNum = splits.length + 1;
