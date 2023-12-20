@@ -13,7 +13,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import IconButton from "@mui/material/IconButton";
 
-import { initialData } from "../../utils/storyboards/feature-action-mock";
+import { initialData } from "../../../utils/storyboards/feature-action-mock";
 import FeatureActionTableDialog from "./FeatureActionTableDialog"; // Import your FeatureActionTableDialog component
 
 const FeatureActionTable = () => {
