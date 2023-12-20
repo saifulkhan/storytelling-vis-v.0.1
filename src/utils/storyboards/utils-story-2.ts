@@ -9,8 +9,8 @@ import {
   maxBounds,
 } from "./utils-aggregation-segmentation";
 
-import { GraphAnnotation } from "../../components/storyboards/GraphAnnotation_story-1-2-3";
-import { TimeSeries } from "../../components/storyboards/TimeSeries";
+import { GraphAnnotation } from "../../components/storyboards/plots/GraphAnnotation_story-1-2-3";
+import { TimeSeries } from "../../components/storyboards/plots/TimeSeries";
 import { Rise } from "./Raise";
 import { Fall } from "./Fall";
 import { createDataGroup } from "./utils-data-processing";

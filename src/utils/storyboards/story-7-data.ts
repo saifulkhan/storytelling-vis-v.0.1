@@ -4,13 +4,13 @@ import { AnimationType } from "src/models/AnimationType";
 import {
   LearningCurve,
   LearningCurveData,
-} from "../../components/storyboards/LearningCurve";
+} from "../../components/storyboards/plots/LearningCurve";
 import { Color, DotColor } from "../../components/storyboards/Colors";
 import { NumericalFeatureType } from "./NumericalFeatureType";
 import {
   GraphAnnotation,
   LCPAnnotation,
-} from "../../components/storyboards/GraphAnnotation";
+} from "../../components/storyboards/plots/GraphAnnotation";
 
 /*******************************************************************************
  ** Prepare data

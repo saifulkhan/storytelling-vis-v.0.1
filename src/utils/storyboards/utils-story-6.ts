@@ -1,11 +1,11 @@
 import * as d3 from "d3";
 import { readCSVFile } from "./utils-data";
-import { ParallelCoordinatePlot } from "../../components/storyboards/ParallelCoordinatePlot";
+import { ParallelCoordinatePlot } from "../../components/storyboards/plots/ParallelCoordinatePlot";
 import { AnimationType } from "src/models/AnimationType";
 import {
   GraphAnnotation,
   PCPAnnotation,
-} from "../../components/storyboards/GraphAnnotation";
+} from "../../components/storyboards/plots/GraphAnnotation";
 import {
   DotColor,
   LineColor,

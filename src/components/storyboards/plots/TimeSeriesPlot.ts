@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { AnimationType } from "src/models/AnimationType";
-import { NumericalFeatureType } from "../../utils/storyboards/NumericalFeatureType";
+import { NumericalFeatureType } from "../../../utils/storyboards/NumericalFeatureType";
 import { GraphAnnotation, TSPAnnotation } from "./GraphAnnotation";
 
 export type TSPData = {
