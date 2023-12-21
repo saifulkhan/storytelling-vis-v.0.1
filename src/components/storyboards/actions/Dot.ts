@@ -24,12 +24,11 @@ export class Dot extends Action {
       .attr("opacity", this.props.opacity)
       .node();
     this.node.appendChild(this.dotNode);
-    this.reposition(this.x, this.y);
   }
 
-  public reposition(newX: number, newY: number) {
-    this.x = newX;
-    this.y = newY;
-    d3.select(this.dotNode).attr("cx", newX).attr("cy", newY);
+  public position(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+    d3.select(this.dotNode).attr("cx", x).attr("cy", y);
   }
 }

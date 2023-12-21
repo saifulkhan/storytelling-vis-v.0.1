@@ -4,8 +4,8 @@ export abstract class Action {
   protected node: HTMLElement;
   protected svg: HTMLElement;
   protected id: string;
-  protected x = 0;
-  protected y = 0;
+  protected x;
+  protected y;
 
   constructor(id: string) {
     this.id = id;
@@ -63,5 +63,5 @@ export abstract class Action {
   }
 
   protected abstract draw();
-  public abstract reposition(newX: number, newY: number);
+  public abstract position(x: number, y: number, y0: number);
 }

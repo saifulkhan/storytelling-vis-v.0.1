@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { Dot } from "src/components/storyboards/actions/Dot";
 import { TextBox } from "src/components/storyboards/actions/TextBox";
+import { Connector } from "src/components/storyboards/actions/Connector";
 
 const TestAction = () => {
   const chartRef = useRef(null);
@@ -42,38 +43,23 @@ const TestAction = () => {
       // .attr("transform", `translate(${margin.left},${margin.top})`)
       .node();
 
-    //
-    // Test action dot
-    //
-    let props = {
+    const textbox = new TextBox({});
+    textbox.drawOn(svg);
+    textbox.show();
+    textbox.position(100, 100);
+
+    const dot = new Dot({
       size: 8,
       color: "#000000",
       opacity: 0.3,
-      x: 20,
-      y: 20,
-    };
-    /*
-    const dot = new Dot(props);
-    const funcs = [
-      dot.drawOn(svg),
-      dot.hide(),
-      dot.show(),
-      dot.reposition(50, 50),
-      dot.hide(),
-      dot.show(),
-      dot.reposition(100, 50),
-    ];
-    execFuncsInInterval(funcs, 10000);
-  */
+    });
+    dot.drawOn(svg);
+    dot.position(100, 100);
 
-    //
-    // Test action textbox
-    //
-    props = {};
-    const textbox = new TextBox(props);
-    textbox.drawOn(svg);
-    textbox.show();
-    textbox.reposition(100, 100);
+    const connector = new Connector({});
+    connector.drawOn(svg);
+    connector.show();
+    connector.position(100, 100, 200);
   }, []);
 
   return (

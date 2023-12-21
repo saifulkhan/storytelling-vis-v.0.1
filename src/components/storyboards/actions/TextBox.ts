@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { Action } from "./Action";
 
-const RECT_PADDING = 10;
+const RECT_PADDING = 0;
 
 export class TextBox extends Action {
   protected rectNode: HTMLElement;
@@ -74,7 +74,6 @@ export class TextBox extends Action {
     console.log("rowHeight, titleHeight =", rowHeight, titleHeight);
 
     this.messageNode.setAttribute("y", titleSpacing);
-    this.reposition(this.x, this.y);
   }
 
   /*
@@ -147,13 +146,15 @@ export class TextBox extends Action {
     return rowHeight;
   }
 
-  public reposition(newX: number, newY: number) {
-    this.x = newX;
-    this.y = newY;
+  public position(x: number, y: number) {
+    this.x = x;
+    this.y = y;
 
     const { width, height } = this.textNode.getBoundingClientRect();
     const rectX = this.x - (width + RECT_PADDING) / 2;
     const textX = this.x - width / 2;
+
+    console.log(width, height, rectX);
 
     this.rectNode.setAttribute(
       "transform",
