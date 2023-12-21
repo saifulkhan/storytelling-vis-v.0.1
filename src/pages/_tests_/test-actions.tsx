@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import { Dot } from "src/components/storyboards/actions/Dot";
 import { TextBox } from "src/components/storyboards/actions/TextBox";
 import { Connector } from "src/components/storyboards/actions/Connector";
+import { Circle } from "src/components/storyboards/actions/Circle";
 
 const TestAction = () => {
   const chartRef = useRef(null);
@@ -49,17 +50,27 @@ const TestAction = () => {
     textbox.position(100, 100);
 
     const dot = new Dot({
-      size: 8,
+      size: 5,
       color: "#000000",
       opacity: 0.3,
     });
     dot.drawOn(svg);
     dot.position(100, 100);
 
+    const circle = new Circle({
+      size: 10,
+      color: "#000000",
+      opacity: 1,
+    });
+    circle.drawOn(svg);
+    circle.position(100, 100);
+
     const connector = new Connector({});
     connector.drawOn(svg);
     connector.show();
     connector.position(100, 100, 200);
+
+    //
   }, []);
 
   return (

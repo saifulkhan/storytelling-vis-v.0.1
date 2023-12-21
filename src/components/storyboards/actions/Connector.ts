@@ -6,11 +6,11 @@ export class Connector extends Action {
   protected props;
   protected y0: number;
 
-  constructor(props: any = {}, id = "Dot") {
+  constructor(props: any = {}, id = "Connector") {
     super(id);
 
     this.props = {
-      stroke: props?.stroke || "#4287f5",
+      stroke: props?.stroke || "#000000",
       opacity: props?.opacity || 1,
     };
   }
