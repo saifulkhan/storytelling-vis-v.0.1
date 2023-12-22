@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 
-import { readCSVFile } from "./utils-data";
+import { readCSVFile } from "../../services/data";
 import { detectFeatures } from "./feature-detector_bkp";
 import {
   combineBounds,

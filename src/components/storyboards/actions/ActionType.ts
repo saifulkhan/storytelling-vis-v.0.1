@@ -1,5 +1,6 @@
 export enum ActionType {
   CIRCLE = "CIRCLE",
-  NODE = "NODE",
+  DOT = "DOT",
   TEXT_BOX = "TEXT_BOX",
+  CONNECTOR = "CONNECTOR",
 }

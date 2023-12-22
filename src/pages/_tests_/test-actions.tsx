@@ -5,7 +5,7 @@ import { TextBox } from "src/components/storyboards/actions/TextBox";
 import { Connector } from "src/components/storyboards/actions/Connector";
 import { Circle } from "src/components/storyboards/actions/Circle";
 
-const TestAction = () => {
+const TestActions = () => {
   const chartRef = useRef(null);
 
   const margin = { top: 20, right: 30, bottom: 40, left: 50 };
@@ -16,24 +16,6 @@ const TestAction = () => {
     if (!chartRef.current) return;
 
     console.log("useEffect triggered");
-
-    function execFuncsInInterval(functionsArray, intervalTime) {
-      let index = 0;
-
-      function execute() {
-        if (index < functionsArray.length) {
-          const currentFunction = functionsArray[index];
-          if (typeof currentFunction === "function") {
-            currentFunction();
-          }
-          index++;
-        } else {
-          clearInterval(interval);
-        }
-      }
-
-      const interval = setInterval(execute, intervalTime);
-    }
 
     const svg = d3
       .select(chartRef.current)
@@ -83,4 +65,4 @@ const TestAction = () => {
   );
 };
 
-export default TestAction;
+export default TestActions;

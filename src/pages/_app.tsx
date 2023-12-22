@@ -36,8 +36,6 @@ import "src/lib/vis/css/portal.css";
 import "src/lib/vis/css/pv-legend.css";
 import "src/lib/vis/css/ensemble.css";
 
-import "src/components/storyboards/plots/StoryBoards.module.css";
-
 type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactNode;
 };

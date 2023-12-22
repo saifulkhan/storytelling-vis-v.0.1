@@ -1,19 +1,21 @@
 import * as d3 from "d3";
+import { ActionType } from "./ActionType";
 
 export abstract class Action {
+  protected _type: ActionType;
+  protected _id: string;
   protected node: HTMLElement;
   protected svg: HTMLElement;
-  protected id: string;
   protected x;
   protected y;
 
   constructor(id: string) {
-    this.id = id;
+    this._id = id;
 
     this.node = d3
       .create("svg")
       .append("g")
-      .attr("id", this.id)
+      .attr("id", this._id)
       // hide
       // .attr("display", "none")
       .node();
@@ -60,6 +62,14 @@ export abstract class Action {
         console.log("hide on end");
       });
     return delay;
+  }
+
+  public get id() {
+    return this._id;
+  }
+
+  public get type() {
+    return this._type;
   }
 
   protected abstract draw();

@@ -1,4 +1,4 @@
-import { readCSVFile } from "./utils-data";
+import { readCSVFile } from "../../services/data";
 import { CategoricalFeature } from "./CategoricalFeature";
 import { detectFeatures } from "./feature-detector_bkp";
 import {

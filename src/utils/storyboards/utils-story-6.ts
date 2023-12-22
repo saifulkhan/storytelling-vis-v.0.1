@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { readCSVFile } from "./utils-data";
+import { readCSVFile } from "../../services/data";
 import { ParallelCoordinatePlot } from "../../components/storyboards/plots/ParallelCoordinatePlot";
 import { AnimationType } from "src/models/AnimationType";
 import {

@@ -1,12 +1,14 @@
 import * as d3 from "d3";
 import { Action } from "./Action";
+import { ActionType } from "./ActionType";
 
 export class Dot extends Action {
   protected dotNode;
   protected props;
 
-  constructor(props: any = {}, id = "Dot") {
+  constructor(props: any = {}, id = ActionType.DOT) {
     super(id);
+    this._type = ActionType.DOT;
 
     this.props = {
       size: props?.size || 5,

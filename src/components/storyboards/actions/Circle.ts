@@ -1,12 +1,14 @@
 import * as d3 from "d3";
 import { Action } from "./Action";
+import { ActionType } from "./ActionType";
 
 export class Circle extends Action {
   protected circleNode;
   protected props;
 
-  constructor(props: any = {}, id = "Circle") {
+  constructor(props: any = {}, id = ActionType.CIRCLE) {
     super(id);
+    this._type = ActionType.CIRCLE;
 
     this.props = {
       size: props?.size || 10,

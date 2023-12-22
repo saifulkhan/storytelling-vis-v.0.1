@@ -1,13 +1,15 @@
 import * as d3 from "d3";
 import { Action } from "./Action";
+import { ActionType } from "./ActionType";
 
 export class Connector extends Action {
   protected connectorNode;
   protected props;
   protected y0: number;
 
-  constructor(props: any = {}, id = "Connector") {
+  constructor(props: any = {}, id = ActionType.CONNECTOR) {
     super(id);
+    this._type = ActionType.CONNECTOR;
 
     this.props = {
       stroke: props?.stroke || "#000000",

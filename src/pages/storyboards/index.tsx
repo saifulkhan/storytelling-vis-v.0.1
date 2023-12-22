@@ -3,8 +3,8 @@ import Head from "next/head";
 import { Box, Card, CardContent, Container, Grid } from "@mui/material";
 import Link from "next/link";
 
-import DashboardLayout from "src/components/dashboard-layout/DashboardLayout";
-import styles from "src/components/storyboards/StoryBoards.module.css";
+import DashboardLayout from "../../components/dashboard-layout/DashboardLayout";
+import styles from "../../components/storyboards/dashboards/StoryBoards.module.css";
 
 // https://ssvg.io/examples
 

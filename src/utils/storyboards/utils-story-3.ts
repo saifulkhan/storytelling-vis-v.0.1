@@ -6,7 +6,7 @@ import { ScrollingSvg } from "../../components/storyboards/plots/ScrollingSvg";
 import { CategoricalFeature } from "./CategoricalFeature";
 import { TimeLine } from "../../components/storyboards/plots/Timeline";
 import { TimeSeries } from "../../components/storyboards/plots/TimeSeries";
-import { readCSVFile } from "./utils-data";
+import { readCSVFile } from "../../services/data";
 import { findDateIdx } from "./feature-detector_bkp";
 import { getCalendarEvents } from "./utils-lockdown-restriction-data";
 

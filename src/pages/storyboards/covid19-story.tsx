@@ -26,7 +26,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 import { blue } from "@mui/material/colors";
 import DashboardLayout from "src/components/dashboard-layout/DashboardLayout";
-import { Covid19StoryWorkflow } from "src/utils/storyboards/Covid19StoryWorkflow";
+import { Covid19StoryWorkflow } from "src/utils/storyboards/workflows/Covid19StoryWorkflow";
 
 const useStyles = makeStyles((theme) => ({
   root: {

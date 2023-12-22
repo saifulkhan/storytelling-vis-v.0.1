@@ -1,4 +1,4 @@
-import { readCSVFile } from "./utils-data";
+import { readCSVFile } from "../../services/data";
 import { findDateIdx } from "./feature-detector_bkp";
 import { AnimationType } from "src/models/AnimationType";
 import { MirroredBarChart } from "../../components/storyboards/plots/MirroredBarChart";

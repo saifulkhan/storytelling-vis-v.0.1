@@ -1,4 +1,4 @@
-import { TimeseriesType } from "./TimeseriesType";
+import { TimeseriesType } from "../TimeseriesType";
 
 export abstract class Workflow {
   protected initializationPromise: Promise<void>;

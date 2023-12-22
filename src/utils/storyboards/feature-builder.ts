@@ -3,7 +3,7 @@ import { Slope } from "./Slope";
 import { TimeseriesType } from "./TimeseriesType";
 import { findDateIdx, mean } from "./common";
 
-const WINDOW = 30;
+const WINDOW = 3;
 
 /*
  * The steps for peak search function:

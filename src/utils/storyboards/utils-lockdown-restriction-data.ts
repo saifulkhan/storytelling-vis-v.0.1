@@ -3,7 +3,7 @@
 //
 
 import { CategoricalFeature } from "./CategoricalFeature";
-import { readCSVFile } from "./utils-data";
+import { readCSVFile } from "../../services/data";
 
 let countryRegions;
 let countryRestrictionData;
