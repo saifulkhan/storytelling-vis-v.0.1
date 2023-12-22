@@ -44,9 +44,9 @@ export class Timeseries {
       showPoints:
         typeof props.showPoints != "boolean" ? true : props.showPoints,
       color: props.color || "#2a363b",
-      sameScale: typeof props.sameScale != "boolean" ? false : props.sameScale,
+      sameScale: typeof props.sameScale != "boolean" ? true : props.sameScale,
       yLabelX: props.yLabelX || "y-label X...",
-      colorX: props.colorX || ["#355c7d", "#99b898"],
+      colorX: props.colorX || ["#355c7d", "#99b898", "#E1999C"],
     };
 
     this.data = data;
@@ -94,7 +94,6 @@ export class Timeseries {
   }
 
   private drawAxis() {
-    console.log(`Timeseries:drawAxisAndLabels:`, this.data, this.dataX);
     // clear existing axes and labels
     d3.select(this.svgNode).selectAll(ID_AXIS_LABEL).remove();
 
@@ -191,7 +190,7 @@ export class Timeseries {
     console.log("Timeseries: draw:");
 
     // draw data line
-    d3.select(this.svgNode)
+    this.selector
       .append("path")
       .attr("stroke", this.props.color)
       .attr("stroke-width", LINE_STROKE_WIDTH)
@@ -252,7 +251,8 @@ export class Timeseries {
   }
 
   /*
-   * Given a date of a time series, return the [x, y0, x, y] coordinates
+   * Given a date of the timeseries, return the corresponding [x, y0, x, y]
+   * coordinates
    */
   public coordinates(date: Date): [number, number, number, number] {
     const d = this.data[findDateIdx(date, this.data)];

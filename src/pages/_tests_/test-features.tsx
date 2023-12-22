@@ -6,6 +6,7 @@ import { Dot } from "src/components/storyboards/actions/Dot";
 import { Peak } from "src/utils/storyboards/Peak";
 import { searchPeaks } from "src/utils/storyboards/feature-search";
 import { TimeseriesType } from "src/utils/storyboards/TimeseriesType";
+import { sliceTimeseriesByDate } from "src/utils/storyboards/common";
 
 const TestFeatures = () => {
   const chartRef = useRef(null);
@@ -30,15 +31,24 @@ const TestFeatures = () => {
       const data: TimeseriesType[] = d["Aberdeenshire"];
       console.log("TestFeatures: data = ", data);
 
-      const plot = new Timeseries({ showPoints: false }, data);
-      plot.drawOn(svg).draw();
-
       const peaks: Peak[] = searchPeaks(data, "cases/day");
       console.log("TestFeatures: peaks = ", peaks);
 
-      peaks.forEach((d) => {
-        const coordinates = plot.coordinates(d.date);
+      const dataX = peaks.map((peak) =>
+        sliceTimeseriesByDate(data, peak.start, peak.end),
+      );
 
+      console.log("dataX = ", dataX);
+
+      const plot = new Timeseries(
+        { showPoints: false, color: "#FFFFFF", sameScale: true },
+        data,
+        dataX,
+      );
+      plot.drawOn(svg).draw();
+
+      peaks.forEach((peak) => {
+        const coordinates = plot.coordinates(peak.date);
         const dot = new Dot({
           size: 5,
           color: "#FF0044",
