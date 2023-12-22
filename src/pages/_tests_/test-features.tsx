@@ -4,8 +4,7 @@ import { covid19data1 } from "src/services/covid19-data";
 import { Timeseries } from "src/components/storyboards/plots/Timeseries";
 import { Dot } from "src/components/storyboards/actions/Dot";
 import { Peak } from "src/utils/storyboards/Peak";
-import { searchPeaks } from "src/utils/storyboards/feature-builder";
-import { findDateIdx } from "src/utils/storyboards/common";
+import { searchPeaks } from "src/utils/storyboards/feature-search";
 import { TimeseriesType } from "src/utils/storyboards/TimeseriesType";
 
 const TestFeatures = () => {

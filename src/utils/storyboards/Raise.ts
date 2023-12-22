@@ -1,4 +1,5 @@
 import { NumericalFeature } from "./NumericalFeature";
+import { NumericalFeatureType } from "./NumericalFeatureType";
 
 export class Rise extends NumericalFeature {
   _height;
@@ -14,7 +15,7 @@ export class Rise extends NumericalFeature {
     grad = undefined,
   ) {
     super(date, start, end, metric);
-    this._type = NumericalFeature.TYPES.RISE;
+    this._type = NumericalFeatureType.RAISE;
     this._height = height;
     this._grad = grad;
     this._normGrad;

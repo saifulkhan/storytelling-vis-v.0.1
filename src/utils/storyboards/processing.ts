@@ -3,7 +3,7 @@ import { CategoricalFeatureType } from "./CategoricalFeatureType";
 import { NumericalFeature } from "./NumericalFeature";
 import { Peak } from "./Peak";
 import { TimeseriesType } from "./TimeseriesType";
-import { searchPeaks } from "./feature-builder";
+import { searchPeaks } from "./feature-search";
 
 const MAX_RANK = 5;
 
