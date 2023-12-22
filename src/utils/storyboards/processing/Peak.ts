@@ -1,5 +1,5 @@
+import { NumericalFeatureType } from "src/types/NumericalFeatureType";
 import { NumericalFeature } from "./NumericalFeature";
-import { NumericalFeatureType } from "./NumericalFeatureType";
 
 const CONST = 0.2; // TODO: Why?
 

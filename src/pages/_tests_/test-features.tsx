@@ -3,10 +3,10 @@ import * as d3 from "d3";
 import { covid19data1 } from "src/services/covid19-data";
 import { Timeseries } from "src/components/storyboards/plots/Timeseries";
 import { Dot } from "src/components/storyboards/actions/Dot";
-import { Peak } from "src/utils/storyboards/Peak";
-import { searchPeaks } from "src/utils/storyboards/feature-search";
+import { Peak } from "src/utils/storyboards/processing/Peak";
+import { searchPeaks } from "src/utils/storyboards/processing/feature-search";
 import { TimeseriesType } from "src/utils/storyboards/TimeseriesType";
-import { sliceTimeseriesByDate } from "src/utils/storyboards/common";
+import { sliceTimeseriesByDate } from "src/utils/storyboards/processing/common";
 
 const TestFeatures = () => {
   const chartRef = useRef(null);

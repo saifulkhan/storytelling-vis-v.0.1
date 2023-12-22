@@ -1,6 +1,6 @@
-import { Fall } from "./Fall";
-import { Peak } from "./Peak";
-import { Rise } from "./Raise";
+import { Fall } from "./processing/Fall";
+import { Peak } from "./processing/Peak";
+import { Rise } from "./processing/Raise";
 import minIndex from "./min-index";
 import maxIndex from "./max-index";
 

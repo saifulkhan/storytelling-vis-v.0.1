@@ -3,7 +3,7 @@
 
 import * as d3 from "d3";
 import { ScrollingSvg } from "../../components/storyboards/plots/ScrollingSvg";
-import { CategoricalFeature } from "./CategoricalFeature";
+import { CategoricalFeature } from "./processing/CategoricalFeature";
 import { TimeLine } from "../../components/storyboards/plots/Timeline";
 import { TimeSeries } from "../../components/storyboards/plots/TimeSeries";
 import { readCSVFile } from "../../services/data";

@@ -16,7 +16,7 @@ import useSettings from "src/hooks/useSettings";
 import DashboardLayout from "src/components/dashboard-layout/DashboardLayout";
 import AuthGuard from "src/components/auth/guards/AuthGuard";
 import PortalView from "src/components/portal/PortalView";
-import { mockPortalData } from "src/components/mock/portalData";
+import { mockPortalData } from "src/mock/portalData";
 import useAuth from "src/hooks/useAuth";
 import { apiService } from "src/utils/ApiService";
 import { IThumbnail } from "src/models/IThumbnail";

@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { Color } from "../Colors";
-import { NumericalFeatureType } from "../../../utils/storyboards/NumericalFeatureType";
+import { NumericalFeatureType } from "../../../utils/storyboards/processing/NumericalFeatureType";
 
 //
 // Annotations used in parallel coordinate

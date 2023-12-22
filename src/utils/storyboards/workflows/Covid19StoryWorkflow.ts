@@ -1,9 +1,9 @@
 import { Workflow } from "./Workflow";
 import { readCSVFile } from "../../../services/data";
-import { createCTS, createNTS } from "../processing";
+import { createCTS, createNTS } from "../processing/processing";
 import { TimeseriesType } from "../TimeseriesType";
-import { NumericalFeature } from "../NumericalFeature";
-import { CategoricalFeature } from "../CategoricalFeature";
+import { NumericalFeature } from "../processing/NumericalFeature";
+import { CategoricalFeature } from "../processing/CategoricalFeature";
 
 export class Covid19StoryWorkflow extends Workflow {
   private nts: NumericalFeature[];

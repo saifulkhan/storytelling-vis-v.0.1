@@ -34,7 +34,7 @@ import {
 } from "src/utils/storyboards/story-7-data";
 import DisplayAccuracyCard from "src/components/storyboards/dashboards/DisplayAccuracyCard";
 import { TextColor } from "src/components/storyboards/Colors";
-import { NumericalFeatureType } from "src/utils/storyboards/NumericalFeatureType";
+import { NumericalFeatureType } from "src/utils/storyboards/processing/NumericalFeatureType";
 import { LearningCurveData } from "src/components/storyboards/plots/LearningCurve";
 
 const styling = {

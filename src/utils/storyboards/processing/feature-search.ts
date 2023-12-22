@@ -1,6 +1,6 @@
+import { TimeseriesType } from "src/types/TimeseriesType";
 import { Peak } from "./Peak";
 import { Slope } from "./Slope";
-import { TimeseriesType } from "./TimeseriesType";
 import { findDateIdx, mean } from "./common";
 
 const WINDOW = 3;

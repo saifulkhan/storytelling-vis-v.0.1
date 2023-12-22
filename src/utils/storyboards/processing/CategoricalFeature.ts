@@ -1,5 +1,5 @@
 import { Feature } from "./Feature";
-import { CategoricalFeatureType } from "./CategoricalFeatureType";
+import { CategoricalFeatureType } from "../../../types/CategoricalFeatureType";
 
 export class CategoricalFeature extends Feature {
   protected _description: string;

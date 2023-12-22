@@ -11,8 +11,8 @@ import {
 
 import { GraphAnnotation } from "../../components/storyboards/plots/GraphAnnotation_story-1-2-3";
 import { TimeSeries } from "../../components/storyboards/plots/TimeSeries";
-import { Rise } from "./Raise";
-import { Fall } from "./Fall";
+import { Rise } from "./processing/Raise";
+import { Fall } from "./processing/Fall";
 import { createDataGroup } from "./utils-data-processing";
 
 /*What is the definition of a wave?

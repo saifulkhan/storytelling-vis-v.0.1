@@ -1,4 +1,4 @@
-import { TimeseriesType } from "./TimeseriesType";
+import { TimeseriesType } from "../TimeseriesType";
 
 export function findDateIdx(date: Date, data: TimeseriesType[]): number {
   return data.findIndex((d) => d.date.getTime() == date.getTime());

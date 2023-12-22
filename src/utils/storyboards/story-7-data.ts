@@ -6,7 +6,7 @@ import {
   LearningCurveData,
 } from "../../components/storyboards/plots/LearningCurve";
 import { Color, DotColor } from "../../components/storyboards/Colors";
-import { NumericalFeatureType } from "./NumericalFeatureType";
+import { NumericalFeatureType } from "./processing/NumericalFeatureType";
 import {
   GraphAnnotation,
   LCPAnnotation,

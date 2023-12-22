@@ -1,8 +1,8 @@
 import { CategoricalFeature } from "./CategoricalFeature";
-import { CategoricalFeatureType } from "./CategoricalFeatureType";
+import { CategoricalFeatureType } from "../../../types/CategoricalFeatureType";
 import { NumericalFeature } from "./NumericalFeature";
 import { Peak } from "./Peak";
-import { TimeseriesType } from "./TimeseriesType";
+import { TimeseriesType } from "../TimeseriesType";
 import { searchPeaks } from "./feature-search";
 
 const MAX_RANK = 5;

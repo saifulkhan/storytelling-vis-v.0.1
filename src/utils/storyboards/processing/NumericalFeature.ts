@@ -1,4 +1,4 @@
-import { NumericalFeatureType } from "./NumericalFeatureType";
+import { NumericalFeatureType } from "src/types/NumericalFeatureType";
 import { Feature } from "./Feature";
 
 export class NumericalFeature extends Feature {

@@ -1,4 +1,4 @@
-import { NumericalFeatureType } from "./NumericalFeatureType";
+import { NumericalFeatureType } from "src/types/NumericalFeatureType";
 import { NumericalFeature } from "./NumericalFeature";
 
 export class Slope extends NumericalFeature {

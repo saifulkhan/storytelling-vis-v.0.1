@@ -1,5 +1,5 @@
 import { readCSVFile } from "../../services/data";
-import { CategoricalFeature } from "./CategoricalFeature";
+import { CategoricalFeature } from "./processing/CategoricalFeature";
 import { detectFeatures } from "./feature-detector_bkp";
 import {
   combineBounds,
@@ -11,7 +11,7 @@ import {
 } from "./utils-aggregation-segmentation";
 
 import { GraphAnnotation } from "../../components/storyboards/plots/GraphAnnotation_story-1-2-3";
-import { NumericalFeature } from "./NumericalFeature";
+import { NumericalFeature } from "./processing/NumericalFeature";
 import { TimeSeries } from "../../components/storyboards/plots/TimeSeries";
 
 const dailyCasesByRegion = {};

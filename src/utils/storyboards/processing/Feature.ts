@@ -1,4 +1,4 @@
-import { CategoricalFeatureType } from "./CategoricalFeatureType";
+import { CategoricalFeatureType } from "../../../types/CategoricalFeatureType";
 import { NumericalFeatureType } from "./NumericalFeatureType";
 
 export abstract class Feature {
