@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { ActionType } from "./ActionType";
+import { ActionType } from "../../../types/ActionType";
 
 export abstract class Action {
   protected _type: ActionType;

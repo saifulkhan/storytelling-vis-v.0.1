@@ -20,14 +20,13 @@ export abstract class Workflow {
   }
 
   keys(): string[] {
-    return Object.keys(this.data).sort();
+    return Object.keys(this._data).sort();
   }
 
   filter(key: string) {
     this.key = key;
     this.data = this._data[key];
-    // this.execute();
-    this.translate();
+    this.execute();
   }
 
   protected abstract execute();

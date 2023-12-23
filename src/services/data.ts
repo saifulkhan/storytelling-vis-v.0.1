@@ -2,6 +2,7 @@ import * as d3 from "d3";
 
 export const readCSVFile = async (file: string) => {
   const csv = await d3.csv(file);
+  // console.log("readCSVFile: file = ", file, ", csv = ", csv);
   return csv;
 };
 

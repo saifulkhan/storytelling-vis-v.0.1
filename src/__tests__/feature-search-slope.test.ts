@@ -1,5 +1,5 @@
 import { TimeseriesType } from "../utils/storyboards/TimeseriesType";
-import { searchSlopes } from "../utils/storyboards/processing/feature-search";
+import { searchSlopes } from "../utils/storyboards/processing/FeatureBuilder";
 
 describe("searchSlopes", () => {
   it("should calculate slopes for time series with date and number pairs", () => {

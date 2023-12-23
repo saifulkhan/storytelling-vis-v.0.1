@@ -4,21 +4,23 @@ import { NumericalFeature } from "../processing/NumericalFeature";
 import { CategoricalFeature } from "../processing/CategoricalFeature";
 import { TimeseriesType } from "src/types/TimeseriesType";
 import { featureActionTable1 } from "src/mock/covid19-feature-action";
-import { rankByHeight, searchPeaks } from "../processing/feature-search";
-import { Peak } from "../processing/Peak";
-import { CategoricalFeatureType } from "src/types/CategoricalFeatureType";
+import { FeatureBuilder } from "../processing/FeatureBuilder";
+import { cts, nts } from "../processing/feature-search";
+
+const WINDOW = 3;
 
 export class Covid19StoryWorkflow extends Workflow {
-  private _nts: NumericalFeature[];
-  private _cts: CategoricalFeature[];
+  private nts: NumericalFeature[];
+  private cts: CategoricalFeature[];
 
   constructor() {
     super();
   }
 
   protected async load() {
-    const CSV = "/static/storyboards/newCasesByPublishDateRollingSum.csv";
-    const csv: any[] = await readCSVFile(CSV);
+    const file = "/static/storyboards/newCasesByPublishDateRollingSum.csv";
+    const csv: any[] = await readCSVFile(file);
+    // console.log("Covid19StoryWorkflow:load: file = ", file, ", csv = ", csv);
 
     csv.forEach((row) => {
       const region = row.areaName;
@@ -39,55 +41,23 @@ export class Covid19StoryWorkflow extends Workflow {
       );
     }
 
-    console.log("load: data = ", this.data);
+    // console.log("load: data = ", this._data);
   }
 
   protected execute() {
     if (!this.key) return;
 
-    this.nts();
-    this.cts();
+    // this.nts = nts(this.data, "Cases/day", WINDOW);
+    // this.cts = cts();
+    // console.log("execute: ranked nts = ", this.nts);
+    // console.log("execute: ranked cts = ", this.cts);
 
-    console.log("execute: ranked nts = ", this._nts);
-    console.log("execute: ranked cts = ", this._cts);
-  }
-
-  private nts() {
-    const nts: Peak[] = searchPeaks(this.data, "Cases/day");
-    rankByHeight(nts);
-  }
-
-  private cts() {
-    const a = new CategoricalFeature(
-      new Date("2020-03-24"),
-      "Start of First Lockdown.",
-      CategoricalFeatureType.LOCKDOWN_START,
-      5,
+    const featureBuilder = new FeatureBuilder(
+      featureActionTable1,
+      this.data,
+      "Cases/day",
+      WINDOW,
     );
-
-    const b = new CategoricalFeature(
-      new Date("2021-01-05"),
-      "Start of Second Lockdown.",
-      CategoricalFeatureType.LOCKDOWN_END,
-      3,
-    );
-
-    const c = new CategoricalFeature(
-      new Date("2020-05-28"),
-      "End of First Lockdown.",
-      CategoricalFeatureType.LOCKDOWN_END,
-      5,
-    );
-
-    this._cts = [a, b, c];
-  }
-
-  protected translate() {
-    // prettier-ignore
-    featureActionTable1.forEach((d, _) => {
-      console.log("Workflow:translate: FA = ", d);
-    
-
-    });
+    featureBuilder.build();
   }
 }

@@ -2,19 +2,57 @@ import { TimeseriesType } from "src/types/TimeseriesType";
 import { Peak } from "./Peak";
 import { Slope } from "./Slope";
 import { findDateIdx, mean } from "./common";
+import { CategoricalFeature } from "./CategoricalFeature";
+import { CategoricalFeatureType } from "src/types/CategoricalFeatureType";
 
-const WINDOW = 3;
 const MAX_RANK = 5;
 
 /*
- * Rank peaks by its height, assign rank between 1 to MAX_RANK
+ * Create numerical timeseries
  */
-export function rankByHeight(peaks: Peak[]) {
-  peaks.sort((p1, p2) => p1.height - p2.height);
-  const nPeaks = peaks.length;
-  // size of each ranking group
-  const groupSize = nPeaks / MAX_RANK;
-  peaks.forEach((p, i) => (p.rank = 1 + Math.floor(i / groupSize)));
+export function nts(data: TimeseriesType[], metric: string, window: number) {
+  const nts: Peak[] = searchPeaks(data, metric, window);
+
+  // rank peaks by its height, assign rank between 1 to MAX_RANK
+  const rankByHeight = (peaks: Peak[]) => {
+    peaks.sort((p1, p2) => p1.height - p2.height);
+    const nPeaks = peaks.length;
+    // size of each ranking group
+    const groupSize = nPeaks / MAX_RANK;
+    peaks.forEach((p, i) => (p.rank = 1 + Math.floor(i / groupSize)));
+  };
+
+  rankByHeight(nts);
+  return nts;
+}
+
+/*
+ * Create categorical timeseries
+ */
+export function cts() {
+  const a = new CategoricalFeature(
+    new Date("2020-03-24"),
+    "Start of First Lockdown.",
+    CategoricalFeatureType.LOCKDOWN_START,
+    5,
+  );
+
+  const b = new CategoricalFeature(
+    new Date("2021-01-05"),
+    "Start of Second Lockdown.",
+    CategoricalFeatureType.LOCKDOWN_END,
+    3,
+  );
+
+  const c = new CategoricalFeature(
+    new Date("2020-05-28"),
+    "End of First Lockdown.",
+    CategoricalFeatureType.LOCKDOWN_END,
+    5,
+  );
+
+  const cts = [a, b, c];
+  return cts;
 }
 
 /*
@@ -25,10 +63,11 @@ export function rankByHeight(peaks: Peak[]) {
  */
 export function searchPeaks(
   data: TimeseriesType[],
-  metric: string = undefined,
+  metric: string,
+  window: number,
 ) {
   const peaks: Peak[] = [];
-  const maxes = searchMaxes(data, WINDOW);
+  const maxes = searchMaxes(data, window);
   const norm = normalise(data.map((o) => o.y));
 
   let start, end;
@@ -75,6 +114,57 @@ export function searchPeaks(
 
   return uniquePeaks;
 }
+
+/*
+ * This function iterates through the time series data using a sliding window
+ * approach with the specified window size and calculates the slopes for each
+ * window.
+ */
+
+export function searchSlopes(data: TimeseriesType[], window: number): Slope[] {
+  if (data.length <= 1 || window <= 1 || window > data.length) {
+    throw new Error(
+      "Invalid input: time series length should be greater than 1 and window size should be a positive number less than or equal to the time series length.",
+    );
+  }
+
+  const slopes: Slope[] = [];
+
+  for (let i = 0; i <= data.length - window; i++) {
+    const windowData = data.slice(i, i + window);
+    const xIndices = windowData.map((_, i) => i);
+    const yValues = windowData.map((d) => d.y);
+
+    const meanX = mean(xIndices);
+    const meanY = mean(yValues);
+
+    let numerator = 0;
+    let denominator = 0;
+
+    // regression
+    for (let j = 0; j < xIndices.length; j++) {
+      numerator += (xIndices[j] - meanX) * (yValues[j] - meanY);
+      denominator += Math.pow(xIndices[j] - meanX, 2);
+    }
+
+    const slope = numerator / denominator;
+    slopes.push(
+      new Slope(
+        windowData[Math.round(meanX)].date,
+        windowData[0].date,
+        windowData[windowData.length - 1].date,
+        "",
+        slope,
+      ),
+    );
+  }
+
+  return slopes;
+}
+
+/*******************************************************************************
+ *
+ ******************************************************************************/
 
 /*
  * Function to find the end of a peak. Move forwards from the peak until the
@@ -133,7 +223,7 @@ function searchPeakStart(idx: number, norm: number[]): number {
  * midpoint and edges.
  */
 
-function searchMaxes(data: TimeseriesType[], window = 30): number[] {
+function searchMaxes(data: TimeseriesType[], window): number[] {
   // centre of window
   const centre = Math.floor((window - 1) / 2);
   const maxes: number[] = [];
@@ -151,53 +241,6 @@ function searchMaxes(data: TimeseriesType[], window = 30): number[] {
     if (diff1 > 0 && diff2 > 0) maxes.push(midPnt);
   }
   return maxes;
-}
-
-/*
- * This function iterates through the time series data using a sliding window
- * approach with the specified window size and calculates the slopes for each
- * window.
- */
-
-export function searchSlopes(data: TimeseriesType[], window: number): Slope[] {
-  if (data.length <= 1 || window <= 1 || window > data.length) {
-    throw new Error(
-      "Invalid input: time series length should be greater than 1 and window size should be a positive number less than or equal to the time series length.",
-    );
-  }
-
-  const slopes: Slope[] = [];
-
-  for (let i = 0; i <= data.length - window; i++) {
-    const windowData = data.slice(i, i + window);
-    const xIndices = windowData.map((_, i) => i);
-    const yValues = windowData.map((d) => d.y);
-
-    const meanX = mean(xIndices);
-    const meanY = mean(yValues);
-
-    let numerator = 0;
-    let denominator = 0;
-
-    // regression
-    for (let j = 0; j < xIndices.length; j++) {
-      numerator += (xIndices[j] - meanX) * (yValues[j] - meanY);
-      denominator += Math.pow(xIndices[j] - meanX, 2);
-    }
-
-    const slope = numerator / denominator;
-    slopes.push(
-      new Slope(
-        windowData[Math.round(meanX)].date,
-        windowData[0].date,
-        windowData[windowData.length - 1].date,
-        "",
-        slope,
-      ),
-    );
-  }
-
-  return slopes;
 }
 
 /*
@@ -248,7 +291,7 @@ function minIndex(values: number[], valueof?) {
  * We remove the need for array x as we assume y data is equally spaced and we only want the gradient.
  */
 
-export function linRegGrad(y) {
+function linRegGrad(y) {
   let slope = {};
   const n = y.length;
   let sum_x = 0;

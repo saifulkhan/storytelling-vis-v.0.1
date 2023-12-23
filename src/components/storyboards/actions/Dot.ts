@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { Action } from "./Action";
-import { ActionType } from "./ActionType";
+import { ActionType } from "../../../types/ActionType";
 
 export class Dot extends Action {
   protected dotNode;

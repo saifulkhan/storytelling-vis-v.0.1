@@ -1,4 +1,6 @@
-export const featureActionTable1 = [
+import { FeatureActionDataType } from "src/types/FeatureActionType";
+
+export const featureActionTable1: FeatureActionDataType[] = [
   {
     feature: "PEAK",
     featureParams: {},
@@ -19,7 +21,7 @@ export const featureActionTable1 = [
   },
   {
     feature: "SLOPE",
-    featureParams: { GT: 10 },
+    featureParams: { GT: 100 },
     rank: 7,
     action: "TEXT_BOX",
     actionParams: { CONNECTOR: "true" },
@@ -28,7 +30,7 @@ export const featureActionTable1 = [
   },
   {
     feature: "SLOPE",
-    featureParams: { GT: -10, LT: 10 },
+    featureParams: { GT: -5, LT: 5, NE: 0 },
     rank: 7,
     action: "TEXT_BOX",
     actionParams: { CONNECTOR: "true" },
