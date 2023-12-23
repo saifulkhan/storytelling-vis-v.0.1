@@ -26,10 +26,9 @@ export abstract class Workflow {
   filter(key: string) {
     this.key = key;
     this.data = this._data[key];
-    this.execute();
+    this.setup();
   }
 
-  protected abstract execute();
   protected abstract load();
-  protected abstract translate();
+  protected abstract setup();
 }

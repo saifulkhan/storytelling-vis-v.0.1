@@ -44,7 +44,7 @@ export class Covid19StoryWorkflow extends Workflow {
     // console.log("load: data = ", this._data);
   }
 
-  protected execute() {
+  protected setup() {
     if (!this.key) return;
 
     // this.nts = nts(this.data, "Cases/day", WINDOW);
@@ -58,6 +58,7 @@ export class Covid19StoryWorkflow extends Workflow {
       "Cases/day",
       WINDOW,
     );
-    featureBuilder.build();
+    const features = featureBuilder.build();
+    console.log("Covid19StoryWorkflow:execute: features = ", features);
   }
 }

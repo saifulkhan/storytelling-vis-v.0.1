@@ -1,14 +1,12 @@
 import { TimeseriesType } from "src/types/TimeseriesType";
-import {
-  NumericalFeatureParamType,
-  NumericalFeatureType,
-} from "src/types/NumericalFeatureType";
+import { NumericalFeatureType } from "src/types/NumericalFeatureType";
 import { FeatureActionDataType } from "src/types/FeatureActionType";
 import { Peak } from "./Peak";
 import { Slope } from "./Slope";
 import { NumericalFeature } from "./NumericalFeature";
 import { searchPeaks, searchSlopes } from "./feature-search";
 import { createPredicateFunction as createPredicate } from "./common";
+import { NumericalFeatureParamType } from "src/types/NumericalFeatureParamType";
 
 export class FeatureBuilder {
   static map: { [key in NumericalFeatureType]: Function } = {
@@ -71,12 +69,12 @@ export class FeatureBuilder {
     // console.log("params = ", params);
 
     for (const [key, value] of Object.entries(params)) {
-      const predicateFunction = FeatureBuilder.translateParams(
+      const predicate = FeatureBuilder.translateParams(
         key as NumericalFeatureParamType,
         value,
         "slope",
       );
-      slopes = slopes.filter(predicateFunction);
+      slopes = slopes.filter(predicate);
       // console.log(`key = ${key}, value = ${value}, slopes = `, slopes);
     }
     return slopes;
