@@ -1,11 +1,10 @@
 # About
 
-RAMPVIS user interface implemented in React.
+\*\*
 
 ## Getting Started
 
 - This is tested in Ubuntu 22.04 and WSL2
-- Start the backend server; please visit https://github.com/ScottishCovidResponse/rampvis-api
 
 ### Stop & Clean (optional)
 
@@ -63,19 +62,33 @@ See [Next.js docs → Environment Variables](https://nextjs.org/docs/basic-featu
 
 ## Local production build
 
-1.  Build the app
+1. Build the app
 
-    ```sh
-    yarn build
-    ```
+   ```sh
+   yarn build
+   ```
 
-1.  Make sure that port 3000 is not used and launch a simple HTTP server for the just-created `out` directory.
+1. Make sure that port 3000 is not used and launch a simple HTTP server for the just-created `out` directory.
 
-    ```sh
-    npx serve out
-    ```
+   ```sh
+   npx serve out
+   ```
 
-1.  Navigate to http://localhost:3000 in your browser.
+1. Navigate to <http://localhost:3000> in your browser.
+
+## Tests
+
+### Unit Tests
+
+```sh
+yarn test
+```
+
+### Visualizations
+
+- <http://localhost:3000/_tests_/test-features>
+- <http://localhost:3000/_tests_/test-actions>
+- <http://localhost:3000/_tests_/test-plots>
 
 ## Deployment
 
@@ -87,19 +100,19 @@ As a result, production URLs match the ones we see during `yarn dev` and `npx se
 It is possible to locally test `nginx.conf` after running `yarn build`.
 This requires [Docker](https://www.docker.com/products/docker-desktop).
 
-1.  Build the container (see [Dockerfile](./Dockerfile)):
+1. Build the container (see [Dockerfile](./Dockerfile)):
 
-    ```sh
-    docker build . --tag=rampvis-ui:local
-    ```
+   ```sh
+   docker build . --tag=rampvis-ui:local
+   ```
 
-1.  Make sure that port 3000 is not used and start the container:
+1. Make sure that port 3000 is not used and start the container:
 
-    ```sh
-    docker run -p 3000:80 rampvis-ui:local
-    ```
+   ```sh
+   docker run -p 3000:80 rampvis-ui:local
+   ```
 
-1.  Navigate to http://localhost:3000 in your browser.
+1. Navigate to <http://localhost:3000> in your browser.
 
 ## References
 
@@ -108,5 +121,4 @@ This requires [Docker](https://www.docker.com/products/docker-desktop).
 
 ## Earlier Prototypes
 
-- [v.0.1 - Angular](https://github.com/ScottishCovidResponse/rampvis-ui-0.1)
-- [v.0.2 - Plain HTML/CSS](https://github.com/ScottishCovidResponse/rampvis-ui-0.2.git)
+- <https://observablehq.com/d/0a6e9c35a809660e>

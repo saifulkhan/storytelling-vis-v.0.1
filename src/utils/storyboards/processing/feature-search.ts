@@ -4,6 +4,18 @@ import { Slope } from "./Slope";
 import { findDateIdx, mean } from "./common";
 
 const WINDOW = 3;
+const MAX_RANK = 5;
+
+/*
+ * Rank peaks by its height, assign rank between 1 to MAX_RANK
+ */
+export function rankByHeight(peaks: Peak[]) {
+  peaks.sort((p1, p2) => p1.height - p2.height);
+  const nPeaks = peaks.length;
+  // size of each ranking group
+  const groupSize = nPeaks / MAX_RANK;
+  peaks.forEach((p, i) => (p.rank = 1 + Math.floor(i / groupSize)));
+}
 
 /*
  * The steps for peak search function:

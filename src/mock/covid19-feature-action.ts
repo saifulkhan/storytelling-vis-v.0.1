@@ -1,0 +1,38 @@
+export const featureActionTable1 = [
+  {
+    feature: "PEAK",
+    featureParams: {},
+    rank: 5,
+    action: "CIRCLE",
+    actionParams: { SIZE: 10, STROKE_WIDTH: 3, OPACITY: 0.6 },
+    text: "",
+    comment: "",
+  },
+  {
+    feature: "PEAK",
+    featureParams: {},
+    rank: 5,
+    action: "TEXT_BOX",
+    actionParams: { CONNECTOR: "true" },
+    text: "On {DATE}, number of cases peaked at {VALUE}",
+    comment: "",
+  },
+  {
+    feature: "SLOPE",
+    featureParams: { GT: 10 },
+    rank: 7,
+    action: "TEXT_BOX",
+    actionParams: { CONNECTOR: "true" },
+    text: "By {DATE}, the number of cases continued to climb higher in {REGION}.",
+    comment: "",
+  },
+  {
+    feature: "SLOPE",
+    featureParams: { GT: -10, LT: 10 },
+    rank: 7,
+    action: "TEXT_BOX",
+    actionParams: { CONNECTOR: "true" },
+    text: "By {DATE}, the number of cases remained low. We should continue to be vigilant",
+    comment: "",
+  },
+];

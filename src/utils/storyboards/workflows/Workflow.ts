@@ -1,8 +1,10 @@
-import { TimeseriesType } from "../TimeseriesType";
+import { TimeseriesType } from "src/types/TimeseriesType";
 
 export abstract class Workflow {
   protected initializationPromise: Promise<void>;
-  protected data: Record<string, TimeseriesType[]> = {};
+  protected _data: Record<string, TimeseriesType[]> = {};
+  protected data: TimeseriesType[];
+
   protected key: string;
 
   constructor() {
@@ -23,20 +25,12 @@ export abstract class Workflow {
 
   filter(key: string) {
     this.key = key;
-    this.execute();
+    this.data = this._data[key];
+    // this.execute();
+    this.translate();
   }
 
-  /*
-   * Implement execution sequences
-   */
-  protected execute() {
-    return;
-  }
-
-  /*
-   * Implement load data
-   */
-  protected async load() {
-    return;
-  }
+  protected abstract execute();
+  protected abstract load();
+  protected abstract translate();
 }

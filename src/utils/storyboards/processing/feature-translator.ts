@@ -1,5 +1,5 @@
-import { NumericalFeatureType } from "./processing/NumericalFeatureType";
-import { searchPeaks, searchSlopes } from "./processing/feature-search";
+import { NumericalFeatureType } from "src/types/NumericalFeatureType";
+import { searchPeaks, searchSlopes } from "./feature-search";
 
 const featureMap: {
   [key in NumericalFeatureType]: Function;
