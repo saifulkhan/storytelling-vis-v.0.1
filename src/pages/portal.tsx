@@ -18,7 +18,7 @@ import AuthGuard from "src/components/auth/guards/AuthGuard";
 import PortalView from "src/components/portal/PortalView";
 import { mockPortalData } from "src/mock/portalData";
 import useAuth from "src/hooks/useAuth";
-import { apiService } from "src/utils/ApiService";
+import { apiService } from "src/services/ApiService";
 import { IThumbnail } from "src/models/IThumbnail";
 
 const useStyles = makeStyles((theme) => ({

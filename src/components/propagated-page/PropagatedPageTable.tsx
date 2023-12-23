@@ -13,7 +13,7 @@ import { blue } from "@mui/material/colors";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useRouter } from "next/router";
 import moment from "moment";
-import { apiService } from "src/utils/ApiService";
+import { apiService } from "src/services/ApiService";
 
 interface Column {
   id: "title" | "function" | "numDataStreams" | "pageType" | "date";

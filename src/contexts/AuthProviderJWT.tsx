@@ -4,7 +4,7 @@ import jwt_decode from "jwt-decode";
 import { useRouter } from "next/router";
 import type { User } from "src/types/user";
 import { ITokenData } from "src/types/tokenData";
-import { apiService } from "src/utils/ApiService";
+import { apiService } from "src/services/ApiService";
 import { IDataStoredInToken } from "src/types/dataStoredInToken";
 
 interface State {
