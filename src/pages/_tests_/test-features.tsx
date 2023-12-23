@@ -1,12 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { covid19data1 } from "src/services/covid19-data";
 import { Timeseries } from "src/components/storyboards/plots/Timeseries";
 import { Dot } from "src/components/storyboards/actions/Dot";
 import { Peak } from "src/utils/storyboards/processing/Peak";
 import { searchPeaks } from "src/utils/storyboards/processing/feature-search";
-import { TimeseriesType } from "src/utils/storyboards/TimeseriesType";
 import { sliceTimeseriesByDate } from "src/utils/storyboards/processing/common";
+import { TimeseriesType } from "src/types/TimeseriesType";
 
 const TestFeatures = () => {
   const chartRef = useRef(null);
@@ -27,11 +27,13 @@ const TestFeatures = () => {
       .append("g")
       .node();
 
+    console.log("svg = ", svg);
+
     covid19data1().then((d) => {
       const data: TimeseriesType[] = d["Aberdeenshire"];
       console.log("TestFeatures: data = ", data);
 
-      const peaks: Peak[] = searchPeaks(data, "cases/day");
+      const peaks: Peak[] = searchPeaks(data, "cases/day", 10);
       console.log("TestFeatures: peaks = ", peaks);
 
       const dataX = peaks.map((peak) =>
@@ -55,7 +57,7 @@ const TestFeatures = () => {
           opacity: 0.3,
         });
         dot.drawOn(svg);
-        dot.position(coordinates[2], coordinates[3]);
+        dot.coordinate(coordinates[2], coordinates[3]);
       });
     });
   }, []);

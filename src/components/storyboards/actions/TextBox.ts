@@ -146,7 +146,7 @@ export class TextBox extends Action {
     return rowHeight;
   }
 
-  public position(x: number, y: number) {
+  public coordinate(x: number, y: number) {
     this.x = x;
     this.y = y;
 

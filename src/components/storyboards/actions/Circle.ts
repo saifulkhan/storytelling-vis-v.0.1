@@ -31,7 +31,7 @@ export class Circle extends Action {
     this.node.appendChild(this.circleNode);
   }
 
-  public position(x: number, y: number) {
+  public coordinate(x: number, y: number) {
     this.x = x;
     this.y = y;
     d3.select(this.circleNode).attr("cx", x).attr("cy", y);

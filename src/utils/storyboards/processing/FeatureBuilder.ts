@@ -39,12 +39,12 @@ export class FeatureBuilder {
     FeatureBuilder.metric = metric;
   }
 
-  public build(): NumericalFeature[] {
-    const features: NumericalFeature[] = [];
+  public build(): NumericalFeature[][] {
+    const features: NumericalFeature[][] = [];
     FeatureBuilder.table.forEach((d: FeatureActionDataType, _) => {
       const feature = FeatureBuilder.map[d.feature](d.featureParams);
-      console.log("FeatureSearch:execute: FA = ", d.feature);
-      console.log("FeatureSearch:execute: FA = ", d.featureParams);
+      console.log("FeatureSearch:execute: feature = ", d.feature);
+      console.log("FeatureSearch:execute: featureParams = ", d.featureParams);
       // prettier-ignore
       console.log("FeatureSearch:execute: feature = ", feature);
       features.push(feature);

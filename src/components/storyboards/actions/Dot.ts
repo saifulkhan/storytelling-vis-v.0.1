@@ -28,7 +28,7 @@ export class Dot extends Action {
     this.node.appendChild(this.dotNode);
   }
 
-  public position(x: number, y: number) {
+  public coordinate(x: number, y: number) {
     this.x = x;
     this.y = y;
     d3.select(this.dotNode).attr("cx", x).attr("cy", y);

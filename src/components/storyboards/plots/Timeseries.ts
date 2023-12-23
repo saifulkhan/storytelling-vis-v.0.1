@@ -1,10 +1,8 @@
 import * as d3 from "d3";
 
-import { TimeseriesType } from "src/utils/storyboards/TimeseriesType";
-import { AnimationType } from "src/models/AnimationType";
-import { NumericalFeatureType } from "../../../utils/storyboards/processing/NumericalFeatureType";
-import { GraphAnnotation, TSPAnnotation } from "./GraphAnnotation";
 import { findDateIdx } from "src/utils/storyboards/processing/common";
+import { StoryPlot } from "./StoryPlot";
+import { TimeseriesType } from "src/types/TimeseriesType";
 
 const MARGIN = { top: 50, right: 50, bottom: 50, left: 50 };
 const ID_AXIS_LABEL = "#id-axes-labels";
@@ -16,7 +14,7 @@ const MAGIC_NO = 10,
 
 const LINE_STROKE_WIDTH = 2;
 
-export class Timeseries {
+export class Timeseries extends StoryPlot {
   props: any;
   data: TimeseriesType[];
   dataX: TimeseriesType[][];
@@ -36,6 +34,8 @@ export class Timeseries {
     data: TimeseriesType[],
     dataX: TimeseriesType[][] = undefined,
   ) {
+    super();
+
     this.props = {
       title: props.title || "title...",
       ticks: props.ticks || true,

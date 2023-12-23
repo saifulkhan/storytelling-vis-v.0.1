@@ -14,7 +14,6 @@ const TestActions = () => {
 
   useEffect(() => {
     if (!chartRef.current) return;
-
     console.log("useEffect triggered");
 
     const svg = d3
@@ -29,7 +28,7 @@ const TestActions = () => {
     const textbox = new TextBox({});
     textbox.drawOn(svg);
     textbox.show();
-    textbox.position(100, 100);
+    textbox.coordinate(100, 100);
 
     const dot = new Dot({
       size: 5,
@@ -37,7 +36,7 @@ const TestActions = () => {
       opacity: 0.3,
     });
     dot.drawOn(svg);
-    dot.position(100, 100);
+    dot.coordinate(100, 100);
 
     const circle = new Circle({
       size: 10,
@@ -45,12 +44,12 @@ const TestActions = () => {
       opacity: 1,
     });
     circle.drawOn(svg);
-    circle.position(100, 100);
+    circle.coordinate(100, 100);
 
     const connector = new Connector({});
     connector.drawOn(svg);
     connector.show();
-    connector.position(100, 100, 200);
+    connector.coordinate(100, 100, 200);
 
     //
   }, []);

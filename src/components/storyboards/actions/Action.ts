@@ -73,5 +73,5 @@ export abstract class Action {
   }
 
   protected abstract draw();
-  public abstract position(x: number, y: number, y0: number);
+  public abstract coordinate(x: number, y: number, y0: number);
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Head from "next/head";
 import Box from "@mui/material/Box";
 import Slider from "@mui/material/Slider";
@@ -45,19 +45,19 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Covid19Story = () => {
-  const classes = useStyles();
-
   const [loading, setLoading] = useState(true);
   const [segment, setSegment] = useState<number>(3);
   const [regions, setRegions] = useState<string[]>([]);
   const [region, setRegion] = useState<string>("");
   const [animationCounter, setAnimationCounter] = useState<number>(0);
-
-  const workflow = new Covid19StoryWorkflow();
   // slider formatted value
   const valuetext = (value) => `${value}`;
+  const workflow = new Covid19StoryWorkflow();
 
   useEffect(() => {
+    // if (!chartRef.current) return;
+    console.log("useEffect triggered");
+
     setLoading(true);
 
     // Wait for initialization to complete before further actions
@@ -90,7 +90,9 @@ const Covid19Story = () => {
     // prettier-ignore
     console.log("StorySingle:handleSelection: selectedRegion = ", selectedRegion);
     if (selectedRegion) {
+      workflow.drawOn("#chartId");
       workflow.filter(selectedRegion);
+
       //createTimeSeriesSVG("#chart1");
       //setRegion(selectedRegion);
       //setAnimationCounter(0);
@@ -252,8 +254,7 @@ const Covid19Story = () => {
                         </Button>
                       </FormControl>
                     </FormGroup>
-
-                    <div id="chart1" />
+                    <div id="chartId" />
                   </>
                 )}
               </CardContent>

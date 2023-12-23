@@ -28,7 +28,7 @@ export class Connector extends Action {
     this.node.appendChild(this.connectorNode);
   }
 
-  public position(newX: number, newY: number, newY0: number) {
+  public coordinate(newX: number, newY: number, newY0: number) {
     this.x = newX;
     this.y = newY;
     this.y0 = newY0;

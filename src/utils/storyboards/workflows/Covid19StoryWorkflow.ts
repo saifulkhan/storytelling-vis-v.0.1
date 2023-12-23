@@ -6,6 +6,8 @@ import { TimeseriesType } from "src/types/TimeseriesType";
 import { featureActionTable1 } from "src/mock/covid19-feature-action";
 import { FeatureBuilder } from "../processing/FeatureBuilder";
 import { cts, nts } from "../processing/feature-search";
+import { Timeseries } from "src/components/storyboards/plots/Timeseries";
+import { ActionBuilder } from "../processing/ActionBuilder";
 
 const WINDOW = 3;
 
@@ -52,6 +54,9 @@ export class Covid19StoryWorkflow extends Workflow {
     // console.log("execute: ranked nts = ", this.nts);
     // console.log("execute: ranked cts = ", this.cts);
 
+    const plot = new Timeseries({ showPoints: false }, this.data);
+    plot.drawOn(this.svgNode).draw();
+
     const featureBuilder = new FeatureBuilder(
       featureActionTable1,
       this.data,
@@ -60,5 +65,22 @@ export class Covid19StoryWorkflow extends Workflow {
     );
     const features = featureBuilder.build();
     console.log("Covid19StoryWorkflow:execute: features = ", features);
+
+    const actionBuilder = new ActionBuilder(featureActionTable1);
+    const actions = actionBuilder.build();
+    console.log("Covid19StoryWorkflow:execute: actions = ", actions);
+
+    let i = 0;
+    for (const f1 of features) {
+      for (const feature of f1) {
+        const coordinate = plot.coordinates(feature.date);
+        console.log(feature.date, coordinate);
+
+        const action = actions[i].drawOn(this.svgNode);
+        action.coordinate(coordinate[2], coordinate[3]);
+      }
+
+      i++;
+    }
   }
 }

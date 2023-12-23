@@ -20,6 +20,15 @@ export const featureActionTable1: FeatureActionDataType[] = [
     comment: "",
   },
   {
+    feature: "PEAK",
+    featureParams: {},
+    rank: 5,
+    action: "DOT",
+    actionParams: { CONNECTOR: "true" },
+    text: "",
+    comment: "",
+  },
+  {
     feature: "SLOPE",
     featureParams: { GT: 100 },
     rank: 7,
@@ -30,7 +39,7 @@ export const featureActionTable1: FeatureActionDataType[] = [
   },
   {
     feature: "SLOPE",
-    featureParams: { GT: -5, LT: 5, NE: 0 },
+    featureParams: { GT: -1, LT: 1, NE: 0 },
     rank: 7,
     action: "TEXT_BOX",
     actionParams: { CONNECTOR: "true" },
