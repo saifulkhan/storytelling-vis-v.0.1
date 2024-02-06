@@ -8,8 +8,6 @@ import {
   ThemeProvider,
 } from "@mui/material";
 import { Toaster } from "react-hot-toast";
-// import { LocalizationProvider } from "@mui/lab";
-// import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import { CacheProvider } from "@emotion/react";
 
 import useSettings from "src/hooks/useSettings";
@@ -25,16 +23,9 @@ import { AuthProviderJWT } from "src/contexts/AuthProviderJWT";
 const clientSideEmotionCache = createEmotionCache();
 
 //
-// Import all the css files created for d3 charts
-// TODO: These are imported globally. @Phong to advice how to scope them.
+// Import all the css files created for d3 charts, e.g.,
+// import "src/lib/vis/css/common.css";
 //
-import "src/lib/vis/css/common.css";
-import "src/lib/vis/css/dashboard.css";
-import "src/lib/vis/css/default-dashboard.css";
-import "src/lib/vis/css/overview-top-level-screen-a.css";
-import "src/lib/vis/css/portal.css";
-import "src/lib/vis/css/pv-legend.css";
-import "src/lib/vis/css/ensemble.css";
 
 type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -70,7 +61,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
           name="viewport"
           content="width=device-width, initial-scale=1, shrink-to-fit=no"
         />
-        <title>RAMPVIS</title>
+        <title>Feature Action DP</title>
       </Head>
       <StrictMode>
         <HelmetProvider>

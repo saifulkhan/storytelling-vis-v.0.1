@@ -15,17 +15,17 @@ const PostMountRedirectToPage: React.VoidFunctionComponent<
   PostMountRedirectToPageProps
 > = ({ pageIdByRoute, children }) => {
   const [ready, setReady] = React.useState(false);
-
   const router = useRouter();
 
   React.useEffect(() => {
-    const pageId = pageIdByRoute[router.asPath];
-    if (pageId) {
-      router.replace(`/page?id=${pageId}`);
-      // router.replace(`/story-boards/story-5`);
-    } else {
-      setReady(true);
-    }
+    // const pageId = pageIdByRoute[router.asPath];
+    //if (pageId) {
+    //  router.replace(`/page?id=${pageId}`);
+    //} else {
+    //  setReady(true);
+    //}
+
+    router.replace(`/storyboards/`);
   }, [pageIdByRoute, router]);
 
   if (!ready) {

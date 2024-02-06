@@ -4,9 +4,7 @@ import { Box, Card, CardContent, Container, Grid } from "@mui/material";
 import Link from "next/link";
 
 import DashboardLayout from "../../components/dashboard-layout/DashboardLayout";
-import styles from "../../components/storyboards/dashboards/StoryBoards.module.css";
-
-// https://ssvg.io/examples
+import styles from "./StoryBoards.module.css";
 
 const StoryBoards = () => {
   return (

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { FC, ReactNode } from "react";
 import { experimentalStyled } from "@mui/material";
 import Footer from "../Footer";

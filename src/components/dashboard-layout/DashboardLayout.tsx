@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
 import type { FC, ReactNode } from "react";
 import { experimentalStyled } from "@mui/material";
-import DashboardNavbar from "./DashboardNavbar";
-import DashboardSidebar from "./DashboardSidebar";
+import Navbar from "./Navbar";
+import Sidebar from "./Sidebar";
 
 interface DashboardLayoutProps {
   children?: ReactNode;
@@ -51,10 +51,8 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
 
   return (
     <DashboardLayoutRoot>
-      <DashboardNavbar
-        onSidebarMobileOpen={(): void => setIsSidebarMobileOpen(true)}
-      />
-      <DashboardSidebar
+      <Navbar onSidebarMobileOpen={(): void => setIsSidebarMobileOpen(true)} />
+      <Sidebar
         onMobileClose={handleSidebarClose}
         openMobile={isSidebarMobileOpen}
       />

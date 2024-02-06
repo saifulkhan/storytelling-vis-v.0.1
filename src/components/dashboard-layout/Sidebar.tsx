@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { Box, Divider, Drawer, Link, Typography } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
+import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import BookmarksIcon from "@mui/icons-material/Bookmarks";
@@ -15,119 +16,143 @@ import AllInboxIcon from "@mui/icons-material/AllInbox";
 import Filter1Icon from "@mui/icons-material/Filter1";
 import Filter2Icon from "@mui/icons-material/Filter2";
 import Filter3Icon from "@mui/icons-material/Filter3";
-import PublicIcon from "@mui/icons-material/Public";
+import ScienceIcon from "@mui/icons-material/Science";
 import Logo from "src/components/Logo";
 import NavSection from "src/components/dashboard-layout/NavSection";
 import Scrollbar from "src/components/Scrollbar";
 
-interface DashboardSidebarProps {
+interface SidebarProps {
   onMobileClose: () => void;
   openMobile: boolean;
 }
 
 const sections = [
-  {
-    items: [
-      {
-        title: "My Portal",
-        path: "/portal",
-        icon: <BookmarksIcon fontSize="small" />,
-      },
-      {
-        title: "Search",
-        path: "/search",
-        icon: <SearchIcon fontSize="small" />,
-      },
-    ],
-  },
+  // {
+  //   items: [
+  //     {
+  //       title: "My Portal",
+  //       path: "/portal",
+  //       icon: <BookmarksIcon fontSize="small" />,
+  //     },
+  //     {
+  //       title: "Search",
+  //       path: "/search",
+  //       icon: <SearchIcon fontSize="small" />,
+  //     },
+  //   ],
+  // },
+  // {
+  //   title: "",
+  //   items: [
+  //     {
+  //       title: "Dashboards",
+  //       path: "/dashboard",
+  //       icon: <DashboardIcon fontSize="small" />,
+  //     },
+  //     {
+  //       title: "Plots",
+  //       path: "/plot",
+  //       icon: <DonutSmallIcon fontSize="small" />,
+  //     },
+  //     {
+  //       title: "Analytics",
+  //       path: "/analytics",
+  //       icon: <TimelineIcon fontSize="small" />,
+  //     },
+  //     {
+  //       title: "Models",
+  //       path: "/model",
+  //       icon: <AssessmentIcon fontSize="small" />,
+  //     },
+  //   ],
+  // },
   {
     title: "",
     items: [
       {
-        title: "Dashboards",
-        path: "/dashboard",
-        icon: <DashboardIcon fontSize="small" />,
-      },
-      {
-        title: "Plots",
-        path: "/plot",
-        icon: <DonutSmallIcon fontSize="small" />,
-      },
-      {
-        title: "Analytics",
-        path: "/analytics",
-        icon: <TimelineIcon fontSize="small" />,
-      },
-      {
-        title: "Models",
-        path: "/model",
-        icon: <AssessmentIcon fontSize="small" />,
-      },
-    ],
-  },
-  {
-    title: "",
-    items: [
-      {
-        title: "Public Storyboards",
+        title: "Storyboards",
         path: "/storyboards",
-        icon: <PublicIcon fontSize="small" />,
+        icon: <AutoStoriesIcon fontSize="small" />,
       },
+      // {
+      //   title: "Tools",
+      //   path: "",
+      //   icon: <AllInboxIcon fontSize="small" />,
+      //   children: [
+      //     {
+      //       title: "Timeseries Similarity",
+      //       path: "/tools/timeseries-sim",
+      //       icon: <Filter1Icon fontSize="small" />,
+      //     },
+      //     {
+      //       title: "Ensemble",
+      //       path: "/tools/ensemble",
+      //       icon: <Filter2Icon fontSize="small" />,
+      //     },
+      //     {
+      //       title: "Gridded Glyphs",
+      //       path: "/tools/gridded-glyphs",
+      //       icon: <Filter3Icon fontSize="small" />,
+      //     },
+      //   ],
+      // },
+    ],
+  },
+  // {
+  //   title: "",
+  //   items: [
+  //     {
+  //       title: "Scotland",
+  //       path: "/country/scotland",
+  //       icon: <PlaceIcon fontSize="small" />,
+  //     },
+  //     {
+  //       title: "England",
+  //       path: "/country/england",
+  //       icon: <PlaceIcon fontSize="small" />,
+  //     },
+  //     {
+  //       title: "Wales",
+  //       path: "/country/wales",
+  //       icon: <PlaceIcon fontSize="small" />,
+  //     },
+  //     {
+  //       title: "N. Ireland",
+  //       path: "/country/northern-ireland",
+  //       icon: <PlaceIcon fontSize="small" />,
+  //     },
+  //   ],
+  // },
+  {
+    title: "__Tests__",
+    items: [
       {
-        title: "Tools",
+        title: "__tests__",
         path: "",
-        icon: <AllInboxIcon fontSize="small" />,
+        icon: <ScienceIcon fontSize="small" />,
         children: [
           {
-            title: "Timeseries Similarity",
-            path: "/tools/timeseries-sim",
-            icon: <Filter1Icon fontSize="small" />,
+            title: "Features",
+            path: "/storyboards/_tests_/test-features",
+            icon: <ScienceIcon fontSize="small" />,
           },
           {
-            title: "Ensemble",
-            path: "/tools/ensemble",
-            icon: <Filter2Icon fontSize="small" />,
+            title: "Actions",
+            path: "/storyboards/_tests_/test-actions",
+            icon: <ScienceIcon fontSize="small" />,
           },
           {
-            title: "Gridded Glyphs",
-            path: "/tools/gridded-glyphs",
-            icon: <Filter3Icon fontSize="small" />,
+            title: "Plots",
+            path: "/storyboards/_tests_/test-plots",
+            icon: <ScienceIcon fontSize="small" />,
           },
         ],
       },
     ],
   },
-  {
-    title: "",
-    items: [
-      {
-        title: "Scotland",
-        path: "/country/scotland",
-        icon: <PlaceIcon fontSize="small" />,
-      },
-      {
-        title: "England",
-        path: "/country/england",
-        icon: <PlaceIcon fontSize="small" />,
-      },
-      {
-        title: "Wales",
-        path: "/country/wales",
-        icon: <PlaceIcon fontSize="small" />,
-      },
-      {
-        title: "N. Ireland",
-        path: "/country/northern-ireland",
-        icon: <PlaceIcon fontSize="small" />,
-      },
-    ],
-  },
 ];
 
-const DashboardSidebar: FC<DashboardSidebarProps> = ({
-  onMobileClose,
-  openMobile,
-}) => {
+const Sidebar: FC<SidebarProps> = ({ onMobileClose, openMobile }) => {
   const { asPath } = useRouter();
   const theme = useTheme();
   const screenIsMobile = !useMediaQuery(theme.breakpoints.up("md"));
@@ -158,17 +183,19 @@ const DashboardSidebar: FC<DashboardSidebarProps> = ({
               p: 2,
             }}
           >
+            {/* Logo */}
+            {/*             
             <Logo
               sx={{
                 height: 60,
                 width: 60,
               }}
-            />
+            /> */}
 
             <Box sx={{ ml: 2 }}>
               <Link href="/" style={{ textDecoration: "none" }}>
                 <Typography color="primary" variant="h5">
-                  RAMPVIS
+                  STORYTELLING
                 </Typography>
               </Link>
               <Link href="/" style={{ textDecoration: "none" }}>
@@ -238,4 +265,4 @@ const DashboardSidebar: FC<DashboardSidebarProps> = ({
   );
 };
 
-export default DashboardSidebar;
+export default Sidebar;

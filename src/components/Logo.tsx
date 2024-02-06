@@ -17,7 +17,7 @@ const Logo: FC<LogoProps> = (props) => (
     width="454"
     {...props}
   >
-    <title>RAMPVIS</title>
+    {/* <title>STORYTELLING</title> */}
     <image href="/static/logos/Logo454x454.png" />
   </LogoRoot>
 );

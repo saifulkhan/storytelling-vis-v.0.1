@@ -63,6 +63,7 @@ export class Covid19StoryWorkflow extends Workflow {
       "Cases/day",
       WINDOW,
     );
+
     const features = featureBuilder.build();
     console.log("Covid19StoryWorkflow:execute: features = ", features);
 

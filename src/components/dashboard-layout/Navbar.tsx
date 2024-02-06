@@ -4,11 +4,11 @@ import { experimentalStyled } from "@mui/material/styles";
 import MenuIcon from "@mui/icons-material/Menu";
 import AccountPopover from "./AccountPopover";
 
-interface DashboardNavbarProps extends AppBarProps {
+interface NavbarProps extends AppBarProps {
   onSidebarMobileOpen?: () => void;
 }
 
-const DashboardNavbarRoot = experimentalStyled(AppBar)(({ theme }) => ({
+const NavbarRoot = experimentalStyled(AppBar)(({ theme }) => ({
   ...(theme.palette.mode === "light" && {
     backgroundColor: "transparent",
     boxShadow: "none",
@@ -21,11 +21,11 @@ const DashboardNavbarRoot = experimentalStyled(AppBar)(({ theme }) => ({
   }),
 }));
 
-const DashboardNavbar: FC<DashboardNavbarProps> = (props) => {
+const Navbar: FC<NavbarProps> = (props) => {
   const { onSidebarMobileOpen, ...other } = props;
 
   return (
-    <DashboardNavbarRoot {...other}>
+    <NavbarRoot {...other}>
       <Toolbar sx={{ minHeight: 64 }}>
         <IconButton
           color="primary"
@@ -75,8 +75,8 @@ const DashboardNavbar: FC<DashboardNavbarProps> = (props) => {
           <AccountPopover />
         </Box>
       </Toolbar>
-    </DashboardNavbarRoot>
+    </NavbarRoot>
   );
 };
 
-export default DashboardNavbar;
+export default Navbar;

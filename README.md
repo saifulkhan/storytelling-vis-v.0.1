@@ -1,22 +1,18 @@
 # About
 
-\*\*
-
 ## Getting Started
 
-- This is tested in Ubuntu 22.04 and WSL2
+This is tested in Ubuntu 20+ and WSL2
 
-### Stop & Clean (optional)
+### Start Development Instance in Container
 
-Following commands will stop the container and and clean the image.
+The following commands will stop the container and clean the image (optional).
 
 ```sh
 docker-compose stop
 docker-compose rm
 docker rmi rampvis-ui-rampvis-ui
 ```
-
-### Start Development Instance in Container
 
 Start the server
 
@@ -86,15 +82,15 @@ yarn test
 
 ### Visualizations
 
-- <http://localhost:3000/_tests_/test-features>
-- <http://localhost:3000/_tests_/test-actions>
-- <http://localhost:3000/_tests_/test-plots>
+- <http://localhost:3000/storyboards/_tests_/test-features>
+- <http://localhost:3000/storyboards/_tests_/test-actions>
+- <http://localhost:3000/storyboards/_tests_/test-plots>
 
 ## Deployment
 
 Running `yarn build` produces a [static HTML export](https://nextjs.org/docs/advanced-features/static-html-export), which means that the app can be served without Node.js.
 One of the options is to use [nginx](https://www.nginx.com) with the following example config: [`nginx.conf`](nginx.conf).
-It maps URLs like `/my/page` to files like `/my/page.html`, removes trailing slashes and applies several output-specific optimisations.
+It maps URLs like `/my/page` to files like `/my/page.html`, removes trailing slashes and applies several output-specific optimizations.
 As a result, production URLs match the ones we see during `yarn dev` and `npx serve out`.
 
 It is possible to locally test `nginx.conf` after running `yarn build`.
