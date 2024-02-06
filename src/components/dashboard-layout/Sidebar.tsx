@@ -27,6 +27,50 @@ interface SidebarProps {
 }
 
 const sections = [
+  {
+    title: "",
+    items: [
+      {
+        title: "All Stories",
+        path: "/storyboards",
+        icon: <AutoStoriesIcon fontSize="small" />,
+      },
+      {
+        title: "[1] COVID-19 Story ",
+        path: "/storyboards/covid19-story",
+        icon: <AutoStoriesIcon fontSize="small" />,
+      },
+    ],
+  },
+  {
+    title: "__Tests__",
+    items: [
+      {
+        title: "__tests__",
+        path: "",
+        icon: <ScienceIcon fontSize="small" />,
+        children: [
+          {
+            title: "Features",
+            path: "/storyboards/_tests_/test-features",
+            icon: <ScienceIcon fontSize="small" />,
+          },
+          {
+            title: "Actions",
+            path: "/storyboards/_tests_/test-actions",
+            icon: <ScienceIcon fontSize="small" />,
+          },
+          {
+            title: "Plots",
+            path: "/storyboards/_tests_/test-plots",
+            icon: <ScienceIcon fontSize="small" />,
+          },
+        ],
+      },
+    ],
+  },
+  //
+  // Examples
   // {
   //   items: [
   //     {
@@ -66,90 +110,28 @@ const sections = [
   //     },
   //   ],
   // },
-  {
-    title: "",
-    items: [
-      {
-        title: "Storyboards",
-        path: "/storyboards",
-        icon: <AutoStoriesIcon fontSize="small" />,
-      },
-      // {
-      //   title: "Tools",
-      //   path: "",
-      //   icon: <AllInboxIcon fontSize="small" />,
-      //   children: [
-      //     {
-      //       title: "Timeseries Similarity",
-      //       path: "/tools/timeseries-sim",
-      //       icon: <Filter1Icon fontSize="small" />,
-      //     },
-      //     {
-      //       title: "Ensemble",
-      //       path: "/tools/ensemble",
-      //       icon: <Filter2Icon fontSize="small" />,
-      //     },
-      //     {
-      //       title: "Gridded Glyphs",
-      //       path: "/tools/gridded-glyphs",
-      //       icon: <Filter3Icon fontSize="small" />,
-      //     },
-      //   ],
-      // },
-    ],
-  },
   // {
-  //   title: "",
-  //   items: [
+  //   title: "Tools",
+  //   path: "",
+  //   icon: <AllInboxIcon fontSize="small" />,
+  //   children: [
   //     {
-  //       title: "Scotland",
-  //       path: "/country/scotland",
-  //       icon: <PlaceIcon fontSize="small" />,
+  //       title: "Timeseries Similarity",
+  //       path: "/tools/timeseries-sim",
+  //       icon: <Filter1Icon fontSize="small" />,
   //     },
   //     {
-  //       title: "England",
-  //       path: "/country/england",
-  //       icon: <PlaceIcon fontSize="small" />,
+  //       title: "Ensemble",
+  //       path: "/tools/ensemble",
+  //       icon: <Filter2Icon fontSize="small" />,
   //     },
   //     {
-  //       title: "Wales",
-  //       path: "/country/wales",
-  //       icon: <PlaceIcon fontSize="small" />,
-  //     },
-  //     {
-  //       title: "N. Ireland",
-  //       path: "/country/northern-ireland",
-  //       icon: <PlaceIcon fontSize="small" />,
+  //       title: "Gridded Glyphs",
+  //       path: "/tools/gridded-glyphs",
+  //       icon: <Filter3Icon fontSize="small" />,
   //     },
   //   ],
   // },
-  {
-    title: "__Tests__",
-    items: [
-      {
-        title: "__tests__",
-        path: "",
-        icon: <ScienceIcon fontSize="small" />,
-        children: [
-          {
-            title: "Features",
-            path: "/storyboards/_tests_/test-features",
-            icon: <ScienceIcon fontSize="small" />,
-          },
-          {
-            title: "Actions",
-            path: "/storyboards/_tests_/test-actions",
-            icon: <ScienceIcon fontSize="small" />,
-          },
-          {
-            title: "Plots",
-            path: "/storyboards/_tests_/test-plots",
-            icon: <ScienceIcon fontSize="small" />,
-          },
-        ],
-      },
-    ],
-  },
 ];
 
 const Sidebar: FC<SidebarProps> = ({ onMobileClose, openMobile }) => {
