@@ -2,28 +2,41 @@ import * as d3 from "d3";
 import { Action } from "./Action";
 import { ActionType } from "../../../types/ActionType";
 
+export type DotProperties = {
+  id?: string;
+  size?: number;
+  color?: string;
+  opacity?: number;
+};
+
 export class Dot extends Action {
+  protected _properties: DotProperties;
   protected dotNode;
   protected props;
 
-  constructor(props: any = {}, id = ActionType.DOT) {
-    super(id);
+  constructor() {
+    super();
     this._type = ActionType.DOT;
-
-    this.props = {
-      size: props?.size || 5,
-      color: props?.color || "#000000",
-      opacity: props?.opacity || 1,
-    };
   }
 
-  protected draw() {
+  public properties(properties: DotProperties = {}) {
+    this._properties = {
+      id: properties?.id || "Dot",
+      size: properties?.size || 5,
+      color: properties?.color || "#000000",
+      opacity: properties?.opacity || 1,
+    };
+
+    return this;
+  }
+
+  protected _draw() {
     this.dotNode = d3
       .create("svg")
       .append("circle")
-      .attr("r", this.props.size)
-      .attr("fill", this.props.color)
-      .attr("opacity", this.props.opacity)
+      .attr("r", this._properties.size)
+      .attr("fill", this._properties.color)
+      .attr("opacity", this._properties.opacity)
       .node();
     this.node.appendChild(this.dotNode);
   }
@@ -32,5 +45,7 @@ export class Dot extends Action {
     this.x = x;
     this.y = y;
     d3.select(this.dotNode).attr("cx", x).attr("cy", y);
+
+    return this;
   }
 }

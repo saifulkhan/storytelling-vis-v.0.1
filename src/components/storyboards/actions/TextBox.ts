@@ -1,33 +1,47 @@
 import * as d3 from "d3";
 import { Action } from "./Action";
+import { ActionType } from "src/types/ActionType";
+
+export type TextBoxProperties = {
+  id?: string;
+  title?: string;
+  message?: string;
+  backgroundColor?: string;
+  width?: number;
+};
 
 const RECT_PADDING = 0;
 
 export class TextBox extends Action {
+  protected _properties: TextBoxProperties;
   protected rectNode: HTMLElement;
   protected titleNode: HTMLElement;
   protected messageNode: HTMLElement;
   protected textNode: HTMLElement;
 
-  protected props;
-
-  constructor(props: any = {}, id = "TextBox") {
-    super(id);
-
-    this.props = {
-      title: props?.title || "Title ...",
-      message: props?.message || "Message text goes here ...",
-      background: props?.background || "#E0E0E0",
-      width: props?.width || 250,
-    };
+  constructor() {
+    super();
+    this._type = ActionType.TEXT_BOX;
   }
 
-  protected draw() {
+  public properties(properties: TextBoxProperties = {}) {
+    this._properties = {
+      id: properties?.id || "TextBox",
+      title: properties?.title || "Title ...",
+      message: properties?.message || "Message text goes here ...",
+      backgroundColor: properties?.backgroundColor || "#E0E0E0",
+      width: properties?.width || 250,
+    };
+
+    return this;
+  }
+
+  protected _draw() {
     this.rectNode = d3
       .create("svg")
       .append("rect")
-      .attr("fill", this.props.background)
-      .attr("width", this.props.width + RECT_PADDING)
+      .attr("fill", this._properties.backgroundColor)
+      .attr("width", this._properties.width + RECT_PADDING)
       .attr("rx", 5)
       .node();
     this.node.appendChild(this.rectNode);
@@ -50,7 +64,7 @@ export class TextBox extends Action {
     this.textNode = d3
       .create("svg")
       .append("g")
-      .attr("fill", this.props.background)
+      .attr("fill", this._properties.background)
       .node();
 
     this.textNode.append(this.titleNode);
@@ -64,8 +78,8 @@ export class TextBox extends Action {
   }
 
   private formatText() {
-    const rowHeight = this.wrapText(this.titleNode, this.props.title);
-    this.wrapText(this.messageNode, this.props.message);
+    const rowHeight = this.wrapText(this.titleNode, this._properties.title);
+    this.wrapText(this.messageNode, this._properties.message);
 
     // Calculate spacing between title and label
     const { height: titleHeight } = this.titleNode.getBoundingClientRect();
@@ -109,7 +123,7 @@ export class TextBox extends Action {
 
     wordsWidth.forEach((word, i) => {
       // Don't factor in the width taken up by spaces atm
-      if (currentWidth + word.width < this.props.width) {
+      if (currentWidth + word.width < this._properties.width) {
         currentWidth += word.width;
         rowString.push(word.word);
       } else {
@@ -183,5 +197,7 @@ export class TextBox extends Action {
     // align text correctly
     correctTextAlignment(this.titleNode, width, "middle");
     correctTextAlignment(this.messageNode, width);
+
+    return this;
   }
 }

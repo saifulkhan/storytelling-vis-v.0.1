@@ -61,7 +61,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
           name="viewport"
           content="width=device-width, initial-scale=1, shrink-to-fit=no"
         />
-        <title>Feature Action DP</title>
+        <title>Storytelling</title>
       </Head>
       <StrictMode>
         <HelmetProvider>

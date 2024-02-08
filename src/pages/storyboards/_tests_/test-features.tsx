@@ -51,13 +51,10 @@ const TestFeatures = () => {
 
       peaks.forEach((peak) => {
         const coordinates = plot.coordinates(peak.date);
-        const dot = new Dot({
-          size: 5,
-          color: "#FF0044",
-          opacity: 0.3,
-        });
-        dot.drawOn(svg);
-        dot.coordinate(coordinates[2], coordinates[3]);
+        const dot = new Dot()
+          .properties()
+          .draw(svg)
+          .coordinate(coordinates[2], coordinates[3]);
       });
     });
   }, []);

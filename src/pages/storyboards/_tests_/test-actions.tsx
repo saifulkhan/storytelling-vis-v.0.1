@@ -25,33 +25,53 @@ const TestActions = () => {
       // .attr("transform", `translate(${margin.left},${margin.top})`)
       .node();
 
-    const textbox = new TextBox({});
-    textbox.drawOn(svg);
-    textbox.show();
-    textbox.coordinate(100, 100);
+    const textBox = new TextBox().properties().draw(svg).coordinate(100, 100);
 
-    const dot = new Dot({
-      size: 5,
-      color: "#000000",
-      opacity: 0.3,
-    });
-    dot.drawOn(svg);
-    dot.coordinate(100, 100);
+    const dot = new Dot()
+      .properties({
+        size: 5,
+        color: "#FF0000",
+        opacity: 0.3,
+      })
+      .draw(svg)
+      .coordinate(100, 100);
 
-    const circle = new Circle({
-      size: 10,
-      color: "#000000",
-      opacity: 1,
-    });
-    circle.drawOn(svg);
-    circle.coordinate(100, 100);
+    const circle = new Circle()
+      .properties({
+        size: 10,
+        color: "#000000",
+        opacity: 1,
+      })
+      .draw(svg)
+      .coordinate(100, 100);
 
-    const connector = new Connector({});
-    connector.drawOn(svg);
-    connector.show();
-    connector.coordinate(100, 100, 200);
+    const connector = new Connector()
+      .properties({})
+      .draw(svg)
+      .coordinate(100, 100, 100, 200);
 
-    //
+    const animate = async () => {
+      await Promise.all([
+        textBox.show(),
+        dot.show(),
+        circle.show(),
+        connector.show(),
+      ]);
+      await Promise.all([
+        textBox.hide(),
+        dot.hide(),
+        circle.hide(),
+        connector.hide(),
+      ]);
+      await Promise.all([
+        textBox.show(),
+        dot.show(),
+        circle.show(),
+        connector.show(),
+      ]);
+    };
+
+    animate();
   }, []);
 
   return (

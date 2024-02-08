@@ -77,7 +77,7 @@ export class Covid19StoryWorkflow extends Workflow {
         const coordinate = plot.coordinates(feature.date);
         console.log(feature.date, coordinate);
 
-        const action = actions[i].drawOn(this.svgNode);
+        const action = actions[i].draw(this.svgNode);
         action.coordinate(coordinate[2], coordinate[3]);
       }
 

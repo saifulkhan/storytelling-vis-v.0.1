@@ -72,20 +72,6 @@ See [Next.js docs → Environment Variables](https://nextjs.org/docs/basic-featu
 
 1. Navigate to <http://localhost:3000> in your browser.
 
-## Tests
-
-### Unit Tests
-
-```sh
-yarn test
-```
-
-### Visualizations
-
-- <http://localhost:3000/storyboards/_tests_/test-features>
-- <http://localhost:3000/storyboards/_tests_/test-actions>
-- <http://localhost:3000/storyboards/_tests_/test-plots>
-
 ## Deployment
 
 Running `yarn build` produces a [static HTML export](https://nextjs.org/docs/advanced-features/static-html-export), which means that the app can be served without Node.js.
@@ -110,11 +96,40 @@ This requires [Docker](https://www.docker.com/products/docker-desktop).
 
 1. Navigate to <http://localhost:3000> in your browser.
 
+## Tests
+
+### Run Unit Tests
+
+```sh
+yarn test
+```
+
+### Test & Debug Visualizations
+
+- <http://localhost:3000/storyboards/_tests_/test-features>
+- <http://localhost:3000/storyboards/_tests_/test-actions>
+- <http://localhost:3000/storyboards/_tests_/test-plots>
+
+## Documentation
+
+Create object
+
+```ts
+visObject = new VISObject()
+                .properties({...})
+                .draw(svg)
+                .coordinate(x, y, x0, y0)
+```
+
+Animate object
+
+```ts
+await visObject.show(delay, duration);
+await visObject.hide(delay, duration);
+```
+
 ## References
 
+- For the Observable prototypes developed during the initial phases of RAMPVIS project, [see](https://observablehq.com/d/0a6e9c35a809660e>).
 - Bootstrapped with [Next.js](https://github.com/vercel/next.js)
 - Using [React MUI dashboard style](https://mui.com)
-
-## Earlier Prototypes
-
-- <https://observablehq.com/d/0a6e9c35a809660e>
