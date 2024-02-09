@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { covid19data1 } from "src/services/covid19-data";
-import { Timeseries } from "src/components/storyboards/plots/Timeseries";
+import { LinePlot } from "src/components/storyboards/plots/LinePlot";
 import { Dot } from "src/components/storyboards/actions/Dot";
 import { Peak } from "src/utils/storyboards/processing/Peak";
 import { searchPeaks } from "src/utils/storyboards/processing/feature-search";
@@ -42,7 +42,7 @@ const TestFeatures = () => {
 
       console.log("dataX = ", dataX);
 
-      const plot = new Timeseries()
+      const plot = new LinePlot()
         .properties({
           showPoints: false,
           color: "#FFFFFF",

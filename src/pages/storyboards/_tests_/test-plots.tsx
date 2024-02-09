@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { covid19data1 } from "src/services/covid19-data";
-import { Timeseries } from "src/components/storyboards/plots/Timeseries";
+import { LinePlot } from "src/components/storyboards/plots/LinePlot";
 
 const TestPlots = () => {
   const chartRef = useRef(null);
@@ -26,7 +26,7 @@ const TestPlots = () => {
       console.log(d);
       const data = d["Aberdeenshire"];
       const dataX = [d["Angus"], d["Barnet"]];
-      new Timeseries()
+      new LinePlot()
         .properties({
           showPoints: true,
           sameScale: false,

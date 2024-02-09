@@ -14,7 +14,7 @@ const MAGIC_NO = 10,
 
 const LINE_STROKE_WIDTH = 2;
 
-type TimeseriesProperties = {
+type LinePlotProperties = {
   title?: string;
   ticks?: boolean;
   xLabel?: string;
@@ -26,7 +26,7 @@ type TimeseriesProperties = {
   colorX?: string[];
 };
 
-export class Timeseries extends AbstractPlot {
+export class LinePlot extends AbstractPlot {
   _data: TimeseriesDataType[];
   dataX: TimeseriesDataType[][];
 
@@ -46,7 +46,7 @@ export class Timeseries extends AbstractPlot {
     console.log(`Timeseries: data = `, this._data, "dataX = ", this.dataX);
   }
 
-  public properties(properties: TimeseriesProperties = {}) {
+  public properties(properties: LinePlotProperties = {}) {
     this._properties = {
       title: properties.title || "title...",
       ticks: properties.ticks || true,

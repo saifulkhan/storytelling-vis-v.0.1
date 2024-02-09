@@ -6,7 +6,7 @@ import { TimeseriesDataType } from "src/types/TimeseriesType";
 import { featureActionTable1 } from "src/mock/covid19-feature-action";
 import { FeatureBuilder } from "../processing/FeatureBuilder";
 import { cts, nts } from "../processing/feature-search";
-import { Timeseries } from "src/components/storyboards/plots/Timeseries";
+import { LinePlot } from "src/components/storyboards/plots/LinePlot";
 import { ActionBuilder } from "../processing/ActionBuilder";
 
 const WINDOW = 3;
@@ -54,7 +54,7 @@ export class Covid19StoryWorkflow extends Workflow {
     // console.log("execute: ranked nts = ", this.nts);
     // console.log("execute: ranked cts = ", this.cts);
 
-    const plot = new Timeseries({ showPoints: false }, this.data);
+    const plot = new LinePlot({ showPoints: false }, this.data);
     plot.drawOn(this.svgNode).draw();
 
     const featureBuilder = new FeatureBuilder(
