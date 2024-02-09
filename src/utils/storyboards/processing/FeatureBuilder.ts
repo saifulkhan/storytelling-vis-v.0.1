@@ -1,4 +1,4 @@
-import { TimeseriesType } from "src/types/TimeseriesType";
+import { TimeseriesDataType } from "src/types/TimeseriesType";
 import { NumericalFeatureType } from "src/types/NumericalFeatureType";
 import { FeatureActionDataType } from "src/types/FeatureActionType";
 import { Peak } from "./Peak";
@@ -22,14 +22,14 @@ export class FeatureBuilder {
     [NumericalFeatureType.RAISE]: undefined,
   };
 
-  static data: TimeseriesType[];
+  static data: TimeseriesDataType[];
   static table: FeatureActionDataType[];
   static metric: string;
   static window: number;
 
   constructor(
     table: FeatureActionDataType[],
-    data: TimeseriesType[],
+    data: TimeseriesDataType[],
     metric,
     window,
   ) {

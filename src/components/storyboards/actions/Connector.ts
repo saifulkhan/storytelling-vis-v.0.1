@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { Action } from "./Action";
+import { AbstractAction } from "./AbstractAction";
 import { ActionType } from "../../../types/ActionType";
 
 export type ConnectorProperties = {
@@ -8,7 +8,7 @@ export type ConnectorProperties = {
   opacity?: number;
 };
 
-export class Connector extends Action {
+export class Connector extends AbstractAction {
   protected _properties: ConnectorProperties;
   protected connectorNode;
   protected props;

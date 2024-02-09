@@ -1,8 +1,8 @@
 import * as d3 from "d3";
 
 import { findDateIdx } from "src/utils/storyboards/processing/common";
-import { StoryPlot } from "./StoryPlot";
-import { TimeseriesType } from "src/types/TimeseriesType";
+import { AbstractPlot } from "./AbstractPlot";
+import { TimeseriesDataType } from "src/types/TimeseriesType";
 
 const MARGIN = { top: 50, right: 50, bottom: 50, left: 50 };
 const ID_AXIS_LABEL = "#id-axes-labels";
@@ -14,10 +14,21 @@ const MAGIC_NO = 10,
 
 const LINE_STROKE_WIDTH = 2;
 
-export class Timeseries extends StoryPlot {
-  props: any;
-  data: TimeseriesType[];
-  dataX: TimeseriesType[][];
+type TimeseriesProperties = {
+  title?: string;
+  ticks?: boolean;
+  xLabel?: string;
+  yLabel?: string;
+  showPoints?: boolean;
+  color?: string;
+  sameScale?: boolean;
+  yLabelX?: string;
+  colorX?: string[];
+};
+
+export class Timeseries extends AbstractPlot {
+  _data: TimeseriesDataType[];
+  dataX: TimeseriesDataType[][];
 
   svgNode: SVGSVGElement;
   selector;
@@ -29,33 +40,45 @@ export class Timeseries extends StoryPlot {
   _yScale: any;
   _yScaleX: any;
 
-  constructor(
-    props: any = {},
-    data: TimeseriesType[],
-    dataX: TimeseriesType[][] = undefined,
-  ) {
+  constructor() {
     super();
 
-    this.props = {
-      title: props.title || "title...",
-      ticks: props.ticks || true,
-      xLabel: props.xLabel || "x-label...",
-      yLabel: props.yLabel || "y-label...",
-      showPoints:
-        typeof props.showPoints != "boolean" ? true : props.showPoints,
-      color: props.color || "#2a363b",
-      sameScale: typeof props.sameScale != "boolean" ? true : props.sameScale,
-      yLabelX: props.yLabelX || "y-label X...",
-      colorX: props.colorX || ["#355c7d", "#99b898", "#E1999C"],
-    };
-
-    this.data = data;
-    this.dataX = dataX;
-
-    console.log(`Timeseries: data = `, this.data, "dataX = ", this.dataX);
+    console.log(`Timeseries: data = `, this._data, "dataX = ", this.dataX);
   }
 
-  public drawOn(svg: SVGSVGElement) {
+  public properties(properties: TimeseriesProperties = {}) {
+    this._properties = {
+      title: properties.title || "title...",
+      ticks: properties.ticks || true,
+      xLabel: properties.xLabel || "x-label...",
+      yLabel: properties.yLabel || "y-label...",
+      showPoints:
+        typeof properties.showPoints === undefined
+          ? false
+          : properties.showPoints,
+      color: properties.color || "#2a363b",
+      sameScale:
+        typeof properties.sameScale === undefined
+          ? false
+          : properties.sameScale,
+      yLabelX: properties.yLabelX || "y-label X...",
+      colorX: properties.colorX || ["#355c7d", "#99b898", "#E1999C"],
+    };
+
+    return this;
+  }
+
+  public data(
+    data: TimeseriesDataType[],
+    dataX: TimeseriesDataType[][] = undefined,
+  ) {
+    this._data = data;
+    this.dataX = dataX;
+
+    return this;
+  }
+
+  public draw(svg: SVGSVGElement) {
     this.svgNode = svg;
     const bounds = svg.getBoundingClientRect();
     this.height = 500; // bounds.height;
@@ -68,6 +91,8 @@ export class Timeseries extends StoryPlot {
       .attr("id", ID_AXIS_LABEL);
 
     this.drawAxis();
+    this._draw();
+
     return this;
   }
 
@@ -75,19 +100,19 @@ export class Timeseries extends StoryPlot {
    * Create axes and add labels
    */
 
-  protected xScale(data: TimeseriesType[], w, m) {
+  protected xScale(data: TimeseriesDataType[], w, m) {
     const xScale = d3
       .scaleTime()
-      .domain(d3.extent(data, (d: TimeseriesType) => d.date))
+      .domain(d3.extent(data, (d: TimeseriesDataType) => d.date))
       .nice()
       .range([m.left, w - m.right]);
     return xScale;
   }
 
-  protected yScale(data: TimeseriesType[], h, m) {
+  protected yScale(data: TimeseriesDataType[], h, m) {
     const yScale = d3
       .scaleLinear()
-      .domain([0, d3.max(data, (d: TimeseriesType) => d.y)])
+      .domain([0, d3.max(data, (d: TimeseriesDataType) => d.y)])
       .nice()
       .range([h - m.bottom, m.top]);
     return yScale;
@@ -100,14 +125,14 @@ export class Timeseries extends StoryPlot {
     // combine all data before creating axis
     const combinedDataX = this.dataX?.reduce((comb, arr) => comb.concat(arr));
     const combinedAll = combinedDataX
-      ? this.data.concat(combinedDataX)
-      : this.data;
+      ? this._data.concat(combinedDataX)
+      : this._data;
 
     this._xScale = this.xScale(combinedAll, this.width, this.margin);
 
-    if (this.dataX && !this.props.sameScale) {
+    if (this.dataX && !this._properties.sameScale) {
       // y-axis are different scale
-      this._yScale = this.yScale(this.data, this.height, this.margin);
+      this._yScale = this.yScale(this._data, this.height, this.margin);
       this._yScaleX = this.yScale(combinedDataX, this.height, this.margin);
     } else {
       // both y-axis are of same scale
@@ -125,7 +150,7 @@ export class Timeseries extends StoryPlot {
       .attr("text-anchor", "start")
       .attr("x", this.width / 2)
       .attr("y", this.height - 5)
-      .text(`${this.props.xLabel}→`);
+      .text(`${this._properties.xLabel}→`);
 
     this.selector
       .append("g")
@@ -144,9 +169,9 @@ export class Timeseries extends StoryPlot {
       .attr("text-anchor", "start")
       .attr("x", -this.height / 2)
       .attr("y", YAXIS_LABEL_OFFSET)
-      .text(`${this.props.yLabel}→`);
+      .text(`${this._properties.yLabel}→`);
 
-    if (this.dataX && !this.props.sameScale) {
+    if (this.dataX && !this._properties.sameScale) {
       this.selector
         .append("g")
         .attr("transform", `translate(${this.width - this.margin.right},0)`)
@@ -164,7 +189,7 @@ export class Timeseries extends StoryPlot {
         .attr("y", -this.width + YAXIS_LABEL_OFFSET)
         .attr("fill", "currentColor")
         .attr("text-anchor", "start")
-        .text(`←${this.props.yLabelX}`);
+        .text(`←${this._properties.yLabelX}`);
     }
 
     // title
@@ -177,7 +202,7 @@ export class Timeseries extends StoryPlot {
       .style("font-size", TITLE_FONT_SIZE)
       .attr("x", this.width / 2)
       .attr("y", this.margin.top + MAGIC_NO)
-      .text(this.props.title);
+      .text(this._properties.title);
 
     return this;
   }
@@ -186,13 +211,13 @@ export class Timeseries extends StoryPlot {
    ** Static timeseries
    *****************************************************************************/
 
-  public draw() {
+  public _draw() {
     console.log("Timeseries: draw:");
 
     // draw data line
     this.selector
       .append("path")
-      .attr("stroke", this.props.color)
+      .attr("stroke", this._properties.color)
       .attr("stroke-width", LINE_STROKE_WIDTH)
       .attr("fill", "none")
       .attr(
@@ -200,7 +225,7 @@ export class Timeseries extends StoryPlot {
         d3
           .line()
           .x((d) => this._xScale(d.date))
-          .y((d) => this._yScale(d.y))(this.data),
+          .y((d) => this._yScale(d.y))(this._data),
       );
 
     // draw all dataX lines
@@ -208,7 +233,10 @@ export class Timeseries extends StoryPlot {
       this.dataX.forEach((d, i) => {
         this.selector
           .append("path")
-          .attr("stroke", this.props.colorX[i % this.props.colorX.length])
+          .attr(
+            "stroke",
+            this._properties.colorX[i % this._properties.colorX.length],
+          )
           .attr("stroke-width", LINE_STROKE_WIDTH)
           .attr("fill", "none")
           .attr(
@@ -221,17 +249,18 @@ export class Timeseries extends StoryPlot {
       });
     }
 
-    if (this.props.showPoints) {
+    if (this._properties.showPoints) {
       // draw data points
       this.selector
         .append("g")
         .selectAll("circle")
-        .data(this.data.map(Object.values))
+        .data(this._data.map(Object.values))
         .join("circle")
         .attr("r", 3)
         .attr("cx", (d) => this._xScale(d[0]))
         .attr("cy", (d) => this._yScale(d[1]))
-        .style("fill", this.props.color);
+        .style("fill", this._properties.color)
+        .attr("opacity", 0.4);
 
       // draw all dataX points
       if (this.dataX) {
@@ -244,7 +273,11 @@ export class Timeseries extends StoryPlot {
             .attr("r", 3)
             .attr("cx", (d) => this._xScale(d[0]))
             .attr("cy", (d) => this._yScaleX(d[1]))
-            .style("fill", this.props.colorX[i % this.props.colorX.length]);
+            .style(
+              "fill",
+              this._properties.colorX[i % this._properties.colorX.length],
+            )
+            .attr("opacity", 0.4);
         });
       }
     }
@@ -255,7 +288,7 @@ export class Timeseries extends StoryPlot {
    * coordinates
    */
   public coordinates(date: Date): [number, number, number, number] {
-    const d = this.data[findDateIdx(date, this.data)];
+    const d = this._data[findDateIdx(date, this._data)];
     return [
       this._xScale(d.date),
       this._yScale(0),

@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { Action } from "./Action";
+import { AbstractAction } from "./AbstractAction";
 import { ActionType } from "src/types/ActionType";
 
 export type TextBoxProperties = {
@@ -12,7 +12,7 @@ export type TextBoxProperties = {
 
 const RECT_PADDING = 0;
 
-export class TextBox extends Action {
+export class TextBox extends AbstractAction {
   protected _properties: TextBoxProperties;
   protected rectNode: HTMLElement;
   protected titleNode: HTMLElement;

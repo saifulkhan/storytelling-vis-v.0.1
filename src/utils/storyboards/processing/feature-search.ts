@@ -1,4 +1,4 @@
-import { TimeseriesType } from "src/types/TimeseriesType";
+import { TimeseriesDataType } from "src/types/TimeseriesType";
 import { Peak } from "./Peak";
 import { Slope } from "./Slope";
 import { findDateIdx, mean } from "./common";
@@ -10,7 +10,11 @@ const MAX_RANK = 5;
 /*
  * Create numerical timeseries
  */
-export function nts(data: TimeseriesType[], metric: string, window: number) {
+export function nts(
+  data: TimeseriesDataType[],
+  metric: string,
+  window: number,
+) {
   const nts: Peak[] = searchPeaks(data, metric, window);
 
   // rank peaks by its height, assign rank between 1 to MAX_RANK
@@ -62,7 +66,7 @@ export function cts() {
  * (c) eliminate peaks that are part of a larger peak.
  */
 export function searchPeaks(
-  data: TimeseriesType[],
+  data: TimeseriesDataType[],
   metric: string,
   window: number,
 ) {
@@ -121,7 +125,10 @@ export function searchPeaks(
  * window.
  */
 
-export function searchSlopes(data: TimeseriesType[], window: number): Slope[] {
+export function searchSlopes(
+  data: TimeseriesDataType[],
+  window: number,
+): Slope[] {
   if (data.length <= 1 || window <= 1 || window > data.length) {
     throw new Error(
       "Invalid input: time series length should be greater than 1 and window size should be a positive number less than or equal to the time series length.",
@@ -223,7 +230,7 @@ function searchPeakStart(idx: number, norm: number[]): number {
  * midpoint and edges.
  */
 
-function searchMaxes(data: TimeseriesType[], window): number[] {
+function searchMaxes(data: TimeseriesDataType[], window): number[] {
   // centre of window
   const centre = Math.floor((window - 1) / 2);
   const maxes: number[] = [];

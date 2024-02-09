@@ -1,10 +1,10 @@
 import * as d3 from "d3";
-import { TimeseriesType } from "src/types/TimeseriesType";
+import { TimeseriesDataType } from "src/types/TimeseriesType";
 
 export abstract class Workflow {
   protected initializationPromise: Promise<void>;
-  protected _data: Record<string, TimeseriesType[]> = {};
-  protected data: TimeseriesType[];
+  protected _data: Record<string, TimeseriesDataType[]> = {};
+  protected data: TimeseriesDataType[];
   protected svgNode: SVGSVGElement;
   protected key: string;
 

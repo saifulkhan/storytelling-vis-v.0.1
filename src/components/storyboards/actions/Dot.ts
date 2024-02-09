@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { Action } from "./Action";
+import { AbstractAction } from "./AbstractAction";
 import { ActionType } from "../../../types/ActionType";
 
 export type DotProperties = {
@@ -9,7 +9,7 @@ export type DotProperties = {
   opacity?: number;
 };
 
-export class Dot extends Action {
+export class Dot extends AbstractAction {
   protected _properties: DotProperties;
   protected dotNode;
   protected props;

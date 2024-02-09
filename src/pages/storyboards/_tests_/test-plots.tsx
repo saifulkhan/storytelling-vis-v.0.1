@@ -26,7 +26,13 @@ const TestPlots = () => {
       console.log(d);
       const data = d["Aberdeenshire"];
       const dataX = [d["Angus"], d["Barnet"]];
-      new Timeseries({}, data, dataX).drawOn(svg).draw();
+      new Timeseries()
+        .properties({
+          showPoints: true,
+          sameScale: false,
+        })
+        .data(data, dataX)
+        .draw(svg);
     });
   }, []);
 

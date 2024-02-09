@@ -1,6 +1,6 @@
 import { FeatureActionDataType } from "src/types/FeatureActionType";
 import { ActionType } from "src/types/ActionType";
-import { Action } from "src/components/storyboards/actions/Action";
+import { AbstractAction } from "src/components/storyboards/actions/Action";
 import { Circle } from "src/components/storyboards/actions/Circle";
 import { Dot } from "src/components/storyboards/actions/Dot";
 import { TextBox } from "src/components/storyboards/actions/TextBox";
@@ -12,8 +12,8 @@ export class ActionBuilder {
     ActionBuilder.table = table;
   }
 
-  public build(): Action[] {
-    const actions: Action[] = [];
+  public build(): AbstractAction[] {
+    const actions: AbstractAction[] = [];
     ActionBuilder.table.forEach((d: FeatureActionDataType, _) => {
       const action = ActionBuilder.createAction(d.action as ActionType);
       console.log("FeatureSearch:execute: action = ", d.action);

@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { ActionType } from "../../../types/ActionType";
 
-export abstract class Action {
+export abstract class AbstractAction {
   protected _type: ActionType;
   protected _properties;
   protected _svg: SVGSVGElement;

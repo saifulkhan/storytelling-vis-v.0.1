@@ -2,7 +2,7 @@ import { Workflow } from "./Workflow";
 import { readCSVFile } from "../../../services/data";
 import { NumericalFeature } from "../processing/NumericalFeature";
 import { CategoricalFeature } from "../processing/CategoricalFeature";
-import { TimeseriesType } from "src/types/TimeseriesType";
+import { TimeseriesDataType } from "src/types/TimeseriesType";
 import { featureActionTable1 } from "src/mock/covid19-feature-action";
 import { FeatureBuilder } from "../processing/FeatureBuilder";
 import { cts, nts } from "../processing/feature-search";
@@ -38,7 +38,7 @@ export class Covid19StoryWorkflow extends Workflow {
 
     for (const region in this.data) {
       this._data[region].sort(
-        (e1: TimeseriesType, e2: TimeseriesType) =>
+        (e1: TimeseriesDataType, e2: TimeseriesDataType) =>
           e1.date.getTime() - e2.date.getTime(),
       );
     }

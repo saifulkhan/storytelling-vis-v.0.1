@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { Action } from "./Action";
+import { AbstractAction } from "./AbstractAction";
 import { ActionType } from "../../../types/ActionType";
 
 export type CircleProperties = {
@@ -10,7 +10,7 @@ export type CircleProperties = {
   opacity?: number;
 };
 
-export class Circle extends Action {
+export class Circle extends AbstractAction {
   protected _properties: CircleProperties;
   protected circleNode;
   protected props;
