@@ -1,12 +1,12 @@
-import { CategoricalFeatureType } from "../../../types/CategoricalFeatureType";
-import { NumericalFeatureType } from "./NumericalFeatureType";
+import { CategoricalFeatureEnum } from "./CategoricalFeatureEnum";
+import { NumericalFeatureEnum } from "./NumericalFeatureEnum";
 
-export abstract class Feature {
+export abstract class AbstractFeature {
   protected _date: Date;
   protected _start: Date;
   protected _end: Date;
   protected _rank: number;
-  protected _type: CategoricalFeatureType | NumericalFeatureType;
+  protected _type: CategoricalFeatureEnum | NumericalFeatureEnum;
 
   constructor(date, start = undefined, end = undefined) {
     this._date = date;

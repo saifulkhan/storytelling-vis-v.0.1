@@ -1,9 +1,9 @@
-import { TimeseriesDataType } from "src/types/TimeseriesType";
 import { Peak } from "./Peak";
 import { Slope } from "./Slope";
-import { findDateIdx, mean } from "./common";
+import { findDateIdx, mean } from "../processing/common";
 import { CategoricalFeature } from "./CategoricalFeature";
-import { CategoricalFeatureType } from "src/types/CategoricalFeatureType";
+import { CategoricalFeatureEnum } from "./CategoricalFeatureEnum";
+import { TimeseriesDataType } from "../processing/TimeseriesDataType";
 
 const MAX_RANK = 5;
 
@@ -37,21 +37,21 @@ export function cts() {
   const a = new CategoricalFeature(
     new Date("2020-03-24"),
     "Start of First Lockdown.",
-    CategoricalFeatureType.LOCKDOWN_START,
+    CategoricalFeatureEnum.LOCKDOWN_START,
     5,
   );
 
   const b = new CategoricalFeature(
     new Date("2021-01-05"),
     "Start of Second Lockdown.",
-    CategoricalFeatureType.LOCKDOWN_END,
+    CategoricalFeatureEnum.LOCKDOWN_END,
     3,
   );
 
   const c = new CategoricalFeature(
     new Date("2020-05-28"),
     "End of First Lockdown.",
-    CategoricalFeatureType.LOCKDOWN_END,
+    CategoricalFeatureEnum.LOCKDOWN_END,
     5,
   );
 

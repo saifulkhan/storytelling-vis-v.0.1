@@ -1,13 +1,13 @@
-import { CategoricalFeatureType } from "src/types/CategoricalFeatureType";
-import { Feature } from "./Feature";
+import { AbstractFeature } from "./AbstractFeature";
+import { CategoricalFeatureEnum } from "./CategoricalFeatureEnum";
 
-export class CategoricalFeature extends Feature {
+export class CategoricalFeature extends AbstractFeature {
   protected _description: string;
 
   constructor(
     date,
     description = undefined,
-    type = CategoricalFeatureType.DEFAULT,
+    type = CategoricalFeatureEnum.DEFAULT,
     rank = undefined,
   ) {
     super(date);

@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { AbstractAction } from "./AbstractAction";
-import { ActionType } from "../../../types/ActionType";
+import { ActionEnum } from "./ActionEnum";
 
 export type CircleProperties = {
   id?: string;
@@ -17,7 +17,7 @@ export class Circle extends AbstractAction {
 
   constructor() {
     super();
-    this._type = ActionType.CIRCLE;
+    this._type = ActionEnum.CIRCLE;
   }
 
   public properties(properties: CircleProperties = {}) {

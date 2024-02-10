@@ -1,6 +1,6 @@
 import { TimeseriesDataType } from "src/types/TimeseriesType";
-import { CategoricalFeature } from "./CategoricalFeature";
-import { Peak } from "./Peak";
+import { CategoricalFeature } from "../features/CategoricalFeature";
+import { Peak } from "../features/Peak";
 import { findDateIdx } from "./common";
 
 /*

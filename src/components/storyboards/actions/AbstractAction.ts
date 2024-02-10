@@ -1,8 +1,10 @@
 import * as d3 from "d3";
-import { ActionType } from "../../../types/ActionType";
+import { ActionEnum } from "./ActionEnum";
+
+export type ActionsAtDateType = { date: Date; actions: AbstractAction[] };
 
 export abstract class AbstractAction {
-  protected _type: ActionType;
+  protected _type: ActionEnum;
   protected _properties;
   protected _svg: SVGSVGElement;
   protected node: HTMLElement;
@@ -19,7 +21,7 @@ export abstract class AbstractAction {
     return this._properties?.id;
   }
 
-  public get type(): ActionType {
+  public get type(): ActionEnum {
     return this._type;
   }
 

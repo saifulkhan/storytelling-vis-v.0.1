@@ -1,7 +1,16 @@
 import { NumericalFeature } from "./NumericalFeature";
-import { NumericalFeatureType } from "./NumericalFeatureType";
+import { NumericalFeatureEnum } from "./NumericalFeatureEnum";
 
-export class Fall extends NumericalFeature {
+export type RaiseProperties = {
+  eq?: number;
+  le?: number;
+  ge?: number;
+  lt?: number;
+  gt?: number;
+  ne?: number;
+};
+
+export class Rise extends NumericalFeature {
   _height;
   _grad;
   _normGrad;
@@ -15,13 +24,19 @@ export class Fall extends NumericalFeature {
     grad = undefined,
   ) {
     super(date, start, end, metric);
-    this._type = NumericalFeatureType.FALL;
+    this._type = NumericalFeatureEnum.RAISE;
     this._height = height;
     this._grad = grad;
+    this._normGrad;
   }
 
   get rank() {
-    return this._rank;
+    if (this._rank) return this._rank;
+
+    if (!this._normGrad) {
+      throw "You must set normalised gradient. Use the set functions: .setNormGrad().";
+    }
+    return 1 + Math.min(9, Math.round(this._normGrad - 1));
   }
 
   setHeight(height) {
@@ -41,14 +56,14 @@ export class Fall extends NumericalFeature {
 
   get height() {
     if (!this._height) {
-      throw "You must set Fall height. Use constructor or chain the set function: .setHeight().";
+      throw "You must set Rise height. Use constructor or chain the set function: .setHeight().";
     }
     return this._height;
   }
 
   get grad() {
     if (!this._grad) {
-      throw "You must set Fall grad. Use constructor or chain the set function: .setGrad().";
+      throw "You must set Rise grad. Use constructor or chain the set function: .setGrad().";
     }
     return this._grad > 5 ? "steep" : this._grad > 2 ? "steady" : "slow";
   }

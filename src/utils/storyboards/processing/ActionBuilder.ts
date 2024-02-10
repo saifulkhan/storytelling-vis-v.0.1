@@ -1,39 +1,46 @@
-import { FeatureActionDataType } from "src/types/FeatureActionType";
-import { ActionType } from "src/types/ActionType";
-import { AbstractAction } from "src/components/storyboards/actions/Action";
-import { Circle } from "src/components/storyboards/actions/Circle";
-import { Dot } from "src/components/storyboards/actions/Dot";
-import { TextBox } from "src/components/storyboards/actions/TextBox";
+import { Dot, DotProperties } from "src/components/storyboards/actions/Dot";
+import {
+  TextBox,
+  TextBoxProperties,
+} from "src/components/storyboards/actions/TextBox";
+import {
+  Circle,
+  CircleProperties,
+} from "src/components/storyboards/actions/Circle";
+import { ActionEnum } from "src/components/storyboards/actions/ActionEnum";
+import {
+  Connector,
+  ConnectorProperties,
+} from "src/components/storyboards/actions/Connector";
+import { AbstractAction } from "src/components/storyboards/actions/AbstractAction";
 
 export class ActionBuilder {
-  static table: FeatureActionDataType[];
-
-  constructor(table: FeatureActionDataType[]) {
-    ActionBuilder.table = table;
+  constructor() {
+    //
   }
 
-  public build(): AbstractAction[] {
-    const actions: AbstractAction[] = [];
-    ActionBuilder.table.forEach((d: FeatureActionDataType, _) => {
-      const action = ActionBuilder.createAction(d.action as ActionType);
-      console.log("FeatureSearch:execute: action = ", d.action);
-      console.log("FeatureSearch:execute: actionParams = ", d.actionParams);
-      // prettier-ignore
-      console.log("FeatureSearch:execute: feature = ", action);
-      actions.push(action);
-    });
+  public create(
+    action: ActionEnum,
+    properties:
+      | CircleProperties
+      | ConnectorProperties
+      | DotProperties
+      | TextBoxProperties,
+  ): AbstractAction {
+    // prettier-ignore
+    console.log("ActionBuilder:create: action = ", action, ", properties = ", properties);
 
-    return actions;
-  }
-
-  private static createAction(key: ActionType) {
-    switch (key) {
-      case ActionType.DOT:
-        return new Dot();
-      case ActionType.TEXT_BOX:
-        return new TextBox();
-      case ActionType.CIRCLE:
-        return new Circle();
+    switch (action) {
+      case ActionEnum.DOT:
+        return new Dot().properties(properties);
+      case ActionEnum.TEXT_BOX:
+        return new TextBox().properties(properties);
+      case ActionEnum.CIRCLE:
+        return new Circle().properties(properties);
+      case ActionEnum.CONNECTOR:
+        return new Connector().properties(properties);
+      default:
+        console.error(`Action ${action} is not implemented!`);
     }
   }
 }

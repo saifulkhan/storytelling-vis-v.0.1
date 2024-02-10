@@ -1,19 +1,22 @@
 import { Workflow } from "./Workflow";
 import { readCSVFile } from "../../../services/data";
-import { NumericalFeature } from "../processing/NumericalFeature";
-import { CategoricalFeature } from "../processing/CategoricalFeature";
-import { TimeseriesDataType } from "src/types/TimeseriesType";
+import { NumericalFeature } from "../features/NumericalFeature";
+import { CategoricalFeature } from "../features/CategoricalFeature";
 import { featureActionTable1 } from "src/mock/covid19-feature-action";
-import { FeatureBuilder } from "../processing/FeatureBuilder";
-import { cts, nts } from "../processing/feature-search";
 import { LinePlot } from "src/components/storyboards/plots/LinePlot";
-import { ActionBuilder } from "../processing/ActionBuilder";
+import { TimeseriesDataType } from "../processing/TimeseriesDataType";
+import { FeatureActionTableTranslator } from "../processing/FeatureActionTableTranslator";
+import {
+  AbstractAction,
+  ActionsOnDateType,
+} from "src/components/storyboards/actions/AbstractAction";
+import { ActionEnum } from "src/components/storyboards/actions/ActionEnum";
 
 const WINDOW = 3;
 
 export class Covid19StoryWorkflow extends Workflow {
-  private nts: NumericalFeature[];
-  private cts: CategoricalFeature[];
+  private _nts: NumericalFeature[];
+  private _cts: CategoricalFeature[];
 
   constructor() {
     super();
@@ -46,7 +49,7 @@ export class Covid19StoryWorkflow extends Workflow {
     // console.log("load: data = ", this._data);
   }
 
-  protected setup() {
+  protected create() {
     if (!this.key) return;
 
     // this.nts = nts(this.data, "Cases/day", WINDOW);
@@ -54,34 +57,36 @@ export class Covid19StoryWorkflow extends Workflow {
     // console.log("execute: ranked nts = ", this.nts);
     // console.log("execute: ranked cts = ", this.cts);
 
-    const plot = new LinePlot({ showPoints: false }, this.data);
-    plot.drawOn(this.svgNode).draw();
+    const plot = new LinePlot()
+      .properties({ showPoints: false })
+      .data(this.data)
+      .draw(this.svgNode);
 
-    const featureBuilder = new FeatureBuilder(
+    const actionsOnDate = new FeatureActionTableTranslator(
       featureActionTable1,
       this.data,
-      "Cases/day",
-      WINDOW,
-    );
+      {
+        metric: "Cases/day",
+        window: WINDOW,
+      },
+    ).translate();
 
-    const features = featureBuilder.build();
-    console.log("Covid19StoryWorkflow:execute: features = ", features);
+    console.log("Covid19StoryWorkflow: actionsOnDate = ", actionsOnDate);
 
-    const actionBuilder = new ActionBuilder(featureActionTable1);
-    const actions = actionBuilder.build();
-    console.log("Covid19StoryWorkflow:execute: actions = ", actions);
-
-    let i = 0;
-    for (const f1 of features) {
-      for (const feature of f1) {
-        const coordinate = plot.coordinates(feature.date);
-        console.log(feature.date, coordinate);
-
-        const action = actions[i].draw(this.svgNode);
-        action.coordinate(coordinate[2], coordinate[3]);
-      }
-
-      i++;
-    }
+    actionsOnDate.forEach((d: ActionsOnDateType) => {
+      const coordinate = plot.coordinates(d.date);
+      // prettier-ignore
+      console.log("Covid19StoryWorkflow: date = ", d.date, "coordinate = ", coordinate);
+      d.actions.forEach((d1: AbstractAction) => {
+        if (d1.type !== ActionEnum.TEXT_BOX) {
+          d1.draw(this.svgNode).coordinate(
+            coordinate[0],
+            coordinate[1],
+            coordinate[2],
+            coordinate[3],
+          );
+        }
+      });
+    });
   }
 }

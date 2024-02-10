@@ -1,4 +1,4 @@
-import { TimeseriesDataType } from "src/types/TimeseriesType";
+import { TimeseriesDataType } from "./TimeseriesDataType";
 
 export function findDateIdx(date: Date, data: TimeseriesDataType[]): number {
   return data.findIndex((d) => d.date.getTime() == date.getTime());
@@ -20,7 +20,7 @@ interface FilterCondition {
   (obj: any): boolean;
 }
 
-export function createPredicateFunction(
+export function createPredicate(
   predicateString: string,
 ): FilterCondition | null {
   try {

@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { AbstractAction } from "./AbstractAction";
-import { ActionType } from "../../../types/ActionType";
+import { ActionEnum } from "./ActionEnum";
 
 export type ConnectorProperties = {
   id?: string;
@@ -17,7 +17,7 @@ export class Connector extends AbstractAction {
 
   constructor() {
     super();
-    this._type = ActionType.CONNECTOR;
+    this._type = ActionEnum.CONNECTOR;
   }
 
   public properties(properties: ConnectorProperties = {}) {

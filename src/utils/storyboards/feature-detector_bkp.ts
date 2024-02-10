@@ -1,6 +1,6 @@
-import { Fall } from "./processing/Fall";
-import { Peak } from "./processing/Peak";
-import { Rise } from "./processing/Raise";
+import { Fall } from "./features/Fall";
+import { Peak } from "./features/Peak";
+import { Rise } from "./features/Raise";
 import minIndex from "./min-index";
 import maxIndex from "./max-index";
 

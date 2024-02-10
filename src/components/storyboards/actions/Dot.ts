@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { AbstractAction } from "./AbstractAction";
-import { ActionType } from "../../../types/ActionType";
+import { ActionEnum } from "./ActionEnum";
 
 export type DotProperties = {
   id?: string;
@@ -16,7 +16,7 @@ export class Dot extends AbstractAction {
 
   constructor() {
     super();
-    this._type = ActionType.DOT;
+    this._type = ActionEnum.DOT;
   }
 
   public properties(properties: DotProperties = {}) {

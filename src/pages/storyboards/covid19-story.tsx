@@ -90,7 +90,7 @@ const Covid19Story = () => {
     // prettier-ignore
     console.log("StorySingle:handleSelection: selectedRegion = ", selectedRegion);
     if (selectedRegion) {
-      workflow.drawOn("#chartId");
+      workflow.draw("#chartId");
       workflow.filter(selectedRegion);
 
       //createTimeSeriesSVG("#chart1");

@@ -1,49 +1,80 @@
-import { FeatureActionDataType } from "src/types/FeatureActionType";
+import { ActionEnum } from "src/components/storyboards/actions/ActionEnum";
+import { CircleProperties } from "src/components/storyboards/actions/Circle";
+import { ConnectorProperties } from "src/components/storyboards/actions/Connector";
+import { DotProperties } from "src/components/storyboards/actions/Dot";
+import { TextBoxProperties } from "src/components/storyboards/actions/TextBox";
+import { NumericalFeatureEnum } from "src/utils/storyboards/features/NumericalFeatureEnum";
+import { PeakProperties } from "src/utils/storyboards/features/Peak";
+import { SlopeProperties } from "src/utils/storyboards/features/Slope";
+import { FeatureActionTableRowType } from "src/utils/storyboards/processing/FeatureActionTableRowType";
 
-export const featureActionTable1: FeatureActionDataType[] = [
+export const featureActionTable1: FeatureActionTableRowType[] = [
   {
-    feature: "PEAK",
-    featureParams: {},
+    feature: NumericalFeatureEnum.PEAK,
+    properties: {} as PeakProperties,
     rank: 5,
-    action: "CIRCLE",
-    actionParams: { SIZE: 10, STROKE_WIDTH: 3, OPACITY: 0.6 },
-    text: "",
-    comment: "",
+    actions: [
+      {
+        action: ActionEnum.CIRCLE,
+        properties: {
+          size: 10,
+          strokeWidth: 2,
+          opacity: 0.6,
+          color: "#FFA500",
+        } as CircleProperties,
+      },
+      {
+        action: ActionEnum.TEXT_BOX,
+        properties: {
+          message: "On {DATE}, number of cases peaked at {VALUE}",
+        } as TextBoxProperties,
+      },
+
+      {
+        action: ActionEnum.CONNECTOR,
+        properties: {} as ConnectorProperties,
+      },
+      {
+        action: ActionEnum.DOT,
+        properties: { color: "#FFA500" } as DotProperties,
+      },
+    ],
   },
+
   {
-    feature: "PEAK",
-    featureParams: {},
-    rank: 5,
-    action: "TEXT_BOX",
-    actionParams: { CONNECTOR: "true" },
-    text: "On {DATE}, number of cases peaked at {VALUE}",
-    comment: "",
-  },
-  {
-    feature: "PEAK",
-    featureParams: {},
-    rank: 5,
-    action: "DOT",
-    actionParams: { CONNECTOR: "true" },
-    text: "",
-    comment: "",
-  },
-  {
-    feature: "SLOPE",
-    featureParams: { GT: 100 },
+    feature: NumericalFeatureEnum.SLOPE,
+    properties: { gt: 100 } as SlopeProperties,
     rank: 7,
-    action: "TEXT_BOX",
-    actionParams: { CONNECTOR: "true" },
-    text: "By {DATE}, the number of cases continued to climb higher in {REGION}.",
-    comment: "",
+    actions: [
+      {
+        action: ActionEnum.TEXT_BOX,
+        properties: {
+          message:
+            "By {DATE}, the number of cases continued to climb higher in {REGION}.",
+        } as TextBoxProperties,
+      },
+      {
+        action: ActionEnum.CONNECTOR,
+        properties: {} as ConnectorProperties,
+      },
+    ],
   },
   {
-    feature: "SLOPE",
-    featureParams: { GT: -1, LT: 1, NE: 0 },
+    feature: NumericalFeatureEnum.SLOPE,
+    properties: { gt: -1, lt: 1, ne: 0 } as SlopeProperties,
     rank: 7,
-    action: "TEXT_BOX",
-    actionParams: { CONNECTOR: "true" },
-    text: "By {DATE}, the number of cases remained low. We should continue to be vigilant",
-    comment: "",
+    actions: [
+      {
+        action: ActionEnum.TEXT_BOX,
+        properties: {
+          message:
+            "By {DATE}, the number of cases remained low. We should continue to be vigilant",
+        } as TextBoxProperties,
+      },
+      {
+        action: ActionEnum.CONNECTOR,
+        properties: {} as ConnectorProperties,
+      },
+    ],
   },
 ];

@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { TimeseriesDataType } from "src/types/TimeseriesType";
+import { TimeseriesDataType } from "../processing/TimeseriesDataType";
 
 export abstract class Workflow {
   protected initializationPromise: Promise<void>;
@@ -20,7 +20,7 @@ export abstract class Workflow {
     return this.initializationPromise;
   }
 
-  public drawOn(selector: string) {
+  public draw(selector: string) {
     this.svgNode = d3
       .select(selector)
       .append("svg")
@@ -38,9 +38,9 @@ export abstract class Workflow {
   filter(key: string) {
     this.key = key;
     this.data = this._data[key];
-    this.setup();
+    this.create();
   }
 
   protected abstract load();
-  protected abstract setup();
+  protected abstract create();
 }

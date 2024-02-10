@@ -1,7 +1,10 @@
-import { NumericalFeatureType } from "src/types/NumericalFeatureType";
 import { NumericalFeature } from "./NumericalFeature";
+import { NumericalFeatureEnum } from "./NumericalFeatureEnum";
 
-const CONST = 0.2; // TODO: Why?
+// TODO: Why?
+const CONST = 0.2;
+
+export type PeakProperties = unknown;
 
 export class Peak extends NumericalFeature {
   protected _height: number;
@@ -19,7 +22,7 @@ export class Peak extends NumericalFeature {
     normHeight = undefined,
   ) {
     super(date, start, end, metric);
-    this._type = NumericalFeatureType.PEAK;
+    this._type = NumericalFeatureEnum.PEAK;
     this._height = height;
     this._normWidth = normWidth;
     this._normHeight = normHeight;

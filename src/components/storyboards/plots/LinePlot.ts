@@ -284,16 +284,16 @@ export class LinePlot extends AbstractPlot {
   }
 
   /*
-   * Given a date of the timeseries, return the corresponding [x, y0, x, y]
+   * Given a date of the timeseries, return the corresponding [x, y, x0, y0]
    * coordinates
    */
   public coordinates(date: Date): [number, number, number, number] {
     const d = this._data[findDateIdx(date, this._data)];
     return [
       this._xScale(d.date),
-      this._yScale(0),
-      this._xScale(d.date),
       this._yScale(d.y),
+      this._xScale(d.date),
+      this._yScale(0),
     ];
   }
 }

@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { AbstractAction } from "./AbstractAction";
-import { ActionType } from "src/types/ActionType";
+import { ActionEnum } from "./ActionEnum";
 
 export type TextBoxProperties = {
   id?: string;
@@ -21,7 +21,7 @@ export class TextBox extends AbstractAction {
 
   constructor() {
     super();
-    this._type = ActionType.TEXT_BOX;
+    this._type = ActionEnum.TEXT_BOX;
   }
 
   public properties(properties: TextBoxProperties = {}) {
