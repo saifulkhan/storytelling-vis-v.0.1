@@ -1,5 +1,5 @@
-import { sign, decode, JWT_SECRET, JWT_EXPIRES_IN } from "../utils/jwt";
-import wait from "../utils/wait";
+import { sign, decode, JWT_SECRET, JWT_EXPIRES_IN } from "../utils/common/jwt";
+import wait from "../utils/common/wait";
 import { User } from "../types/user";
 
 const users = [

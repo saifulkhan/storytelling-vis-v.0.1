@@ -18,7 +18,7 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import Scrollbar from "../Scrollbar";
-import wait from "../../utils/wait";
+import wait from "../../utils/common/wait";
 
 interface Result {
   description: string;
