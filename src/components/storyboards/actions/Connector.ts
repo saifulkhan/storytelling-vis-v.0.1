@@ -10,10 +10,9 @@ export type ConnectorProperties = {
 
 export class Connector extends AbstractAction {
   protected _properties: ConnectorProperties;
-  protected connectorNode;
-  protected props;
-  protected x0: number;
-  protected y0: number;
+  protected _connectorNode;
+  protected _x0: number;
+  protected _y0: number;
 
   constructor() {
     super();
@@ -30,27 +29,27 @@ export class Connector extends AbstractAction {
   }
 
   protected _draw() {
-    this.connectorNode = d3
+    this._connectorNode = d3
       .create("svg")
       .append("line")
       .attr("stroke", this._properties.stroke)
       .attr("opacity", this._properties.opacity)
       .style("stroke-dasharray", "5,5")
       .node();
-    this.node.appendChild(this.connectorNode);
+    this._node.appendChild(this._connectorNode);
   }
 
   public coordinate(x: number, y: number, x0: number, y0: number) {
-    this.x = x;
-    this.y = y;
-    this.x0 = x0;
-    this.y0 = y0;
+    this._x = x;
+    this._y = y;
+    this._x0 = x0;
+    this._y0 = y0;
 
-    d3.select(this.connectorNode)
-      .attr("x1", this.x0)
-      .attr("x2", this.x)
-      .attr("y1", this.y0)
-      .attr("y2", this.y);
+    d3.select(this._connectorNode)
+      .attr("x1", this._x0)
+      .attr("x2", this._x)
+      .attr("y1", this._y0)
+      .attr("y2", this._y);
 
     return this;
   }

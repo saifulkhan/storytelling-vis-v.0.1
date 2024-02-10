@@ -14,10 +14,10 @@ const RECT_PADDING = 0;
 
 export class TextBox extends AbstractAction {
   protected _properties: TextBoxProperties;
-  protected rectNode: HTMLElement;
-  protected titleNode: HTMLElement;
-  protected messageNode: HTMLElement;
-  protected textNode: HTMLElement;
+  protected _rectNode: HTMLElement;
+  protected _titleNode: HTMLElement;
+  protected _messageNode: HTMLElement;
+  protected _textNode: HTMLElement;
 
   constructor() {
     super();
@@ -37,16 +37,16 @@ export class TextBox extends AbstractAction {
   }
 
   protected _draw() {
-    this.rectNode = d3
+    this._rectNode = d3
       .create("svg")
       .append("rect")
       .attr("fill", this._properties.backgroundColor)
       .attr("width", this._properties.width + RECT_PADDING)
       .attr("rx", 5)
       .node();
-    this.node.appendChild(this.rectNode);
+    this._node.appendChild(this._rectNode);
 
-    this.titleNode = d3
+    this._titleNode = d3
       .create("svg")
       .append("text")
       .attr("font-size", "12px")
@@ -54,40 +54,40 @@ export class TextBox extends AbstractAction {
       .attr("font-weight", "bold")
       .node();
 
-    this.messageNode = d3
+    this._messageNode = d3
       .create("svg")
       .append("text")
       .attr("font-size", "12px")
       .attr("fill", "black")
       .node();
 
-    this.textNode = d3
+    this._textNode = d3
       .create("svg")
       .append("g")
       .attr("fill", this._properties.background)
       .node();
 
-    this.textNode.append(this.titleNode);
-    this.textNode.append(this.messageNode);
-    this.node.appendChild(this.textNode);
+    this._textNode.append(this._titleNode);
+    this._textNode.append(this._messageNode);
+    this._node.appendChild(this._textNode);
 
     this.formatText();
 
-    const { height } = this.textNode.getBoundingClientRect();
-    this.rectNode.setAttribute("height", `${height + RECT_PADDING}px`);
+    const { height } = this._textNode.getBoundingClientRect();
+    this._rectNode.setAttribute("height", `${height + RECT_PADDING}px`);
   }
 
   private formatText() {
-    const rowHeight = this.wrapText(this.titleNode, this._properties.title);
-    this.wrapText(this.messageNode, this._properties.message);
+    const rowHeight = this.wrapText(this._titleNode, this._properties.title);
+    this.wrapText(this._messageNode, this._properties.message);
 
     // Calculate spacing between title and label
-    const { height: titleHeight } = this.titleNode.getBoundingClientRect();
+    const { height: titleHeight } = this._titleNode.getBoundingClientRect();
     const titleSpacing = titleHeight + rowHeight * 0.2;
 
     console.log("rowHeight, titleHeight =", rowHeight, titleHeight);
 
-    this.messageNode.setAttribute("y", titleSpacing);
+    this._messageNode.setAttribute("y", titleSpacing);
   }
 
   /*
@@ -161,24 +161,24 @@ export class TextBox extends AbstractAction {
   }
 
   public coordinate(x: number, y: number) {
-    this.x = x;
-    this.y = y;
+    this._x = x;
+    this._y = y;
 
-    const { width, height } = this.textNode.getBoundingClientRect();
-    const rectX = this.x - (width + RECT_PADDING) / 2;
-    const textX = this.x - width / 2;
+    const { width, height } = this._textNode.getBoundingClientRect();
+    const rectX = this._x - (width + RECT_PADDING) / 2;
+    const textX = this._x - width / 2;
 
     console.log(width, height, rectX);
 
-    this.rectNode.setAttribute(
+    this._rectNode.setAttribute(
       "transform",
-      `translate(${rectX},${this.y - (height + RECT_PADDING) / 2})`,
+      `translate(${rectX},${this._y - (height + RECT_PADDING) / 2})`,
     );
 
     // translate x,y position to center of anno (rather than top left)
-    this.textNode.setAttribute(
+    this._textNode.setAttribute(
       "transform",
-      `translate(${textX},${this.y - height / 2})`,
+      `translate(${textX},${this._y - height / 2})`,
     );
 
     const correctTextAlignment = (textElem, width, align = undefined) => {
@@ -195,8 +195,8 @@ export class TextBox extends AbstractAction {
     };
 
     // align text correctly
-    correctTextAlignment(this.titleNode, width, "middle");
-    correctTextAlignment(this.messageNode, width);
+    correctTextAlignment(this._titleNode, width, "middle");
+    correctTextAlignment(this._messageNode, width);
 
     return this;
   }

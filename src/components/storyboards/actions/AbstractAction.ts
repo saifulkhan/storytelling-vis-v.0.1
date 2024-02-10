@@ -1,15 +1,15 @@
 import * as d3 from "d3";
 import { ActionEnum } from "./ActionEnum";
 
-export type ActionsAtDateType = { date: Date; actions: AbstractAction[] };
+export type ActionsOnDateType = { date: Date; actions: AbstractAction[] };
 
 export abstract class AbstractAction {
   protected _type: ActionEnum;
   protected _properties;
   protected _svg: SVGSVGElement;
-  protected node: HTMLElement;
-  protected x;
-  protected y;
+  protected _node: HTMLElement;
+  protected _x;
+  protected _y;
 
   constructor() {
     //
@@ -28,7 +28,7 @@ export abstract class AbstractAction {
   public draw(svg: SVGSVGElement) {
     this._svg = svg;
 
-    this.node = d3
+    this._node = d3
       .create("svg")
       .append("g")
       .attr("id", this._properties?.id)
@@ -38,7 +38,7 @@ export abstract class AbstractAction {
     // show
     // this.node.removeAttribute("display");
 
-    d3.select(this._svg).append(() => this.node);
+    d3.select(this._svg).append(() => this._node);
     this._draw();
 
     return this;
@@ -55,7 +55,7 @@ export abstract class AbstractAction {
 
   public show(delay = 0, duration = 1000) {
     return new Promise<number>((resolve, reject) => {
-      d3.select(this.node)
+      d3.select(this._node)
         .transition()
         .delay(delay)
         .duration(duration)
@@ -68,7 +68,7 @@ export abstract class AbstractAction {
 
   public hide(delay = 0, duration = 1000) {
     return new Promise<number>((resolve, reject) => {
-      d3.select(this.node)
+      d3.select(this._node)
         .transition()
         .delay(delay)
         .duration(duration)

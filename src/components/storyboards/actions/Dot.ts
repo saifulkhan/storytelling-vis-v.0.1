@@ -11,8 +11,7 @@ export type DotProperties = {
 
 export class Dot extends AbstractAction {
   protected _properties: DotProperties;
-  protected dotNode;
-  protected props;
+  protected _dotNode;
 
   constructor() {
     super();
@@ -31,20 +30,20 @@ export class Dot extends AbstractAction {
   }
 
   protected _draw() {
-    this.dotNode = d3
+    this._dotNode = d3
       .create("svg")
       .append("circle")
       .attr("r", this._properties.size)
       .attr("fill", this._properties.color)
       .attr("opacity", this._properties.opacity)
       .node();
-    this.node.appendChild(this.dotNode);
+    this._node.appendChild(this._dotNode);
   }
 
   public coordinate(x: number, y: number) {
-    this.x = x;
-    this.y = y;
-    d3.select(this.dotNode).attr("cx", x).attr("cy", y);
+    this._x = x;
+    this._y = y;
+    d3.select(this._dotNode).attr("cx", x).attr("cy", y);
 
     return this;
   }

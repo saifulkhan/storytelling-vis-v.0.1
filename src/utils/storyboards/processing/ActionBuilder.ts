@@ -1,4 +1,6 @@
 import { Dot, DotProperties } from "src/components/storyboards/actions/Dot";
+import { AbstractAction } from "src/components/storyboards/actions/AbstractAction";
+import { ActionEnum } from "src/components/storyboards/actions/ActionEnum";
 import {
   TextBox,
   TextBoxProperties,
@@ -7,12 +9,10 @@ import {
   Circle,
   CircleProperties,
 } from "src/components/storyboards/actions/Circle";
-import { ActionEnum } from "src/components/storyboards/actions/ActionEnum";
 import {
   Connector,
   ConnectorProperties,
 } from "src/components/storyboards/actions/Connector";
-import { AbstractAction } from "src/components/storyboards/actions/AbstractAction";
 
 export class ActionBuilder {
   constructor() {

@@ -10,20 +10,20 @@ import { TimeseriesProperties } from "./TimeseriesProperties";
 import { AbstractFeature } from "../features/AbstractFeature";
 
 export class FeatureDetector {
-  private data: TimeseriesDataType[];
-  private timeseriesProcessingProperties: TimeseriesProperties;
+  private _data: TimeseriesDataType[];
+  private _timeseriesProcessingProperties: TimeseriesProperties;
 
   constructor(
     data: TimeseriesDataType[],
     timeseriesProcessingProperties: TimeseriesProperties,
   ) {
-    this.data = data;
-    this.timeseriesProcessingProperties = timeseriesProcessingProperties;
+    this._data = data;
+    this._timeseriesProcessingProperties = timeseriesProcessingProperties;
 
     // prettier-ignore
-    console.log("FeatureDetector: timeseriesProcessingProperties =", this.timeseriesProcessingProperties);
+    console.log("FeatureDetector: timeseriesProcessingProperties =", this._timeseriesProcessingProperties);
     // prettier-ignore
-    console.log("FeatureDetector: data =", this.data);
+    console.log("FeatureDetector: data =", this._data);
   }
 
   public detect(
@@ -35,9 +35,9 @@ export class FeatureDetector {
       | FallProperties,
   ): AbstractFeature[] {
     // prettier-ignore
-    console.log("FeatureDetector:detect: timeseriesProcessingProperties =", this.timeseriesProcessingProperties);
+    console.log("FeatureDetector:detect: timeseriesProcessingProperties =", this._timeseriesProcessingProperties);
     // prettier-ignore
-    console.log("FeatureDetector:detect: data =", this.data);
+    console.log("FeatureDetector:detect: data =", this._data);
 
     switch (feature) {
       case NumericalFeatureEnum.SLOPE:
@@ -51,14 +51,14 @@ export class FeatureDetector {
 
   private detectPeaks(properties: PeakProperties): Peak[] {
     // prettier-ignore
-    console.log("FeatureDetector:detectPeaks: timeseriesProcessingProperties =", this.timeseriesProcessingProperties);
+    console.log("FeatureDetector:detectPeaks: timeseriesProcessingProperties =", this._timeseriesProcessingProperties);
     // prettier-ignore
-    console.log("FeatureDetector:detectPeaks: data =", this.data);
+    console.log("FeatureDetector:detectPeaks: data =", this._data);
 
     const peaks = searchPeaks(
-      this.data,
-      this.timeseriesProcessingProperties.metric,
-      this.timeseriesProcessingProperties.window,
+      this._data,
+      this._timeseriesProcessingProperties.metric,
+      this._timeseriesProcessingProperties.window,
     );
 
     return peaks;
@@ -66,8 +66,8 @@ export class FeatureDetector {
 
   private detectSlopes(properties: SlopeProperties): Slope[] {
     let slopes = searchSlopes(
-      this.data,
-      this.timeseriesProcessingProperties.window,
+      this._data,
+      this._timeseriesProcessingProperties.window,
     );
     // console.log("detectSlopes: slopes = ", slopes);
     // console.log("detectSlopes: properties = ", properties);

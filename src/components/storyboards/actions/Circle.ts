@@ -12,8 +12,7 @@ export type CircleProperties = {
 
 export class Circle extends AbstractAction {
   protected _properties: CircleProperties;
-  protected circleNode;
-  protected props;
+  protected _circleNode;
 
   constructor() {
     super();
@@ -33,7 +32,7 @@ export class Circle extends AbstractAction {
   }
 
   protected _draw() {
-    this.circleNode = d3
+    this._circleNode = d3
       .create("svg")
       .append("circle")
       .attr("fill", "none")
@@ -42,13 +41,13 @@ export class Circle extends AbstractAction {
       .attr("stroke", this._properties.color)
       .attr("opacity", this._properties.opacity)
       .node();
-    this.node.appendChild(this.circleNode);
+    this._node.appendChild(this._circleNode);
   }
 
   public coordinate(x: number, y: number) {
-    this.x = x;
-    this.y = y;
-    d3.select(this.circleNode).attr("cx", x).attr("cy", y);
+    this._x = x;
+    this._y = y;
+    d3.select(this._circleNode).attr("cx", x).attr("cy", y);
 
     return this;
   }
