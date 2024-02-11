@@ -28,22 +28,6 @@ import { blue } from "@mui/material/colors";
 import DashboardLayout from "src/components/dashboard-layout/DashboardLayout";
 import { Covid19StoryWorkflow } from "src/utils/storyboards/workflows/Covid19StoryWorkflow";
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    maxWidth: 345,
-  },
-  media: {
-    height: 0,
-    paddingTop: "56.25%", // 16:9
-  },
-  avatar: {
-    backgroundColor: blue[500],
-  },
-  icon: {
-    fill: blue[500],
-  },
-}));
-
 const Covid19Story = () => {
   const [loading, setLoading] = useState(true);
   const [segment, setSegment] = useState<number>(3);

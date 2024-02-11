@@ -11,6 +11,7 @@ import {
   ActionsOnDateType,
 } from "src/components/storyboards/actions/AbstractAction";
 import { ActionEnum } from "src/components/storyboards/actions/ActionEnum";
+import { TimeseriesFeatureDetectorProperties } from "../features/TimeseriesFeatureDetector";
 
 const WINDOW = 3;
 
@@ -68,7 +69,7 @@ export class Covid19StoryWorkflow extends Workflow {
       {
         metric: "Cases/day",
         window: WINDOW,
-      },
+      } as TimeseriesFeatureDetectorProperties,
     ).translate();
 
     console.log("Covid19StoryWorkflow: actionsOnDate = ", actionsOnDate);

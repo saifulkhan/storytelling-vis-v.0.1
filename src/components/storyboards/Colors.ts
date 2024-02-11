@@ -1,4 +1,4 @@
-import { NumericalFeatureType } from "../../utils/storyboards/processing/NumericalFeatureType";
+import { NumericalFeatureEnum } from "src/utils/storyboards/features/NumericalFeatureEnum";
 
 export enum Color {
   ForestGreen = "#228B22",
@@ -29,28 +29,28 @@ export enum Color {
 }
 
 export const LineColor = {};
-LineColor[NumericalFeatureType.DEFAULT] = Color.LightGrey1;
-LineColor[NumericalFeatureType.CURRENT] = Color.Orange;
-LineColor[NumericalFeatureType.LAST] = Color.PaleCyan;
-LineColor[NumericalFeatureType.MAX] = Color.Green;
-LineColor[NumericalFeatureType.MIN] = Color.Purple;
-LineColor[NumericalFeatureType.PEAK] = Color.LightGreen;
-LineColor[NumericalFeatureType.VALLEY] = Color.PalePurple;
+LineColor[NumericalFeatureEnum.DEFAULT] = Color.LightGrey1;
+LineColor[NumericalFeatureEnum.CURRENT] = Color.Orange;
+LineColor[NumericalFeatureEnum.LAST] = Color.PaleCyan;
+LineColor[NumericalFeatureEnum.MAX] = Color.Green;
+LineColor[NumericalFeatureEnum.MIN] = Color.Purple;
+LineColor[NumericalFeatureEnum.PEAK] = Color.LightGreen;
+LineColor[NumericalFeatureEnum.VALLEY] = Color.PalePurple;
 
 export const DotColor = {};
-DotColor[NumericalFeatureType.DEFAULT] = Color.DarkGrey;
-DotColor[NumericalFeatureType.CURRENT] = Color.Orange;
-DotColor[NumericalFeatureType.LAST] = Color.PaleCyan;
-DotColor[NumericalFeatureType.MAX] = Color.Green;
-DotColor[NumericalFeatureType.MIN] = Color.Purple;
-DotColor[NumericalFeatureType.PEAK] = Color.LightGreen;
-DotColor[NumericalFeatureType.VALLEY] = Color.PalePurple;
+DotColor[NumericalFeatureEnum.DEFAULT] = Color.DarkGrey;
+DotColor[NumericalFeatureEnum.CURRENT] = Color.Orange;
+DotColor[NumericalFeatureEnum.LAST] = Color.PaleCyan;
+DotColor[NumericalFeatureEnum.MAX] = Color.Green;
+DotColor[NumericalFeatureEnum.MIN] = Color.Purple;
+DotColor[NumericalFeatureEnum.PEAK] = Color.LightGreen;
+DotColor[NumericalFeatureEnum.VALLEY] = Color.PalePurple;
 
 export const TextColor = {};
-TextColor[NumericalFeatureType.DEFAULT] = Color.DarkGrey;
-TextColor[NumericalFeatureType.CURRENT] = Color.DarkOrange;
-TextColor[NumericalFeatureType.LAST] = Color.DarkCyan;
-TextColor[NumericalFeatureType.MAX] = Color.DarkGreen;
-TextColor[NumericalFeatureType.MIN] = Color.DarkPurple;
-TextColor[NumericalFeatureType.PEAK] = Color.LightGreen;
-TextColor[NumericalFeatureType.VALLEY] = Color.PalePurple;
+TextColor[NumericalFeatureEnum.DEFAULT] = Color.DarkGrey;
+TextColor[NumericalFeatureEnum.CURRENT] = Color.DarkOrange;
+TextColor[NumericalFeatureEnum.LAST] = Color.DarkCyan;
+TextColor[NumericalFeatureEnum.MAX] = Color.DarkGreen;
+TextColor[NumericalFeatureEnum.MIN] = Color.DarkPurple;
+TextColor[NumericalFeatureEnum.PEAK] = Color.LightGreen;
+TextColor[NumericalFeatureEnum.VALLEY] = Color.PalePurple;

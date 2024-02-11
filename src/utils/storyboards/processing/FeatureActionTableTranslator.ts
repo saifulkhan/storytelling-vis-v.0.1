@@ -1,12 +1,14 @@
+import { TimeseriesDataType } from "./TimeseriesDataType";
+import { AbstractFeature } from "../features/AbstractFeature";
+import { ActionBuilder } from "./ActionBuilder";
 import {
   ActionTableRowType,
   FeatureActionTableRowType as FeatureActionTableRowType,
 } from "./FeatureActionTableRowType";
-import { TimeseriesDataType } from "./TimeseriesDataType";
-import { FeatureDetector } from "./FeatureDetector";
-import { AbstractFeature } from "../features/AbstractFeature";
-import { TimeseriesProperties } from "./TimeseriesProperties";
-import { ActionBuilder } from "./ActionBuilder";
+import {
+  TimeseriesFeatureDetector,
+  TimeseriesFeatureDetectorProperties,
+} from "../features/TimeseriesFeatureDetector";
 import {
   AbstractAction,
   ActionsOnDateType,
@@ -15,12 +17,12 @@ import {
 export class FeatureActionTableTranslator {
   private _data: TimeseriesDataType[];
   private _table: FeatureActionTableRowType[];
-  private _properties: TimeseriesProperties;
+  private _properties: TimeseriesFeatureDetectorProperties;
 
   constructor(
     table: FeatureActionTableRowType[],
     data: TimeseriesDataType[],
-    properties: TimeseriesProperties,
+    properties: TimeseriesFeatureDetectorProperties,
   ) {
     this._table = table;
     this._data = data;
@@ -28,7 +30,10 @@ export class FeatureActionTableTranslator {
   }
 
   public translate() {
-    const featureDetector = new FeatureDetector(this._data, this._properties);
+    const featureDetector = new TimeseriesFeatureDetector(
+      this._data,
+      this._properties,
+    );
     const actionBuilder = new ActionBuilder();
 
     const actionsOnDate: ActionsOnDateType[] = [];
