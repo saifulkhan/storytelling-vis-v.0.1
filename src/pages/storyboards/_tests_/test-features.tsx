@@ -3,9 +3,9 @@ import * as d3 from "d3";
 import { covid19data1 } from "src/services/covid19-data";
 import { LinePlot } from "src/components/storyboards/plots/LinePlot";
 import { Dot } from "src/components/storyboards/actions/Dot";
-import { searchPeaks } from "src/utils/storyboards/features/feature-search";
+import { searchPeaks } from "src/utils/storyboards/feature/feature-search";
 import { sliceTimeseriesByDate } from "src/utils/storyboards/processing/common";
-import { Peak } from "src/utils/storyboards/features/Peak";
+import { Peak } from "src/utils/storyboards/feature/Peak";
 import { TimeseriesDataType } from "src/utils/storyboards/processing/TimeseriesDataType";
 
 const TestFeatures = () => {

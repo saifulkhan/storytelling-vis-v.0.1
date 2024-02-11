@@ -2,7 +2,7 @@
 // Ported from https://observablehq.com/@scottwjones/lockdown-restriction-data
 //
 
-import { CategoricalFeature } from "./features/CategoricalFeature";
+import { CategoricalFeature } from "./feature/CategoricalFeature";
 import { readCSVFile } from "../../services/data";
 
 let countryRegions;

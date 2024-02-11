@@ -1,5 +1,5 @@
 import { TimeseriesDataType } from "./TimeseriesDataType";
-import { AbstractFeature } from "../features/AbstractFeature";
+import { AbstractFeature } from "../feature/AbstractFeature";
 import { ActionBuilder } from "./ActionBuilder";
 import {
   ActionTableRowType,
@@ -8,7 +8,7 @@ import {
 import {
   TimeseriesFeatureDetector,
   TimeseriesFeatureDetectorProperties,
-} from "../features/TimeseriesFeatureDetector";
+} from "../feature/TimeseriesFeatureDetector";
 import {
   AbstractAction,
   ActionsOnDateType,

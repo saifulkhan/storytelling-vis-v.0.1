@@ -1,4 +1,4 @@
-import { searchSlopes } from "src/utils/storyboards/features/feature-search";
+import { searchSlopes } from "src/utils/storyboards/feature/feature-search";
 import { TimeseriesDataType } from "src/utils/storyboards/processing/TimeseriesDataType";
 
 describe("searchSlopes", () => {

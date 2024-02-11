@@ -3,9 +3,9 @@ import { CircleProperties } from "src/components/storyboards/actions/Circle";
 import { ConnectorProperties } from "src/components/storyboards/actions/Connector";
 import { DotProperties } from "src/components/storyboards/actions/Dot";
 import { TextBoxProperties } from "src/components/storyboards/actions/TextBox";
-import { NumericalFeatureEnum } from "src/utils/storyboards/features/NumericalFeatureEnum";
-import { PeakProperties } from "src/utils/storyboards/features/Peak";
-import { SlopeProperties } from "src/utils/storyboards/features/Slope";
+import { NumericalFeatureEnum } from "src/utils/storyboards/feature/NumericalFeatureEnum";
+import { PeakProperties } from "src/utils/storyboards/feature/Peak";
+import { SlopeProperties } from "src/utils/storyboards/feature/Slope";
 import { FeatureActionTableRowType } from "src/utils/storyboards/processing/FeatureActionTableRowType";
 
 export const featureActionTable1: FeatureActionTableRowType[] = [

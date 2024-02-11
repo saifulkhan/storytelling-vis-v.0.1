@@ -1,7 +1,7 @@
 import { Workflow } from "./Workflow";
 import { readCSVFile } from "../../../services/data";
-import { NumericalFeature } from "../features/NumericalFeature";
-import { CategoricalFeature } from "../features/CategoricalFeature";
+import { NumericalFeature } from "../feature/NumericalFeature";
+import { CategoricalFeature } from "../feature/CategoricalFeature";
 import { featureActionTable1 } from "src/mock/covid19-feature-action";
 import { LinePlot } from "src/components/storyboards/plots/LinePlot";
 import { TimeseriesDataType } from "../processing/TimeseriesDataType";
@@ -11,7 +11,7 @@ import {
   ActionsOnDateType,
 } from "src/components/storyboards/actions/AbstractAction";
 import { ActionEnum } from "src/components/storyboards/actions/ActionEnum";
-import { TimeseriesFeatureDetectorProperties } from "../features/TimeseriesFeatureDetector";
+import { TimeseriesFeatureDetectorProperties } from "../feature/TimeseriesFeatureDetector";
 
 const WINDOW = 3;
 

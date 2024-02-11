@@ -11,8 +11,8 @@ import {
 
 import { GraphAnnotation } from "../../components/storyboards/plots/GraphAnnotation_story-1-2-3";
 import { TimeSeries } from "../../components/storyboards/plots/TimeSeries";
-import { Rise } from "./features/Raise";
-import { Fall } from "./features/Fall";
+import { Rise } from "./feature/Raise";
+import { Fall } from "./feature/Fall";
 import { createDataGroup } from "./utils-data-processing";
 
 //
