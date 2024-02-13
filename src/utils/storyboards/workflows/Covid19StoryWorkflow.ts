@@ -1,21 +1,17 @@
-import { Workflow } from "./Workflow";
+import { AbstractWorkflow } from "./AbstractWorkflow";
 import { readCSVFile } from "../../../services/data";
 import { NumericalFeature } from "../feature/NumericalFeature";
 import { CategoricalFeature } from "../feature/CategoricalFeature";
 import { featureActionTable1 } from "src/mock/covid19-feature-action";
-import { LinePlot } from "src/components/storyboards/plots/LinePlot";
+import { LineChart } from "src/components/storyboards/plots/LineChart";
 import { TimeseriesDataType } from "../processing/TimeseriesDataType";
 import { FeatureActionTableTranslator } from "../processing/FeatureActionTableTranslator";
-import {
-  AbstractAction,
-  ActionsOnDateType,
-} from "src/components/storyboards/actions/AbstractAction";
-import { ActionEnum } from "src/components/storyboards/actions/ActionEnum";
 import { TimeseriesFeatureDetectorProperties } from "../feature/TimeseriesFeatureDetector";
+import { findIndicesOfDates } from "../processing/common";
 
 const WINDOW = 3;
 
-export class Covid19StoryWorkflow extends Workflow {
+export class Covid19StoryWorkflow extends AbstractWorkflow {
   private _nts: NumericalFeature[];
   private _cts: CategoricalFeature[];
 
@@ -40,14 +36,14 @@ export class Covid19StoryWorkflow extends Workflow {
       this._data[region].push({ date: date, y: cases });
     });
 
-    for (const region in this.data) {
+    for (const region in this._data) {
       this._data[region].sort(
         (e1: TimeseriesDataType, e2: TimeseriesDataType) =>
           e1.date.getTime() - e2.date.getTime(),
       );
     }
 
-    // console.log("load: data = ", this._data);
+    console.log("Covid19StoryWorkflow:load: data = ", this._data);
   }
 
   protected create() {
@@ -58,12 +54,16 @@ export class Covid19StoryWorkflow extends Workflow {
     // console.log("execute: ranked nts = ", this.nts);
     // console.log("execute: ranked cts = ", this.cts);
 
-    const plot = new LinePlot()
-      .properties({ showPoints: false })
-      .data(this.data)
-      .draw(this.svgNode);
+    const plot = new LineChart()
+      .data([this.data])
+      .chartProperties({})
+      .lineProperties()
+      .svg(this._svg);
 
-    const actionsOnDate = new FeatureActionTableTranslator(
+    plot.draw();
+    // plot.animate();
+
+    const [dateFeatureMap, featureActionMap] = new FeatureActionTableTranslator(
       featureActionTable1,
       this.data,
       {
@@ -72,22 +72,26 @@ export class Covid19StoryWorkflow extends Workflow {
       } as TimeseriesFeatureDetectorProperties,
     ).translate();
 
-    console.log("Covid19StoryWorkflow: actionsOnDate = ", actionsOnDate);
+    console.log("Covid19StoryWorkflow: dateFeatureMap = ", dateFeatureMap);
+    console.log("Covid19StoryWorkflow: featureActionMap = ", featureActionMap);
 
-    actionsOnDate.forEach((d: ActionsOnDateType) => {
-      const coordinate = plot.coordinates(d.date);
-      // prettier-ignore
-      console.log("Covid19StoryWorkflow: date = ", d.date, "coordinate = ", coordinate);
-      d.actions.forEach((d1: AbstractAction) => {
-        if (d1.type !== ActionEnum.TEXT_BOX) {
-          d1.draw(this.svgNode).coordinate(
-            coordinate[0],
-            coordinate[1],
-            coordinate[2],
-            coordinate[3],
-          );
-        }
-      });
-    });
+    const indices = findIndicesOfDates(this.data, [...dateFeatureMap.keys()]);
+    console.log("Covid19StoryWorkflow: indices = ", indices);
+
+    // actionsOnDate.forEach((d: ActionsOnDateType) => {
+    //   const coordinate = plot.coordinates(d.date);
+    //   // prettier-ignore
+    //   // console.log("Covid19StoryWorkflow: date = ", d.date, "coordinate = ", coordinate);
+    //   d.actions.forEach((d1: AbstractAction) => {
+    //     if (d1.type !== ActionEnum.TEXT_BOX) {
+    //       d1.draw(this.svgNode).coordinate(
+    //         coordinate[0],
+    //         coordinate[1],
+    //         coordinate[2],
+    //         coordinate[3],
+    //       );
+    //     }
+    //   });
+    // });
   }
 }

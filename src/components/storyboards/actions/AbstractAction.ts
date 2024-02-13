@@ -1,8 +1,6 @@
 import * as d3 from "d3";
 import { ActionEnum } from "./ActionEnum";
 
-export type ActionsOnDateType = { date: Date; actions: AbstractAction[] };
-
 export abstract class AbstractAction {
   protected _type: ActionEnum;
   protected _properties;

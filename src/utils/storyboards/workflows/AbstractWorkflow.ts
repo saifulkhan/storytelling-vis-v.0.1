@@ -1,11 +1,11 @@
 import * as d3 from "d3";
 import { TimeseriesDataType } from "../processing/TimeseriesDataType";
 
-export abstract class Workflow {
+export abstract class AbstractWorkflow {
   protected initializationPromise: Promise<void>;
   protected _data: Record<string, TimeseriesDataType[]> = {};
   protected data: TimeseriesDataType[];
-  protected svgNode: SVGSVGElement;
+  protected _svg: SVGSVGElement;
   protected key: string;
 
   constructor() {
@@ -21,14 +21,14 @@ export abstract class Workflow {
   }
 
   public draw(selector: string) {
-    this.svgNode = d3
+    this._svg = d3
       .select(selector)
       .append("svg")
       .attr("width", 1200)
       .attr("height", 500)
       .node();
 
-    console.log("svgNode = ", this.svgNode);
+    console.log("Workflow:draw: svg = ", this._svg);
   }
 
   keys(): string[] {

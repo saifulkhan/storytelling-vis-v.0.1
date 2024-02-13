@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import { covid19data1 } from "src/services/covid19-data";
-import { LinePlot } from "src/components/storyboards/plots/LinePlot";
+import { LineChart } from "src/components/storyboards/plots/LineChart";
 
-const TestPlots = () => {
+const TestLineChart = () => {
   const chartRef = useRef(null);
 
   const margin = { top: 20, right: 30, bottom: 40, left: 50 };
@@ -24,15 +24,34 @@ const TestPlots = () => {
 
     covid19data1().then((d) => {
       console.log(d);
-      const data = d["Aberdeenshire"];
-      const dataX = [d["Angus"], d["Barnet"]];
-      new LinePlot()
-        .properties({
-          showPoints: true,
-          sameScale: false,
-        })
-        .data(data, dataX)
-        .draw(svg);
+      const data = [d["Aberdeenshire"], d["Angus"], d["Barnet"]];
+
+      new LineChart()
+        .data(data)
+        .chartProperties({})
+        .lineProperties([
+          {
+            stroke: "#355c7d",
+            strokeWidth: 1,
+            showPoints: true,
+            onRightAxis: false,
+          },
+          {
+            stroke: "#99b898",
+            strokeWidth: 2,
+            showPoints: false,
+            onRightAxis: false,
+          },
+          {
+            stroke: "#E1999C",
+            strokeWidth: 3,
+            showPoints: false,
+            onRightAxis: true,
+          },
+        ])
+        .svg(svg)
+        // .draw();
+        .animate(2, 20, 400);
     });
   }, []);
 
@@ -50,4 +69,4 @@ const TestPlots = () => {
   );
 };
 
-export default TestPlots;
+export default TestLineChart;

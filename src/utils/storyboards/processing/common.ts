@@ -35,3 +35,23 @@ export function createPredicate(
     return null;
   }
 }
+
+/**
+ **  Function to find indices of dates in the time series data
+ **/
+export function findIndicesOfDates(
+  data: TimeseriesDataType[],
+  dates: Date[],
+): number[] {
+  const indices: number[] = [];
+
+  // iterate through the time series data
+  for (let i = 0; i < data.length; i++) {
+    const currentDate = data[i].date;
+    // check if the current date exists in the array of dates to find
+    if (dates.some((date) => date.getTime() === currentDate.getTime())) {
+      indices.push(i);
+    }
+  }
+  return indices;
+}

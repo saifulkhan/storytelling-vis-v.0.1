@@ -28,6 +28,8 @@ import { blue } from "@mui/material/colors";
 import DashboardLayout from "src/components/dashboard-layout/DashboardLayout";
 import { Covid19StoryWorkflow } from "src/utils/storyboards/workflows/Covid19StoryWorkflow";
 
+const workflow = new Covid19StoryWorkflow();
+
 const Covid19Story = () => {
   const [loading, setLoading] = useState(true);
   const [segment, setSegment] = useState<number>(3);
@@ -36,7 +38,6 @@ const Covid19Story = () => {
   const [animationCounter, setAnimationCounter] = useState<number>(0);
   // slider formatted value
   const valuetext = (value) => `${value}`;
-  const workflow = new Covid19StoryWorkflow();
 
   useEffect(() => {
     // if (!chartRef.current) return;

@@ -61,8 +61,8 @@ const sections = [
             icon: <ScienceIcon fontSize="small" />,
           },
           {
-            title: "Plots",
-            path: "/storyboards/_tests_/test-plots",
+            title: "Line Chart",
+            path: "/storyboards/_tests_/test-line-chart",
             icon: <ScienceIcon fontSize="small" />,
           },
         ],

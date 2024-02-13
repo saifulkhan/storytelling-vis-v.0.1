@@ -28,7 +28,7 @@ export class ActionBuilder {
       | TextBoxProperties,
   ): AbstractAction {
     // prettier-ignore
-    console.log("ActionBuilder:create: action = ", action, ", properties = ", properties);
+    // console.log("ActionBuilder:create: action = ", action, ", properties = ", properties);
 
     switch (action) {
       case ActionEnum.DOT:
@@ -41,6 +41,7 @@ export class ActionBuilder {
         return new Connector().properties(properties);
       default:
         console.error(`Action ${action} is not implemented!`);
+        alert(`Action ${action} is not implemented!`)
     }
   }
 }

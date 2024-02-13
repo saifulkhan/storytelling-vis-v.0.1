@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { covid19data1 } from "src/services/covid19-data";
-import { LinePlot } from "src/components/storyboards/plots/LinePlot";
+import { LinePlot } from "src/components/storyboards/plots/LineChart";
 import { Dot } from "src/components/storyboards/actions/Dot";
 import { searchPeaks } from "src/utils/storyboards/feature/feature-search";
 import { sliceTimeseriesByDate } from "src/utils/storyboards/processing/common";
@@ -46,7 +46,7 @@ const TestFeatures = () => {
         .properties({
           showPoints: false,
           color: "#FFFFFF",
-          sameScale: true,
+          isSameScale: true,
         })
         .data(data, dataX)
         .draw(svg);
