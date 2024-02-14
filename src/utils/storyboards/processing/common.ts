@@ -1,9 +1,5 @@
 import { TimeseriesDataType } from "./TimeseriesDataType";
 
-export function findDateIdx(date: Date, data: TimeseriesDataType[]): number {
-  return data.findIndex((d) => d.date.getTime() == date.getTime());
-}
-
 export function mean(data: number[]): number {
   return data.reduce((acc, val) => acc + val, 0) / data.length;
 }
@@ -37,6 +33,32 @@ export function createPredicate(
 }
 
 /**
+ **  Function to find index of a date in the timeseries data
+ **/
+
+export function findDateIdx(date: Date, data: TimeseriesDataType[]): number {
+  return data.findIndex((d) => d.date.getTime() == date.getTime());
+}
+
+export function findIndexOfDate(
+  data: TimeseriesDataType[],
+  date: Date,
+): number {
+  return data.findIndex((d) => {
+    for (const key in d) {
+      if (
+        d.hasOwnProperty(key) &&
+        d[key] instanceof Date &&
+        d[key].getTime() === date.getTime()
+      ) {
+        return true;
+      }
+    }
+    return false;
+  });
+}
+
+/**
  **  Function to find indices of dates in the time series data
  **/
 export function findIndicesOfDates(
@@ -54,4 +76,21 @@ export function findIndicesOfDates(
     }
   }
   return indices;
+}
+
+/**
+ ** Function to set a value in the map if it doesn't exist, otherwise get the existing value and then set it again
+ **/
+export function setOrUpdateMap(
+  map: Map<unknown, unknown>,
+  key: unknown,
+  value: unknown[] | unknown,
+) {
+  if (map.has(key)) {
+    const existingValue = map.get(key);
+    existingValue?.push(value);
+    map.set(key, existingValue!);
+  } else {
+    map.set(key, [value]);
+  }
 }

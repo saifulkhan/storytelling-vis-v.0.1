@@ -29,7 +29,7 @@ export class Dot extends AbstractAction {
     return this;
   }
 
-  protected _draw() {
+  public draw() {
     this._dotNode = d3
       .create("svg")
       .append("circle")
@@ -38,12 +38,17 @@ export class Dot extends AbstractAction {
       .attr("opacity", this._properties.opacity)
       .node();
     this._node.appendChild(this._dotNode);
+
+    return this;
   }
 
-  public coordinate(x: number, y: number) {
-    this._x = x;
-    this._y = y;
-    d3.select(this._dotNode).attr("cx", x).attr("cy", y);
+  public coordinate(x0: number, y0: number, x1: number, y1: number) {
+    this._x0 = x0;
+    this._y0 = y0;
+    this._x1 = x1;
+    this._y1 = y1;
+
+    d3.select(this._dotNode).attr("cx", x1).attr("cy", y1);
 
     return this;
   }

@@ -4,6 +4,10 @@ import { Dot } from "src/components/storyboards/actions/Dot";
 import { TextBox } from "src/components/storyboards/actions/TextBox";
 import { Connector } from "src/components/storyboards/actions/Connector";
 import { Circle } from "src/components/storyboards/actions/Circle";
+import {
+  hideAll,
+  showAll,
+} from "src/components/storyboards/actions/AbstractAction";
 
 const TestActions = () => {
   const chartRef = useRef(null);
@@ -25,7 +29,11 @@ const TestActions = () => {
       // .attr("transform", `translate(${margin.left},${margin.top})`)
       .node();
 
-    const textBox = new TextBox().properties().draw(svg).coordinate(100, 100);
+    const textBox = new TextBox()
+      .properties()
+      .svg(svg)
+      .draw()
+      .coordinate(100, 200, 100, 100);
 
     const dot = new Dot()
       .properties({
@@ -33,8 +41,9 @@ const TestActions = () => {
         color: "#FF0000",
         opacity: 0.3,
       })
-      .draw(svg)
-      .coordinate(100, 100);
+      .svg(svg)
+      .draw()
+      .coordinate(100, 200, 100, 100);
 
     const circle = new Circle()
       .properties({
@@ -42,15 +51,22 @@ const TestActions = () => {
         color: "#000000",
         opacity: 1,
       })
-      .draw(svg)
-      .coordinate(100, 100);
+      .svg(svg)
+      .draw()
+      .coordinate(100, 200, 100, 100);
 
     const connector = new Connector()
       .properties({})
-      .draw(svg)
-      .coordinate(100, 100, 100, 200);
+      .svg(svg)
+      .draw()
+      .coordinate(100, 200, 100, 100);
 
     const animate = async () => {
+      //
+      // test individually
+      //
+
+      /*
       await Promise.all([
         textBox.show(),
         dot.show(),
@@ -69,6 +85,15 @@ const TestActions = () => {
         circle.show(),
         connector.show(),
       ]);
+      */
+
+      //
+      // test all together
+      //
+      const actions = [textBox, dot, circle, connector];
+      await showAll(actions);
+      await hideAll(actions);
+      await showAll(actions);
     };
 
     animate();

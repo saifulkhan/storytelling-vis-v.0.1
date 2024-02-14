@@ -1,14 +1,15 @@
-import * as d3 from "d3";
-
 export abstract class AbstractPlot {
   protected _svg: SVGSVGElement;
-  protected node: HTMLElement;
+  protected _node: HTMLElement;
 
   constructor() {
     //
   }
-  public abstract data(data: unknown, dataX: unknown);
-  public abstract draw(svg: SVGSVGElement);
-
-  public abstract coordinates(date: Date): [number, number, number, number];
+  public abstract data(...args: unknown[]);
+  public abstract chartProperties(p: unknown);
+  public abstract svg(svg: SVGSVGElement);
+  public abstract draw();
+  public abstract coordinates(
+    ...args: unknown[]
+  ): [number, number, number, number];
 }

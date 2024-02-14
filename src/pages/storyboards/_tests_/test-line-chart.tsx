@@ -26,7 +26,7 @@ const TestLineChart = () => {
       console.log(d);
       const data = [d["Aberdeenshire"], d["Angus"], d["Barnet"]];
 
-      new LineChart()
+      const lineChart = new LineChart()
         .data(data)
         .chartProperties({})
         .lineProperties([
@@ -50,8 +50,9 @@ const TestLineChart = () => {
           },
         ])
         .svg(svg)
-        // .draw();
-        .animate(2, 20, 400);
+        .draw();
+
+      lineChart.animate(2, 20, 400);
     });
   }, []);
 

@@ -5,16 +5,14 @@ import { AbstractPlot } from "./AbstractPlot";
 import { TimeseriesDataType } from "src/utils/storyboards/processing/TimeseriesDataType";
 
 const MARGIN = { top: 50, right: 50, bottom: 50, left: 50 };
-const ID_AXIS_SELECTION = "#id-axes-selection";
+const ID_AXIS_SELECTION = "#id-axes-selection",
+  YAXIS_LABEL_OFFSET = 10,
+  MAGIC_NO = 10,
+  TITLE_FONT_SIZE = "14px",
+  LINE_STROKE_WIDTH = 2,
+  LINE_STROKE = "#2a363b";
 
-const YAXIS_LABEL_OFFSET = 10;
-const MAGIC_NO = 10,
-  FONT_SIZE = "12px",
-  TITLE_FONT_SIZE = "14px";
-
-const LINE_STROKE_WIDTH = 2;
-
-type ChartProperties = {
+export type ChartProperties = {
   title?: string;
   ticks?: boolean;
   xLabel?: string;
@@ -22,7 +20,7 @@ type ChartProperties = {
   leftAxisLabel?: string;
 };
 
-type LineProperties = {
+export type LineProperties = {
   stroke: string;
   strokeWidth?: number;
   showPoints?: boolean;
@@ -72,8 +70,8 @@ export class LineChart extends AbstractPlot {
 
     this._data.forEach((_, i: number) => {
       this._lineProperties.push({
-        stroke: p[i]?.stroke || "#2a363b",
-        strokeWidth: p[i]?.strokeWidth || 2,
+        stroke: p[i]?.stroke || LINE_STROKE,
+        strokeWidth: p[i]?.strokeWidth || LINE_STROKE_WIDTH,
         onRightAxis:
           typeof p[i]?.onRightAxis === undefined ? false : p[i]?.onRightAxis,
         showPoints:
@@ -123,7 +121,7 @@ export class LineChart extends AbstractPlot {
     // draw line and dots
     this._data?.forEach((data: TimeseriesDataType[], i: number) => {
       const p = this._lineProperties[i];
-      const yAxis = p.onRightAxis ? this._rightAxis : this._leftAxis;
+      const yAxis = this.leftOrRightAxis(i);
 
       // draw line
       this._selector
@@ -152,12 +150,16 @@ export class LineChart extends AbstractPlot {
   }
 
   /**
-   ** Animate & draw the line.
+   ** Animate & draw a line
    **/
   public animate(lineNo: number, start: number, stop: number) {
+    // prettier-ignore
+    // console.log(`LineChart: lineNo = ${lineNo}, start = ${start}, stop = ${stop}`)
+    // console.log(this._data, this._data[lineNo]);
+
     const data = this._data[lineNo].slice(start, stop + 1);
     const p = this._lineProperties[lineNo];
-    const yAxis = p.onRightAxis ? this._rightAxis : this._leftAxis;
+    const yAxis = this.leftOrRightAxis(lineNo);
 
     const lineGenerator = (xAxis, yAxis) => {
       return d3
@@ -182,13 +184,20 @@ export class LineChart extends AbstractPlot {
       .attr("stroke-dasharray", `${length} ${length}`)
       .attr("stroke-dashoffset", length);
 
+    const delay = 1000;
+
     // Animate current path with duration given by user
-    path
-      .transition()
-      .ease(d3.easeLinear)
-      .delay(1000)
-      .duration(duration)
-      .attr("stroke-dashoffset", 0);
+    return new Promise<number>((resolve, reject) => {
+      path
+        .transition()
+        .ease(d3.easeLinear)
+        .delay(1000)
+        .duration(duration)
+        .attr("stroke-dashoffset", 0)
+        .on("end", () => {
+          resolve(delay + duration);
+        });
+    });
   }
 
   /**
@@ -318,17 +327,23 @@ export class LineChart extends AbstractPlot {
     return yScale;
   }
 
+  private leftOrRightAxis(lineNo: number) {
+    const p = this._lineProperties[lineNo];
+    return p.onRightAxis ? this._rightAxis : this._leftAxis;
+  }
+
   /*
    * Given a date of the LineChart, return the corresponding [x, y, x0, y0]
    * coordinates
    */
-  public coordinates(date: Date): [number, number, number, number] {
-    const d = this._data1[findDateIdx(date, this._data1)];
-    return [
-      this._xAxis(d.date),
-      this._leftAxis(d.y),
-      this._xAxis(d.date),
-      this._leftAxis(0),
-    ];
+  public coordinates(
+    lineNo: number,
+    date: Date,
+  ): [number, number, number, number] {
+    const data = this._data[lineNo];
+    const d = data[findDateIdx(date, data)];
+    const yAxis = this.leftOrRightAxis(lineNo);
+
+    return [this._xAxis(d.date), yAxis(0), this._xAxis(d.date), yAxis(d.y)];
   }
 }

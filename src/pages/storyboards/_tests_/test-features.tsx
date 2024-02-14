@@ -1,7 +1,12 @@
 import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
+import { schemeTableau10 } from "d3-scale-chromatic";
+
 import { covid19data1 } from "src/services/covid19-data";
-import { LinePlot } from "src/components/storyboards/plots/LineChart";
+import {
+  LineChart,
+  LineProperties,
+} from "src/components/storyboards/plots/LineChart";
 import { Dot } from "src/components/storyboards/actions/Dot";
 import { searchPeaks } from "src/utils/storyboards/feature/feature-search";
 import { sliceTimeseriesByDate } from "src/utils/storyboards/processing/common";
@@ -36,27 +41,33 @@ const TestFeatures = () => {
       const peaks: Peak[] = searchPeaks(data, "cases/day", 10);
       console.log("TestFeatures: peaks = ", peaks);
 
-      const dataX = peaks.map((peak) =>
+      const peaksData = peaks.map((peak) =>
         sliceTimeseriesByDate(data, peak.start, peak.end),
       );
 
-      console.log("dataX = ", dataX);
+      peaksData.unshift(data);
+      console.log("TestFeatures: peaksData = ", peaksData);
 
-      const plot = new LinePlot()
-        .properties({
-          showPoints: false,
-          color: "#FFFFFF",
-          isSameScale: true,
-        })
-        .data(data, dataX)
-        .draw(svg);
+      const plot = new LineChart()
+        .data(peaksData)
+        .chartProperties({})
+        .lineProperties(
+          peaksData.map((d, i) => {
+            return {
+              stroke: schemeTableau10[i],
+            } as LineProperties;
+          }),
+        )
+        .svg(svg)
+        .draw();
 
       peaks.forEach((peak) => {
-        const coordinates = plot.coordinates(peak.date);
-        const dot = new Dot()
+        console.log(...plot.coordinates(0, peak.date));
+        new Dot()
           .properties()
-          .draw(svg)
-          .coordinate(coordinates[2], coordinates[3]);
+          .svg(svg)
+          .draw()
+          .coordinate(...plot.coordinates(0, peak.date));
       });
     });
   }, []);

@@ -47,7 +47,7 @@ const Covid19Story = () => {
 
     // Wait for initialization to complete before further actions
     workflow
-      .waitForInitialization()
+      .waitForInit()
       .then(() => {
         const _regions = workflow.keys();
         setRegions([..._regions]);

@@ -1,6 +1,8 @@
 import { CategoricalFeatureEnum } from "./CategoricalFeatureEnum";
 import { NumericalFeatureEnum } from "./NumericalFeatureEnum";
 
+export type FeaturesType = AbstractFeature[];
+
 export abstract class AbstractFeature {
   protected _date: Date;
   protected _start: Date;

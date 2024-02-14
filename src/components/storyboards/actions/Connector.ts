@@ -28,7 +28,7 @@ export class Connector extends AbstractAction {
     return this;
   }
 
-  protected _draw() {
+  public draw() {
     this._connectorNode = d3
       .create("svg")
       .append("line")
@@ -37,19 +37,21 @@ export class Connector extends AbstractAction {
       .style("stroke-dasharray", "5,5")
       .node();
     this._node.appendChild(this._connectorNode);
+
+    return this;
   }
 
   public coordinate(x: number, y: number, x0: number, y0: number) {
-    this._x = x;
-    this._y = y;
+    this._x1 = x;
+    this._y1 = y;
     this._x0 = x0;
     this._y0 = y0;
 
     d3.select(this._connectorNode)
       .attr("x1", this._x0)
-      .attr("x2", this._x)
+      .attr("x2", this._x1)
       .attr("y1", this._y0)
-      .attr("y2", this._y);
+      .attr("y2", this._y1);
 
     return this;
   }

@@ -36,7 +36,7 @@ export class TextBox extends AbstractAction {
     return this;
   }
 
-  protected _draw() {
+  public draw() {
     this._rectNode = d3
       .create("svg")
       .append("rect")
@@ -75,6 +75,8 @@ export class TextBox extends AbstractAction {
 
     const { height } = this._textNode.getBoundingClientRect();
     this._rectNode.setAttribute("height", `${height + RECT_PADDING}px`);
+
+    return this;
   }
 
   private formatText() {
@@ -160,25 +162,27 @@ export class TextBox extends AbstractAction {
     return rowHeight;
   }
 
-  public coordinate(x: number, y: number) {
-    this._x = x;
-    this._y = y;
+  public coordinate(x0: number, y0: number, x1: number, y1: number) {
+    this._x0 = x0;
+    this._y0 = y0;
+    this._x1 = x1;
+    this._y1 = y1;
 
     const { width, height } = this._textNode.getBoundingClientRect();
-    const rectX = this._x - (width + RECT_PADDING) / 2;
-    const textX = this._x - width / 2;
+    const rectX = this._x1 - (width + RECT_PADDING) / 2;
+    const textX = this._x1 - width / 2;
 
     console.log(width, height, rectX);
 
     this._rectNode.setAttribute(
       "transform",
-      `translate(${rectX},${this._y - (height + RECT_PADDING) / 2})`,
+      `translate(${rectX},${this._y1 - (height + RECT_PADDING) / 2})`,
     );
 
     // translate x,y position to center of anno (rather than top left)
     this._textNode.setAttribute(
       "transform",
-      `translate(${textX},${this._y - height / 2})`,
+      `translate(${textX},${this._y1 - height / 2})`,
     );
 
     const correctTextAlignment = (textElem, width, align = undefined) => {

@@ -1,5 +1,5 @@
 import { TimeseriesDataType } from "./TimeseriesDataType";
-import { AbstractFeature } from "../feature/AbstractFeature";
+import { AbstractFeature, FeaturesType } from "../feature/AbstractFeature";
 import { ActionBuilder } from "./ActionBuilder";
 import {
   ActionTableRowType,
@@ -9,8 +9,13 @@ import {
   TimeseriesFeatureDetector,
   TimeseriesFeatureDetectorProperties,
 } from "../feature/TimeseriesFeatureDetector";
-import { AbstractAction } from "src/components/storyboards/actions/AbstractAction";
-import { DateFeatureMap, FeatureActionMap } from "./FeatureActionMap";
+import { ActionsType } from "src/components/storyboards/actions/AbstractAction";
+import {
+  DateActionsMap,
+  DateFeaturesMap,
+  FeatureActionsMap,
+} from "./FeatureActionMaps";
+import { setOrUpdateMap } from "./common";
 
 export class FeatureActionTableTranslator {
   private _data: TimeseriesDataType[];
@@ -28,54 +33,43 @@ export class FeatureActionTableTranslator {
   }
 
   public translate() {
-    const dateFeatureMap: DateFeatureMap = new Map<Date, AbstractFeature[]>();
-    const featureActionMap: FeatureActionMap = new Map<
-      AbstractFeature,
-      AbstractAction[]
-    >();
+    const dateFeaturesMap: DateFeaturesMap = new Map();
+    const dataActionsMap: DateActionsMap = new Map();
+    const featureActionMap: FeatureActionsMap = new Map();
+
     const featureDetector = new TimeseriesFeatureDetector(
       this._data,
       this._properties,
     );
     const actionBuilder = new ActionBuilder();
 
-    this._table.forEach((d: FeatureActionTableRowType) => {
+    this._table.forEach((row: FeatureActionTableRowType) => {
       // prettier-ignore
       // console.log("FeatureActionTableTranslator: feature = ", d.feature, ", properties = ", d.properties);
-      const features: AbstractFeature[] = featureDetector.detect(
-        d.feature,
-        d.properties,
+      const features: FeaturesType = featureDetector.detect(
+        row.feature,
+        row.properties,
       );
       // prettier-ignore
       // console.log("FeatureActionTableTranslator: features = ", features);
 
-      const actions: AbstractAction[] = [];
-      d.actions.forEach((d1: ActionTableRowType) => {
+      const actions: ActionsType = [];
+      row.actions.forEach((rowIn: ActionTableRowType) => {
         // prettier-ignore
         // console.log("FeatureActionTableTranslator: action = ", d1.action,  ", properties = ", d1.properties);
-        const action = actionBuilder.create(d1.action, d1.properties);
+        const action = actionBuilder.create(rowIn.action, rowIn.properties);
         // prettier-ignore
         // console.log("FeatureActionTableTranslator: action = ", action);
         actions.push(action);
       });
 
-      features.forEach((d: AbstractFeature) => {
-        this.setOrUpdateValue(dateFeatureMap, d.date, d);
-        this.setOrUpdateValue(featureActionMap, d, actions);
+      features.forEach((feature: AbstractFeature) => {
+        setOrUpdateMap(dateFeaturesMap, feature.date, feature);
+        setOrUpdateMap(featureActionMap, feature, actions);
+        setOrUpdateMap(dataActionsMap, feature.date, actions);
       });
     });
 
-    return [dateFeatureMap, featureActionMap];
-  }
-
-  // Function to set a value in the map if it doesn't exist, otherwise get the existing value and then set it again
-  setOrUpdateValue(map: Map<unknown, unknown>, key: unknown, value: unknown[]) {
-    if (map.has(key)) {
-      const existingValue = map.get(key);
-      existingValue?.push(value);
-      map.set(key, existingValue!);
-    } else {
-      map.set(key, [value]);
-    }
+    return dataActionsMap;
   }
 }
