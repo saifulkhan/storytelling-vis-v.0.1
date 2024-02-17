@@ -40,8 +40,10 @@ const Covid19Story = () => {
   const valuetext = (value) => `${value}`;
 
   useEffect(() => {
+    let ignore = false;
+
     // if (!chartRef.current) return;
-    console.log("useEffect triggered");
+    console.log("Covid19Story: useEffect triggered");
 
     setLoading(true);
 
@@ -50,13 +52,17 @@ const Covid19Story = () => {
       .waitForInit()
       .then(() => {
         const _regions = workflow.keys();
-        setRegions([..._regions]);
+        if (!ignore) setRegions([..._regions]);
         setLoading(false);
       })
       .catch((error) => {
         console.error(error);
         setLoading(false);
       });
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   const handleChangeSlider = (event) => {

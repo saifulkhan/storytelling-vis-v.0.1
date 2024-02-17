@@ -16,7 +16,6 @@ import { TimeseriesDataType } from "src/utils/storyboards/processing/TimeseriesD
 const TestFeatures = () => {
   const chartRef = useRef(null);
 
-  const margin = { top: 20, right: 30, bottom: 40, left: 50 };
   const height = 550;
   const width = 1500;
 

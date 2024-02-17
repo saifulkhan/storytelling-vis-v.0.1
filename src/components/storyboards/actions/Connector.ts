@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { AbstractAction } from "./AbstractAction";
+import { AbstractAction, Coordinate } from "./AbstractAction";
 import { ActionEnum } from "./ActionEnum";
 
 export type ConnectorProperties = {
@@ -41,17 +41,15 @@ export class Connector extends AbstractAction {
     return this;
   }
 
-  public coordinate(x: number, y: number, x0: number, y0: number) {
-    this._x1 = x;
-    this._y1 = y;
-    this._x0 = x0;
-    this._y0 = y0;
+  public coordinate(src: Coordinate, dest: Coordinate) {
+    const [x1, y1] = (this._src = src);
+    const [x2, y2] = (this._dest = dest);
 
     d3.select(this._connectorNode)
-      .attr("x1", this._x0)
-      .attr("x2", this._x1)
-      .attr("y1", this._y0)
-      .attr("y2", this._y1);
+      .attr("x1", x1)
+      .attr("y1", y1)
+      .attr("x2", x2)
+      .attr("y2", y2);
 
     return this;
   }

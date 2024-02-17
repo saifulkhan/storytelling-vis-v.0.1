@@ -102,22 +102,23 @@ export class Covid19StoryWorkflow extends AbstractWorkflow {
           const end = findIndexOfDate(this._data, date);
           await plot.animate(0, start, end);
 
+          console.log("Covid19StoryWorkflow: length = ", actionsArray.length);
+
           for (const actions of actionsArray) {
             console.log("Covid19StoryWorkflow: actions = ", actions);
-            for (const action of actions) {
-              console.log("Covid19StoryWorkflow: action = ", action);
-              action
-                .svg(this._svg)
-                .draw()
-                .coordinate(...plot.coordinates(0, date));
-            }
-            await AbstractAction.showAll(actions);
-            await AbstractAction.hideAll(actions);
-            console.log("actions = ", actions);
+            AbstractAction.svg(actions, this._svg);
+            AbstractAction.draw(actions);
+            AbstractAction.coordinate(actions, ...plot.coordinates(0, date));
+            let res = await AbstractAction.show(actions);
+            console.log("res 1 = ", res);
+            res = await AbstractAction.hide(actions);
+            console.log("res 2 = ", res);
           }
 
           start = end;
         }
+
+        // plot remaining indices
         if (start < this._data.length) {
           const res = await plot.animate(0, start, this._data.length);
           console.log("res = ", res);

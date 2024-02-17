@@ -1,17 +1,16 @@
 import * as d3 from "d3";
-import { ActionEnum } from "./ActionEnum";
+import { ActionEnum, ActionEnumZOrder } from "./ActionEnum";
 
 export type ActionsType = AbstractAction[];
+export type Coordinate = [number, number];
 
 export abstract class AbstractAction {
   protected _type: ActionEnum;
   protected _properties;
   protected _svg: SVGSVGElement;
   protected _node: HTMLElement;
-  protected _x0;
-  protected _y0;
-  protected _x1;
-  protected _y1;
+  protected _src;
+  protected _dest;
 
   constructor() {
     //
@@ -40,19 +39,19 @@ export abstract class AbstractAction {
     // this.node.removeAttribute("display");
 
     d3.select(this._svg).append(() => this._node);
-    // this._draw();
     return this;
   }
 
   public abstract draw();
-  public abstract coordinate(x0: number, y0: number, x1: number, y1: number);
+  public abstract coordinate(src: Coordinate, dest: Coordinate);
 
-  public show(delay = 0, duration = 1000) {
+  public show(delay = 2000, duration = 1000) {
     return new Promise<number>((resolve, reject) => {
       d3.select(this._node)
         .transition()
-        .delay(delay)
+        .delay(0)
         .duration(duration)
+        .delay(delay)
         .attr("opacity", 1)
         .on("end", () => {
           resolve(delay + duration);
@@ -64,8 +63,9 @@ export abstract class AbstractAction {
     return new Promise<number>((resolve, reject) => {
       d3.select(this._node)
         .transition()
-        .delay(delay)
+        .delay(0)
         .duration(duration)
+        .delay(delay)
         .attr("opacity", 0)
         .on("end", () => {
           resolve(delay + duration);
@@ -79,30 +79,35 @@ export abstract class AbstractAction {
     return this;
   }
 
-  // public static svgAll(actions: ActionsType, svg) {
-  //   actions.map((d: AbstractAction) => d.svg(svg));
-  // }
+  public static svg(actions: ActionsType, svg) {
+    actions.map((d: AbstractAction) => d.svg(svg));
+    return this;
+  }
 
-  // public static drawAll(actions: ActionsType) {
-  //   actions.map((d: AbstractAction) => d.draw());
-  // }
+  public static draw(actions: ActionsType) {
+    actions.sort(
+      (a: AbstractAction, b: AbstractAction) =>
+        ActionEnumZOrder[b.type] - ActionEnumZOrder[a.type],
+    );
+    actions.map((d: AbstractAction) => d.draw());
+    return this;
+  }
 
-  // public static coordinateAll(
-  //   actions: ActionsType,
-  //   x0: number,
-  //   y0: number,
-  //   x1: number,
-  //   y1: number,
-  // ) {
-  //   actions.map((d: AbstractAction) => d.coordinate(x0, y0, x1, y1));
-  // }
+  public static coordinate(
+    actions: ActionsType,
+    src: Coordinate,
+    dest: Coordinate,
+  ) {
+    actions.map((d: AbstractAction) => d.coordinate(src, dest));
+    return this;
+  }
 
-  public static showAll(actions: ActionsType): Promise<any[]> {
+  public static show(actions: ActionsType): Promise<any[]> {
     const promises = actions.map((d: AbstractAction) => d.show());
     return Promise.all(promises);
   }
 
-  public static hideAll(actions: ActionsType) {
+  public static hide(actions: ActionsType) {
     const promises = actions.map((d: AbstractAction) => d.hide());
     return Promise.all(promises);
   }

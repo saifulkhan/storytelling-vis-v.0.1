@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { AbstractAction } from "./AbstractAction";
+import { AbstractAction, Coordinate } from "./AbstractAction";
 import { ActionEnum } from "./ActionEnum";
 
 export type CircleProperties = {
@@ -46,13 +46,11 @@ export class Circle extends AbstractAction {
     return this;
   }
 
-  public coordinate(x0: number, y0: number, x1: number, y1: number) {
-    this._x0 = x0;
-    this._y0 = y0;
-    this._x1 = x1;
-    this._y1 = y1;
+  public coordinate(src: Coordinate, dest: Coordinate) {
+    const [x1, y1] = (this._src = src);
+    const [x2, y2] = (this._dest = dest);
 
-    d3.select(this._circleNode).attr("cx", x1).attr("cy", y1);
+    d3.select(this._circleNode).attr("cx", x2).attr("cy", y2);
 
     return this;
   }

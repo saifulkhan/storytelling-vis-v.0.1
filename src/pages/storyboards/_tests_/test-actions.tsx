@@ -5,9 +5,10 @@ import { TextBox } from "src/components/storyboards/actions/TextBox";
 import { Connector } from "src/components/storyboards/actions/Connector";
 import { Circle } from "src/components/storyboards/actions/Circle";
 import {
-  hideAll,
-  showAll,
+  AbstractAction,
+  Coordinate,
 } from "src/components/storyboards/actions/AbstractAction";
+import { title } from "process";
 
 const TestActions = () => {
   const chartRef = useRef(null);
@@ -29,11 +30,18 @@ const TestActions = () => {
       // .attr("transform", `translate(${margin.left},${margin.top})`)
       .node();
 
+    const src: Coordinate = [200, 200];
+    const dest: Coordinate = [200, 100];
+
     const textBox = new TextBox()
-      .properties()
+      .properties({
+        title: "17-02-2024",
+        message:
+          "By {DATE}, the number of cases continued to climb higher in {REGION}.",
+      })
       .svg(svg)
       .draw()
-      .coordinate(100, 200, 100, 100);
+      .coordinate(src, dest);
 
     const dot = new Dot()
       .properties({
@@ -43,8 +51,15 @@ const TestActions = () => {
       })
       .svg(svg)
       .draw()
-      .coordinate(100, 200, 100, 100);
+      .coordinate(src, dest);
 
+    const connector = new Connector()
+      .properties({})
+      .svg(svg)
+      .draw()
+      .coordinate(src, dest);
+
+    /*
     const circle = new Circle()
       .properties({
         size: 10,
@@ -53,19 +68,15 @@ const TestActions = () => {
       })
       .svg(svg)
       .draw()
-      .coordinate(100, 200, 100, 100);
+      .coordinate(src, dest);
 
-    const connector = new Connector()
-      .properties({})
-      .svg(svg)
-      .draw()
-      .coordinate(100, 200, 100, 100);
+    
+    */
 
     const animate = async () => {
       //
       // test individually
       //
-
       /*
       await Promise.all([
         textBox.show(),
@@ -85,15 +96,16 @@ const TestActions = () => {
         circle.show(),
         connector.show(),
       ]);
-      */
-
+    */
       //
       // test all together
       //
+      /*
       const actions = [textBox, dot, circle, connector];
-      await showAll(actions);
-      await hideAll(actions);
-      await showAll(actions);
+      await AbstractAction.show(actions);
+      await AbstractAction.hide(actions);
+      await AbstractAction.show(actions);
+      */
     };
 
     animate();

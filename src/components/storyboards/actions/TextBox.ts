@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { AbstractAction } from "./AbstractAction";
+import { AbstractAction, Coordinate } from "./AbstractAction";
 import { ActionEnum } from "./ActionEnum";
 
 export type TextBoxProperties = {
@@ -64,7 +64,7 @@ export class TextBox extends AbstractAction {
     this._textNode = d3
       .create("svg")
       .append("g")
-      .attr("fill", this._properties.background)
+      .attr("fill", this._properties.backgroundColor)
       .node();
 
     this._textNode.append(this._titleNode);
@@ -87,7 +87,7 @@ export class TextBox extends AbstractAction {
     const { height: titleHeight } = this._titleNode.getBoundingClientRect();
     const titleSpacing = titleHeight + rowHeight * 0.2;
 
-    console.log("rowHeight, titleHeight =", rowHeight, titleHeight);
+    console.log("TextBox: rowHeight, titleHeight =", rowHeight, titleHeight);
 
     this._messageNode.setAttribute("y", titleSpacing);
   }
@@ -98,7 +98,7 @@ export class TextBox extends AbstractAction {
    */
   private wrapText(element, text: string) {
     const words: string[] = text.split(" ");
-    console.log("words =", words);
+    console.log("TextBox: words =", words);
     // element.innerHTML = "";
 
     // Draw each word onto svg and save its width before removing
@@ -107,13 +107,13 @@ export class TextBox extends AbstractAction {
         d3.create("svg").append("tspan").text(word).node(),
       );
 
-      console.log("wordElem =", wordElem);
+      console.log("TextBox: wordElem =", wordElem);
 
       const { width: wordWidth } = wordElem.getBoundingClientRect();
       element.removeChild(wordElem);
       return { word: word, width: wordWidth };
     });
-    console.log("wordsWidth =", wordsWidth);
+    console.log("TextBox: wordsWidth =", wordsWidth);
 
     // element.textContent = "";
 
@@ -162,27 +162,26 @@ export class TextBox extends AbstractAction {
     return rowHeight;
   }
 
-  public coordinate(x0: number, y0: number, x1: number, y1: number) {
-    this._x0 = x0;
-    this._y0 = y0;
-    this._x1 = x1;
-    this._y1 = y1;
+  public coordinate(src: Coordinate, dest: Coordinate) {
+    this._src = src;
+    this._dest = dest;
+    const [x1, y1] = this._dest;
 
     const { width, height } = this._textNode.getBoundingClientRect();
-    const rectX = this._x1 - (width + RECT_PADDING) / 2;
-    const textX = this._x1 - width / 2;
+    const rectX = x1 - (width + RECT_PADDING) / 2;
+    const textX = x1 - width / 2;
 
-    console.log(width, height, rectX);
+    console.log("TextBox: ", width, height, rectX);
 
     this._rectNode.setAttribute(
       "transform",
-      `translate(${rectX},${this._y1 - (height + RECT_PADDING) / 2})`,
+      `translate(${rectX},${y1 - (height + RECT_PADDING) / 2})`,
     );
 
     // translate x,y position to center of anno (rather than top left)
     this._textNode.setAttribute(
       "transform",
-      `translate(${textX},${this._y1 - height / 2})`,
+      `translate(${textX},${y1 - height / 2})`,
     );
 
     const correctTextAlignment = (textElem, width, align = undefined) => {

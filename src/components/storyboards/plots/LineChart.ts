@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import { findDateIdx } from "src/utils/storyboards/processing/common";
 import { AbstractPlot } from "./AbstractPlot";
 import { TimeseriesDataType } from "src/utils/storyboards/processing/TimeseriesDataType";
+import { Coordinate } from "../actions/AbstractAction";
 
 const MARGIN = { top: 50, right: 50, bottom: 50, left: 50 };
 const ID_AXIS_SELECTION = "#id-axes-selection",
@@ -336,14 +337,14 @@ export class LineChart extends AbstractPlot {
    * Given a date of the LineChart, return the corresponding [x, y, x0, y0]
    * coordinates
    */
-  public coordinates(
-    lineNo: number,
-    date: Date,
-  ): [number, number, number, number] {
+  public coordinates(lineNo: number, date: Date): [Coordinate, Coordinate] {
     const data = this._data[lineNo];
     const d = data[findDateIdx(date, data)];
     const yAxis = this.leftOrRightAxis(lineNo);
 
-    return [this._xAxis(d.date), yAxis(0), this._xAxis(d.date), yAxis(d.y)];
+    return [
+      [this._xAxis(d.date), yAxis(0)],
+      [this._xAxis(d.date), yAxis(d.y)],
+    ];
   }
 }
