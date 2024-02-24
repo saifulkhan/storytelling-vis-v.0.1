@@ -10,14 +10,17 @@ export type TextBoxProperties = {
   width?: number;
 };
 
-const RECT_PADDING = 0;
+const PADDING = 3;
+const FONT_FAMILY = "Arial";
+const FONT_SIZE = "12px";
 
 export class TextBox extends AbstractAction {
   protected _properties: TextBoxProperties;
-  protected _rectNode: HTMLElement;
-  protected _titleNode: HTMLElement;
-  protected _messageNode: HTMLElement;
-  protected _textNode: HTMLElement;
+  protected _rectNode: SVGRectElement;
+  protected _titleNode: SVGTextElement;
+  protected _messageNode: SVGTextElement;
+  protected _textNode: SVGGElement;
+  protected _spaceWidth;
 
   constructor() {
     super();
@@ -30,7 +33,7 @@ export class TextBox extends AbstractAction {
       title: properties?.title || "Title ...",
       message: properties?.message || "Message text goes here ...",
       backgroundColor: properties?.backgroundColor || "#E0E0E0",
-      width: properties?.width || 250,
+      width: properties?.width || 300,
     };
 
     return this;
@@ -41,15 +44,15 @@ export class TextBox extends AbstractAction {
       .create("svg")
       .append("rect")
       .attr("fill", this._properties.backgroundColor)
-      .attr("width", this._properties.width + RECT_PADDING)
-      .attr("rx", 5)
+      .attr("width", this._properties.width)
+      .attr("rx", 3)
       .node();
     this._node.appendChild(this._rectNode);
 
     this._titleNode = d3
       .create("svg")
       .append("text")
-      .attr("font-size", "12px")
+      .attr("font-size", FONT_SIZE)
       .attr("fill", "black")
       .attr("font-weight", "bold")
       .node();
@@ -57,7 +60,7 @@ export class TextBox extends AbstractAction {
     this._messageNode = d3
       .create("svg")
       .append("text")
-      .attr("font-size", "12px")
+      .attr("font-size", FONT_SIZE)
       .attr("fill", "black")
       .node();
 
@@ -71,95 +74,98 @@ export class TextBox extends AbstractAction {
     this._textNode.append(this._messageNode);
     this._node.appendChild(this._textNode);
 
-    this.formatText();
+    // wrap title and message
+    this.wrap(this._titleNode, this._properties.title);
+    this.wrap(this._messageNode, this._properties.message);
 
-    const { height } = this._textNode.getBoundingClientRect();
-    this._rectNode.setAttribute("height", `${height + RECT_PADDING}px`);
+    // y position of message, give some space after title
+    let height = this._titleNode.getBoundingClientRect().height;
+    this._messageNode.setAttribute("y", `${height + PADDING}px`);
+
+    // y position of rect
+    height = this._textNode.getBoundingClientRect().height;
+    this._rectNode.setAttribute("height", `${height + PADDING}px`);
 
     return this;
-  }
-
-  private formatText() {
-    const rowHeight = this.wrapText(this._titleNode, this._properties.title);
-    this.wrapText(this._messageNode, this._properties.message);
-
-    // Calculate spacing between title and label
-    const { height: titleHeight } = this._titleNode.getBoundingClientRect();
-    const titleSpacing = titleHeight + rowHeight * 0.2;
-
-    console.log("TextBox: rowHeight, titleHeight =", rowHeight, titleHeight);
-
-    this._messageNode.setAttribute("y", titleSpacing);
   }
 
   /*
    * In SVG, text is rendered in a single line. To wrap text, we use individual
    * <tspan> elements for each row.
    */
-  private wrapText(element, text: string) {
+  private wrap(element: SVGTextElement, text: string) {
     const words: string[] = text.split(" ");
-    console.log("TextBox: words =", words);
-    // element.innerHTML = "";
+    console.log("TextBox:_wrap words =", words);
 
-    // Draw each word onto svg and save its width before removing
-    const wordsWidth: { word: string; width: number }[] = words.map((word) => {
+    const calculateTextWidth = (
+      element: SVGTextElement,
+      word: string,
+    ): number => {
       const wordElem = element.appendChild(
         d3.create("svg").append("tspan").text(word).node(),
       );
 
-      console.log("TextBox: wordElem =", wordElem);
+      // console.log("TextBox:_wrap wordElem =", wordElem);
+      // wordElem = <tspan>​{DATE},​</tspan>​
 
-      const { width: wordWidth } = wordElem.getBoundingClientRect();
+      const { width } = wordElem.getBoundingClientRect();
       element.removeChild(wordElem);
-      return { word: word, width: wordWidth };
-    });
-    console.log("TextBox: wordsWidth =", wordsWidth);
+      return width;
+    };
 
-    // element.textContent = "";
+    const addText = (element: SVGTextElement, words: string[]) => {
+      element.appendChild(
+        d3
+          .create("svg")
+          .append("tspan")
+          .attr("x", 0)
+          .attr("dy", "1.1em")
+          .text(words.join(" ") + " ")
+          .node(),
+      );
+    };
+
+    // Draw each word onto svg and save its width before removing
+    const wordWidthArr: { word: string; width: number }[] = words.map(
+      (word) => {
+        return { word: word, width: calculateTextWidth(element, word) };
+      },
+    );
+    console.log("TextBox:_wrap wordWidthArr =", wordWidthArr);
+
+    // calculate the width of the backspace text
+    this._spaceWidth = calculateTextWidth(element, "-");
+    console.log("TextBox:_wrap _spaceWidth = ", this._spaceWidth);
 
     // Keep adding words to row until width exceeds span then create new row
-    let currentWidth = 0;
-    let rowString = [];
-    let isLastWord;
-    let rowNumber = 0;
+    let accumulatedWidth = 0;
+    let wordsInLine = [];
+    const messageWidth = this._properties.width - PADDING;
 
-    wordsWidth.forEach((word, i) => {
-      // Don't factor in the width taken up by spaces atm
-      if (currentWidth + word.width < this._properties.width) {
-        currentWidth += word.width;
-        rowString.push(word.word);
+    for (let i = 0; i < wordWidthArr.length; i++) {
+      const word = wordWidthArr[i].word,
+        width = wordWidthArr[i].width + this._spaceWidth;
+
+      if (accumulatedWidth + width < messageWidth) {
+        // prettier-ignore
+        console.log("TextBox:_wrap wordsInLine = ", wordsInLine, ", accumulatedWidth + width = ", accumulatedWidth + width, "this._messageWidth = ", this._messageWidth)
+        // keep adding words to be displayed in a line
+        accumulatedWidth += width;
+        wordsInLine.push(word);
       } else {
-        element.appendChild(
-          d3
-            .create("svg")
-            .append("tspan")
-            .attr("x", 0)
-            .attr("dy", "1.1em")
-            .text(rowString.join(" ") + " ")
-            .node(),
-        );
-        currentWidth = word.width;
-        rowString = [word.word];
-        rowNumber++;
+        // create a line
+        addText(element, wordsInLine);
+
+        // prepare for new line
+        accumulatedWidth = width;
+        wordsInLine = [word];
       }
 
-      isLastWord = i == words.length - 1;
-      if (isLastWord) {
-        element.appendChild(
-          d3
-            .create("svg")
-            .append("tspan")
-            .attr("x", 0)
-            .attr("dy", "1.1em")
-            .text(rowString.join(" ") + " ")
-            .node(),
-        );
-        rowNumber++;
+      // last word
+      if (i === wordWidthArr.length - 1) {
+        addText(element, wordsInLine);
       }
-    });
-
-    const rowHeight = element.getBoundingClientRect().height / rowNumber;
-    return rowHeight;
+    }
   }
 
   public coordinate(src: Coordinate, dest: Coordinate) {
@@ -167,22 +173,18 @@ export class TextBox extends AbstractAction {
     this._dest = dest;
     const [x1, y1] = this._dest;
 
-    const { width, height } = this._textNode.getBoundingClientRect();
-    const rectX = x1 - (width + RECT_PADDING) / 2;
-    const textX = x1 - width / 2;
+    const { width, height } = this._rectNode.getBoundingClientRect();
 
-    console.log("TextBox: ", width, height, rectX);
+    // left align
+    if (false) {
+      const x = this._dest[0] - width;
+    }
+    // right align
+    const x = this._dest[0];
+    const y = this._dest[1] - height;
 
-    this._rectNode.setAttribute(
-      "transform",
-      `translate(${rectX},${y1 - (height + RECT_PADDING) / 2})`,
-    );
-
-    // translate x,y position to center of anno (rather than top left)
-    this._textNode.setAttribute(
-      "transform",
-      `translate(${textX},${y1 - height / 2})`,
-    );
+    this._rectNode.setAttribute("transform", `translate(${x},${y})`);
+    this._textNode.setAttribute("transform", `translate(${x + PADDING},${y})`);
 
     const correctTextAlignment = (textElem, width, align = undefined) => {
       const alignToX = () => {
@@ -197,7 +199,7 @@ export class TextBox extends AbstractAction {
       );
     };
 
-    // align text correctly
+    // align texts
     correctTextAlignment(this._titleNode, width, "middle");
     correctTextAlignment(this._messageNode, width);
 

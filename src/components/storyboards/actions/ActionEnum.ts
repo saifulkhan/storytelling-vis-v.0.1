@@ -6,8 +6,8 @@ export enum ActionEnum {
 }
 
 export const ActionEnumZOrder: Record<ActionEnum, number> = {
-  [ActionEnum.DOT]: 1,
-  [ActionEnum.CIRCLE]: 2,
-  [ActionEnum.TEXT_BOX]: 3,
-  [ActionEnum.CONNECTOR]: 4,
+  [ActionEnum.DOT]: 4,
+  [ActionEnum.CIRCLE]: 3,
+  [ActionEnum.TEXT_BOX]: 2,
+  [ActionEnum.CONNECTOR]: 1,
 };

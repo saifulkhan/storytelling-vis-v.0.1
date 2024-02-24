@@ -7,8 +7,8 @@ export type Coordinate = [number, number];
 export abstract class AbstractAction {
   protected _type: ActionEnum;
   protected _properties;
-  protected _svg: SVGSVGElement;
-  protected _node: HTMLElement;
+  protected _svg: SVGGElement;
+  protected _node: SVGGElement;
   protected _src;
   protected _dest;
 
@@ -26,17 +26,15 @@ export abstract class AbstractAction {
     return this._type;
   }
 
-  public svg(svg: SVGSVGElement) {
+  public svg(svg: SVGGElement) {
     this._svg = svg;
     this._node = d3
       .create("svg")
       .append("g")
       .attr("id", this._properties?.id)
-      // hide
-      // .attr("display", "none")
+      // .attr("display", "none") // hide
+      .style("opacity", 0) // hide
       .node();
-    // show
-    // this.node.removeAttribute("display");
 
     d3.select(this._svg).append(() => this._node);
     return this;
@@ -49,10 +47,11 @@ export abstract class AbstractAction {
     return new Promise<number>((resolve, reject) => {
       d3.select(this._node)
         .transition()
-        .delay(0)
-        .duration(duration)
-        .delay(delay)
-        .attr("opacity", 1)
+        .delay(0) // delay before transition
+        .duration(duration) // duration of the opacity transition
+        .style("opacity", 1)
+        .transition()
+        .delay(delay) // delay after the opacity transition ends
         .on("end", () => {
           resolve(delay + duration);
         });
@@ -65,8 +64,7 @@ export abstract class AbstractAction {
         .transition()
         .delay(0)
         .duration(duration)
-        .delay(delay)
-        .attr("opacity", 0)
+        .style("opacity", 0)
         .on("end", () => {
           resolve(delay + duration);
         });
