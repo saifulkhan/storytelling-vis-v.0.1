@@ -40,6 +40,11 @@ const sections = [
         path: "/storyboards/covid19-story",
         icon: <AutoStoriesIcon fontSize="small" />,
       },
+      {
+        title: "[1] COVID-19 Feature Action Table",
+        path: "/storyboards/feature-action-table",
+        icon: <AutoStoriesIcon fontSize="small" />,
+      },
     ],
   },
   {

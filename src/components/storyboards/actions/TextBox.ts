@@ -10,6 +10,14 @@ export type TextBoxProperties = {
   width?: number;
 };
 
+const defaultTextBoxProperties: TextBoxProperties = {
+  id: "TextBox",
+  title: "Title ...",
+  message: "Message text goes here ...",
+  backgroundColor: "#E0E0E0",
+  width: 300,
+};
+
 const PADDING = 3;
 const FONT_FAMILY = "Arial";
 const FONT_SIZE = "12px";
@@ -28,14 +36,7 @@ export class TextBox extends AbstractAction {
   }
 
   public properties(properties: TextBoxProperties = {}) {
-    this._properties = {
-      id: properties?.id || "TextBox",
-      title: properties?.title || "Title ...",
-      message: properties?.message || "Message text goes here ...",
-      backgroundColor: properties?.backgroundColor || "#E0E0E0",
-      width: properties?.width || 300,
-    };
-
+    this._properties = { ...defaultTextBoxProperties, ...properties };
     return this;
   }
 

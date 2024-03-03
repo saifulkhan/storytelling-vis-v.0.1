@@ -8,6 +8,12 @@ export type ConnectorProperties = {
   opacity?: number;
 };
 
+const defaultConnectorProperties = {
+  id: "Connector",
+  stroke: "#000000",
+  opacity: 1,
+};
+
 export class Connector extends AbstractAction {
   protected _properties: ConnectorProperties;
   protected _connectorNode;
@@ -20,11 +26,7 @@ export class Connector extends AbstractAction {
   }
 
   public properties(properties: ConnectorProperties = {}) {
-    this._properties = {
-      stroke: properties?.stroke || "#000000",
-      opacity: properties?.opacity || 1,
-    };
-
+    this._properties = { ...defaultConnectorProperties, ...properties };
     return this;
   }
 

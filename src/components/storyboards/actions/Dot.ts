@@ -9,6 +9,13 @@ export type DotProperties = {
   opacity?: number;
 };
 
+const defaultDotProperties: DotProperties = {
+  id: "Dot",
+  size: 5,
+  color: "#000000",
+  opacity: 1,
+};
+
 export class Dot extends AbstractAction {
   protected _properties: DotProperties;
   protected _dotNode;
@@ -19,13 +26,7 @@ export class Dot extends AbstractAction {
   }
 
   public properties(properties: DotProperties = {}) {
-    this._properties = {
-      id: properties?.id || "Dot",
-      size: properties?.size || 5,
-      color: properties?.color || "#000000",
-      opacity: properties?.opacity || 1,
-    };
-
+    this._properties = { ...defaultDotProperties, ...properties };
     return this;
   }
 

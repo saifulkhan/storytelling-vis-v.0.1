@@ -6,7 +6,7 @@ import { TextBoxProperties } from "src/components/storyboards/actions/TextBox";
 import { NumericalFeatureEnum } from "src/utils/storyboards/feature/NumericalFeatureEnum";
 import { PeakProperties } from "src/utils/storyboards/feature/Peak";
 import { SlopeProperties } from "src/utils/storyboards/feature/Slope";
-import { FeatureActionTableRowType } from "src/utils/storyboards/processing/FeatureActionTableRowType";
+import { FeatureActionTableRowType } from "src/components/storyboards/tables/FeatureActionTableRowType";
 
 export const featureActionTable1: FeatureActionTableRowType[] = [
   {

@@ -10,6 +10,14 @@ export type CircleProperties = {
   opacity?: number;
 };
 
+const defaultCircleProperties: CircleProperties = {
+  id: "Circle",
+  size: 10,
+  strokeWidth: 2,
+  color: "#000000",
+  opacity: 1,
+};
+
 export class Circle extends AbstractAction {
   protected _properties: CircleProperties;
   protected _circleNode;
@@ -20,14 +28,7 @@ export class Circle extends AbstractAction {
   }
 
   public properties(properties: CircleProperties = {}) {
-    this._properties = {
-      id: properties?.id || "Circle",
-      size: properties?.size || 10,
-      strokeWidth: properties?.strokeWidth || 2,
-      color: properties?.color || "#000000",
-      opacity: properties?.opacity || 1,
-    };
-
+    this._properties = { ...defaultCircleProperties, ...properties };
     return this;
   }
 

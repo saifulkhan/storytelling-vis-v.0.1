@@ -4,7 +4,7 @@ import { ActionBuilder } from "./ActionBuilder";
 import {
   ActionTableRowType,
   FeatureActionTableRowType as FeatureActionTableRowType,
-} from "./FeatureActionTableRowType";
+} from "../../../components/storyboards/tables/FeatureActionTableRowType";
 import {
   TimeseriesFeatureDetector,
   TimeseriesFeatureDetectorProperties,
