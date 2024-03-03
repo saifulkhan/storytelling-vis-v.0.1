@@ -9,7 +9,7 @@ export type DotProperties = {
   opacity?: number;
 };
 
-const defaultDotProperties: DotProperties = {
+export const defaultDotProperties: DotProperties = {
   id: "Dot",
   size: 5,
   color: "#000000",

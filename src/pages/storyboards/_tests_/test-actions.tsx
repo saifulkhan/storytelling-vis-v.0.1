@@ -48,9 +48,9 @@ const TestActions = () => {
 
       const dot = new Dot()
         .properties({
-          size: 5,
-          color: "#FF0000",
-          opacity: 0.3,
+          // size: 5,
+          // color: "#FF0000",
+          // opacity: 0.3,
         })
         .svg(svg)
         .draw()

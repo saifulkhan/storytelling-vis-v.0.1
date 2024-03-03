@@ -8,7 +8,7 @@ export type ConnectorProperties = {
   opacity?: number;
 };
 
-const defaultConnectorProperties = {
+export const defaultConnectorProperties: ConnectorProperties = {
   id: "Connector",
   stroke: "#000000",
   opacity: 1,

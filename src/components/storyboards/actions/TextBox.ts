@@ -10,7 +10,7 @@ export type TextBoxProperties = {
   width?: number;
 };
 
-const defaultTextBoxProperties: TextBoxProperties = {
+export const defaultTextBoxProperties: TextBoxProperties = {
   id: "TextBox",
   title: "Title ...",
   message: "Message text goes here ...",

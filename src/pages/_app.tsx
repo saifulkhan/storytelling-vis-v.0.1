@@ -22,10 +22,8 @@ import { AuthProviderJWT } from "src/contexts/AuthProviderJWT";
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();
 
-//
-// Import all the css files created for d3 charts, e.g.,
-// import "src/lib/vis/css/common.css";
-//
+// Import all the css files created, e.g.,
+// import "src/components/storyboards/tables/KeyValueTable.css";
 
 type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactNode;

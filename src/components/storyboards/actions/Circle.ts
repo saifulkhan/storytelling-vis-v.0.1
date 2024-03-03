@@ -10,7 +10,7 @@ export type CircleProperties = {
   opacity?: number;
 };
 
-const defaultCircleProperties: CircleProperties = {
+export const defaultCircleProperties: CircleProperties = {
   id: "Circle",
   size: 10,
   strokeWidth: 2,
